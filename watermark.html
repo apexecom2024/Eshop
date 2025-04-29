@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Watermark Obfuscator Concept</title>
+
+    <style>
+        /* --- CSS Start --- */
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .video-container,
+        .canvas-container {
+            flex: 1 1 45%; /* Flex grow, shrink, basis */
+            min-width: 300px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center; /* Center canvas/video and buttons */
+            position: relative; /* Needed for absolute positioning of selection box within canvas container */
+        }
+
+        video, canvas {
+            max-width: 100%;
+            height: auto;
+            display: block; /* Remove extra space below */
+            margin: 10px auto; /* Center block elements */
+            border: 1px solid #ccc;
+        }
+
+        canvas {
+            cursor: crosshair;
+            /* Position relative is handled by parent .canvas-container now */
+        }
+
+        #selectionBox {
+            position: absolute; /* Position relative to the .canvas-container */
+            border: 2px dashed red;
+            background-color: rgba(255, 0, 0, 0.1);
+            pointer-events: none; /* Don't interfere with canvas mouse events */
+            display: none; /* Initially hidden */
+            z-index: 10; /* Make sure it's above the canvas content */
+            /* Left/Top positioning will be set by JS relative to the canvas offset within its container */
+        }
+
+
+        button {
+            padding: 10px 15px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #resetCanvasButton {
+             background-color: #6c757d;
+        }
+        #resetCanvasButton:hover {
+             background-color: #5a6268;
+        }
+
+
+        p {
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        strong {
+            color: #d9534f;
+        }
+         /* --- CSS End --- */
+    </style>
+</head>
+<body>
+    <h1>Video Watermark Obfuscator (Concept)</h1>
+    <p><strong>Disclaimer:</strong> This is a simplified demo. It only applies an effect to the selected area on the <em>currently displayed frame</em> on the canvas, it does not process the whole video or truly remove watermarks.</p>
+    <p><strong>Legal & Ethical Notice:</strong> Only use this on videos you have the rights to modify. Removing watermarks may violate copyright.</p>
+
+    <input type="file" id="videoInput" accept="video/*">
+    <hr>
+
+    <div class="container">
+        <div class="video-container">
+            <h2>Original Video</h2>
+            <video id="videoPlayer" controls muted playsinline></video>
+            <p>Use the video player controls to pause at the frame you want to process.</p>
+        </div>
+
+        <div class="canvas-container">
+            <h2>Canvas Processing Area</h2>
+            <canvas id="canvasOutput"></canvas>
+             <div id="selectionBox"></div> <!-- Selection box should be sibling of canvas -->
+             <p>Click and drag on the canvas above to select the watermark area.</p>
+             <button id="applyEffectButton">Apply Blur to Selection</button>
+             <button id="resetCanvasButton">Reset Canvas</button>
+        </div>
+    </div>
+
+    <script>
+        // --- JavaScript Start ---
+        const videoInput = document.getElementById('videoInput');
+        const videoPlayer = document.getElementById('videoPlayer');
+        const canvasOutput = document.getElementById('canvasOutput');
+        const ctx = canvasOutput.getContext('2d', { willReadFrequently: true }); // Performance hint
+        const applyEffectButton = document.getElementById('applyEffectButton');
+        const resetCanvasButton = document.getElementById('resetCanvasButton');
+        const selectionBox = document.getElementById('selectionBox');
+        const canvasContainer = document.querySelector('.canvas-container'); // Get container for positioning
+
+        let videoLoaded = false;
+        let selection = { x: 0, y: 0, w: 0, h: 0 };
+        let isSelecting = false;
+        let startX, startY; // Coordinates relative to canvas element
+        let canvasOffsetX = 0;
+        let canvasOffsetY = 0;
+
+
+        // --- Video Loading ---
+
+        videoInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const fileURL = URL.createObjectURL(file);
+                videoPlayer.src = fileURL;
+                videoLoaded = false; // Reset flag
+                resetCanvas(); // Clear previous canvas state
+                console.log("Video selected:", file.name);
+            }
+        });
+
+        videoPlayer.addEventListener('loadedmetadata', () => {
+            console.log("Video metadata loaded. Dimensions:", videoPlayer.videoWidth, "x", videoPlayer.videoHeight);
+            // Set canvas dimensions only once metadata is loaded
+            canvasOutput.width = videoPlayer.videoWidth;
+            canvasOutput.height = videoPlayer.videoHeight;
+            videoLoaded = true;
+            updateCanvasOffsets(); // Calculate initial offsets
+            drawCurrentFrame(); // Draw the first frame
+        });
+
+        videoPlayer.addEventListener('seeked', () => {
+            // When the user seeks (or pauses), draw the current frame
+            if (videoLoaded) {
+                drawCurrentFrame();
+            }
+        });
+
+         videoPlayer.addEventListener('pause', () => {
+             // Draw frame when paused
+             if (videoLoaded) {
+                 drawCurrentFrame();
+             }
+         });
+
+        videoPlayer.addEventListener('play', () => {
+            // Optional: Could continuously draw frames, but VERY resource intensive
+            // For this demo, we only draw when paused or explicitly asked
+            console.log("Playback started. Pause the video to select and apply effect.");
+             hideSelectionBox(); // Hide selection if user plays video
+        });
+
+        // Update canvas offset calculation if window is resized
+        window.addEventListener('resize', updateCanvasOffsets);
+
+        function updateCanvasOffsets() {
+            if (!videoLoaded) return;
+            const canvasRect = canvasOutput.getBoundingClientRect();
+            const containerRect = canvasContainer.getBoundingClientRect();
+            // Calculate the canvas's top-left corner relative to its container's top-left corner
+            // This accounts for padding/margins within the container
+            canvasOffsetX = canvasRect.left - containerRect.left;
+            canvasOffsetY = canvasRect.top - containerRect.top;
+            // console.log("Updated canvas offsets:", canvasOffsetX, canvasOffsetY);
+        }
+
+        // --- Canvas Drawing & Selection ---
+
+        function drawCurrentFrame() {
+            if (!videoLoaded || videoPlayer.readyState < 2) { // Check readyState > 1 (HAVE_METADATA)
+                // console.log("Skipping draw: Video not ready.");
+                return;
+            }
+             if (!videoPlayer.paused && !videoPlayer.seeking) {
+                  // console.log("Skipping draw: Video not paused.");
+                 // Allow drawing during seeking potentially
+                  return;
+             }
+            console.log("Drawing current frame to canvas.");
+            // Draw the current video frame onto the canvas
+            ctx.drawImage(videoPlayer, 0, 0, canvasOutput.width, canvasOutput.height);
+            selection = { x: 0, y: 0, w: 0, h: 0 }; // Reset selection after drawing frame
+            hideSelectionBox();
+        }
+
+        function resetCanvas() {
+             if (!videoLoaded) {
+                 // Clear if no video (ensure dimensions might be 0 initially)
+                 if(canvasOutput.width > 0 && canvasOutput.height > 0) {
+                     ctx.clearRect(0, 0, canvasOutput.width, canvasOutput.height);
+                 }
+             } else {
+                drawCurrentFrame(); // Redraw the original frame
+             }
+             selection = { x: 0, y: 0, w: 0, h: 0 };
+             hideSelectionBox();
+             console.log("Canvas reset to current video frame.");
+        }
+
+        // Mouse events for selection rectangle on the CANVAS
+        canvasOutput.addEventListener('mousedown', (e) => {
+            if (!videoLoaded || !videoPlayer.paused) {
+                 alert("Please pause the video first before selecting an area.");
+                 return;
+            }
+            updateCanvasOffsets(); // Ensure offsets are current before starting
+            isSelecting = true;
+            // Calculate mouse position relative to the CANVAS element itself
+            const rect = canvasOutput.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+
+            // Position the selection box relative to the CONTAINER using calculated canvas offsets
+            selectionBox.style.left = `${startX + canvasOffsetX}px`;
+            selectionBox.style.top = `${startY + canvasOffsetY}px`;
+            selectionBox.style.width = '0px';
+            selectionBox.style.height = '0px';
+            selectionBox.style.display = 'block'; // Show the box
+            console.log("Selection started at canvas coords:", startX, startY);
+        });
+
+        canvasOutput.addEventListener('mousemove', (e) => {
+            if (!isSelecting) return;
+
+            const rect = canvasOutput.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+
+            // Calculate selection dimensions relative to canvas
+            selection.x = Math.min(startX, currentX);
+            selection.y = Math.min(startY, currentY);
+            selection.w = Math.abs(currentX - startX);
+            selection.h = Math.abs(currentY - startY);
+
+            // Update visual selection box position relative to the CONTAINER
+            selectionBox.style.left = `${selection.x + canvasOffsetX}px`;
+            selectionBox.style.top = `${selection.y + canvasOffsetY}px`;
+            selectionBox.style.width = `${selection.w}px`;
+            selectionBox.style.height = `${selection.h}px`;
+        });
+
+        // Use window mouseup in case mouse is released outside canvas
+        window.addEventListener('mouseup', (e) => {
+            if (!isSelecting) return;
+            isSelecting = false;
+             // Check if the mouseup happened over the canvas itself or its container
+             const canvasRect = canvasOutput.getBoundingClientRect();
+             if(e.clientX < canvasRect.left || e.clientX > canvasRect.right || e.clientY < canvasRect.top || e.clientY > canvasRect.bottom) {
+                 // Mouse released outside the canvas, cancel selection
+                 hideSelectionBox();
+                 selection = { x: 0, y: 0, w: 0, h: 0 };
+                 console.log("Selection cancelled (mouse up outside canvas).");
+                 return;
+             }
+
+            console.log("Selection finished:", selection);
+            if (selection.w < 5 || selection.h < 5) { // Ignore tiny selections
+                hideSelectionBox();
+                selection = { x: 0, y: 0, w: 0, h: 0 };
+                 console.log("Selection too small, cancelled.");
+            }
+        });
+
+        // No need for canvas mouseleave listener if using window mouseup
+
+        function hideSelectionBox() {
+            selectionBox.style.display = 'none';
+        }
+
+
+        // --- Applying Effect ---
+
+        applyEffectButton.addEventListener('click', () => {
+            if (!videoLoaded) {
+                alert("Please load a video first.");
+                return;
+            }
+             if (!videoPlayer.paused) {
+                alert("Please pause the video first.");
+                return;
+            }
+            if (selection.w <= 0 || selection.h <= 0) {
+                alert("Please select an area on the canvas first by clicking and dragging.");
+                return;
+            }
+
+             // Ensure selection coords are integers and within canvas bounds
+            const selX = Math.max(0, Math.floor(selection.x));
+            const selY = Math.max(0, Math.floor(selection.y));
+            const selW = Math.min(canvasOutput.width - selX, Math.ceil(selection.w));
+            const selH = Math.min(canvasOutput.height - selY, Math.ceil(selection.h));
+
+            if (selW <=0 || selH <= 0) {
+                 console.log("Selection area outside canvas bounds after clamping.");
+                 hideSelectionBox();
+                 return;
+            }
+
+
+            console.log("Applying blur effect to selection:", {x: selX, y: selY, w: selW, h: selH});
+
+            // --- Using Canvas Filter Method (Recommended for simplicity/performance) ---
+            try {
+                ctx.save(); // Save the current canvas state (transformations, filters, etc.)
+                ctx.filter = 'blur(8px)'; // Adjust blur intensity as needed (e.g., 'blur(5px)')
+
+                // Draw the selected portion of the video again *onto the canvas*, applying the blur filter
+                // Source rectangle from the hidden video element
+                // Destination rectangle on the visible canvas element
+                ctx.drawImage(
+                    videoPlayer, // Source image (current video frame from <video>)
+                    selX,        // Source X
+                    selY,        // Source Y
+                    selW,        // Source Width
+                    selH,        // Source Height
+                    selX,        // Destination X on canvas
+                    selY,        // Destination Y on canvas
+                    selW,        // Destination Width on canvas
+                    selH         // Destination Height on canvas
+                );
+
+                // It's important to reset the filter immediately after drawing the blurred part,
+                // otherwise, subsequent drawing operations (like redrawing the whole frame on reset)
+                // would also be blurred.
+                ctx.filter = 'none';
+                ctx.restore(); // Restore the canvas state (removes the applied filter setting)
+
+            } catch (error) {
+                 console.error("Error applying canvas filter:", error);
+                 alert("An error occurred while applying the blur effect.");
+                 ctx.filter = 'none'; // Ensure filter is reset in case of error
+                 try { ctx.restore(); } catch(e) {} // Attempt to restore state
+            }
+
+            // --- Pixel Manipulation Method (Alternative - uncomment to use) ---
+            /*
+            console.log("Attempting pixel manipulation for selection:", {x: selX, y: selY, w: selW, h: selH});
+            try {
+                if (selW <= 0 || selH <= 0) {
+                    throw new Error("Invalid selection dimensions for getImageData.");
+                }
+                // Get pixel data ONLY from the selected rectangle
+                const imageData = ctx.getImageData(selX, selY, selW, selH);
+                const data = imageData.data; // Array of pixel data (R, G, B, A, R, G, B, A, ...)
+
+                // --- Simple Pixelation Effect ---
+                const pixelationFactor = 10; // Size of the 'pixel' blocks
+                for (let y = 0; y < selH; y += pixelationFactor) {
+                    for (let x = 0; x < selW; x += pixelationFactor) {
+                        // Calculate the index of the top-left pixel of the current block
+                        const blockStartIndex = (y * selW + x) * 4;
+                        const r = data[blockStartIndex];
+                        const g = data[blockStartIndex + 1];
+                        const b = data[blockStartIndex + 2];
+                        const a = data[blockStartIndex + 3]; // Preserve alpha if needed
+
+                        // Fill the entire block with the color of the top-left pixel
+                        for (let blockY = 0; blockY < pixelationFactor; blockY++) {
+                            for (let blockX = 0; blockX < pixelationFactor; blockX++) {
+                                // Check bounds within the selection rectangle
+                                if (x + blockX < selW && y + blockY < selH) {
+                                    const pixelIndex = ((y + blockY) * selW + (x + blockX)) * 4;
+                                    data[pixelIndex] = r;
+                                    data[pixelIndex + 1] = g;
+                                    data[pixelIndex + 2] = b;
+                                    // data[pixelIndex + 3] = a; // Keep original alpha or set block alpha
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Put the modified pixel data back onto the canvas IN THE SAME AREA
+                ctx.putImageData(imageData, selX, selY);
+                console.log("Applied pixel manipulation effect.");
+
+            } catch (error) {
+                console.error("Error manipulating pixel data:", error);
+                if (error.name === 'SecurityError') {
+                     alert("Could not process canvas pixels. This might happen if the video source is cross-origin and doesn't have CORS headers allowing canvas manipulation.");
+                } else {
+                    alert("An error occurred while applying the effect: " + error.message);
+                }
+            }
+            */
+            // --- End Pixel Manipulation Method ---
+
+
+            hideSelectionBox(); // Hide selection box after applying
+            // Selection object is kept so user knows what was last selected,
+            // but it will be reset if they draw a new frame or select again.
+        });
+
+        resetCanvasButton.addEventListener('click', resetCanvas);
+
+        // --- Initial Setup ---
+        hideSelectionBox(); // Ensure box is hidden initially
+
+        // --- JavaScript End ---
+    </script>
+
+</body>
+</html>
