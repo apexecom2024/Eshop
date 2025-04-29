@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>General Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Theme Color Variable --- */
+        :root {
+            --primary-color: #1a2f3d;
+            --primary-color-darker: #12212b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+            touch-action: pan-y;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            padding-top: 70px; /* Space for fixed header */
+            /* Adjusted padding-bottom since FAB is removed */
+            padding-bottom: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
+            height: 65px;
+            transition: padding 0.3s ease-in-out; /* Smooth padding transition */
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-link { /* Renamed from back-btn for clarity on index page */
+            background: none;
+            border: none;
+            margin-right: 15px;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 40%;
+            object-fit: cover;
+            display: block;
+        }
+
+         .logo-link:hover { /* Renamed from back-btn */
+            opacity: 0.8;
+         }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212b36;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-icon {
+             position: relative;
+             font-size: 22px;
+             color: #333;
+             cursor: pointer;
+             text-decoration: none;
+             display: flex; /* Needed for vertical alignment */
+             align-items: center; /* Needed for vertical alignment */
+        }
+        .header-icon .fa-shopping-cart {
+            color: var(--primary-color);
+        }
+
+        /* --- MODIFIED START --- */
+        /* Style for profile user icon */
+        .header-icon.profile i { /* Changed class from .notification */
+             color: #333; /* Or specific color */
+             transition: color 0.2s ease-in-out;
+        }
+        .header-icon.profile:hover i { /* Changed class from .notification */
+            color: var(--primary-color); /* Change color on hover */
+        }
+        /* --- MODIFIED END --- */
+
+
+        /* Cart badge ONLY */
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff5252;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        /* Hide cart badge if count is 0 */
+        .cart-badge.hidden {
+            display: none;
+        }
+
+        /* Search Bar */
+        .search-container {
+            padding: 15px;
+            background-color: #fff;
+            margin-bottom: 10px;
+            transition: padding 0.3s ease-in-out;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #f1f3f4;
+            border-radius: 25px;
+            padding: 8px 15px;
+            transition: max-width 0.3s ease-in-out; /* Smooth transition */
+        }
+
+        .search-bar i {
+            color: #5f6368;
+            margin-right: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+        }
+        .search-bar input:focus {
+             box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 15px;
+            background-color: #fff;
+            margin-bottom: 15px;
+            scrollbar-width: none; /* Firefox */
+            transition: padding 0.3s ease-in-out, margin-bottom 0.3s ease-in-out;
+        }
+
+        .categories::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .category {
+            flex: 0 0 auto;
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: #f1f3f4;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, margin-bottom 0.3s ease-in-out;
+            border: 1px solid transparent;
+        }
+
+        .category.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Products Grid */
+        .products-container {
+            padding: 10px;
+            transition: padding 0.3s ease-in-out;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 5px;
+            align-items: stretch;
+            transition: grid-template-columns 0.3s ease-in-out, gap 0.3s ease-in-out; /* Smooth grid transitions */
+        }
+
+        /* Product Card Link Wrapper */
+        .product-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            border-radius: 10px; /* Match card radius for hover effect */
+        }
+
+        .product-card-link:hover {
+            transform: translateY(-3px);
+             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        .product-card-link:active {
+             transform: scale(0.98);
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        /* Uniform Card Size */
+        .product-card {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            position: relative;
+            background-color: #eee;
+            flex-shrink: 0;
+            transition: height 0.3s ease-in-out; /* Smooth height transition */
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .product-card-link:hover .product-image img {
+             transform: scale(1.05);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff5252;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .product-details {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 42px; /* Approx 2 lines */
+            line-height: 1.5;
+            transition: font-size 0.3s ease-in-out, height 0.3s ease-in-out; /* Smooth font/height transition */
+        }
+
+        .product-vendor {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .current-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            transition: font-size 0.3s ease-in-out; /* Smooth font transition */
+        }
+
+        .original-price {
+            font-size: 12px;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+            height: 22px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .product-tag {
+            background-color: #f1f3f4;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .add-to-cart {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 0;
+            width: 100%;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s, font-size 0.3s ease-in-out, padding 0.3s ease-in-out;
+            margin-top: auto; /* Pushes button to bottom */
+            z-index: 5; /* Ensure button is clickable above link wrapper */
+            position: relative; /* Needed for z-index */
+        }
+
+        .add-to-cart:active, .add-to-cart:hover {
+            background-color: var(--primary-color-darker);
+        }
+        .add-to-cart:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+
+        /* Loading State */
+        .loading { display: flex; justify-content: center; align-items: center; height: 200px; width: 100%; }
+        .loading-spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top: 4px solid var(--primary-color); width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Error State */
+        .error-message { text-align: center; padding: 20px; color: #ff5252; font-weight: bold; }
+
+        /* Empty State */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; min-height: 200px; }
+        .empty-state i { font-size: 50px; color: #ccc; margin-bottom: 15px; }
+        .empty-state h3 { font-size: 18px; color: #333; margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; color: #666; margin-bottom: 20px; }
+
+
+        /* --- START: Desktop Styles --- */
+
+        @media (min-width: 768px) {
+            /* --- Tablet Optimizations --- */
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns for tablets */
+                gap: 20px; /* Slightly larger gap */
+            }
+            .product-image {
+                height: 180px; /* Slightly taller images */
+            }
+            .container {
+                 padding-left: 20px; /* Add some horizontal padding */
+                 padding-right: 20px;
+            }
+             /* Keep categories scrollable on tablet for now */
+        }
+
+        @media (min-width: 1024px) {
+            /* --- Desktop Optimizations --- */
+            .container {
+                max-width: 1200px; /* Limit overall content width */
+                margin: 0 auto; /* Center the container */
+                padding-top: 85px; /* More space below fixed header */
+                padding-left: 30px; /* More horizontal padding */
+                padding-right: 30px;
+            }
+
+            .header {
+                /* Apply max-width to header content to align with container */
+                /* Or adjust padding to match container */
+                 padding-left: max(30px, calc((100% - 1200px) / 2)); /* Align left padding */
+                 padding-right: max(30px, calc((100% - 1200px) / 2)); /* Align right padding */
+            }
+
+            .search-container {
+                padding: 20px 0; /* Adjust vertical padding */
+            }
+            .search-bar {
+                max-width: 700px; /* Limit search bar width slightly */
+                margin: 0 auto; /* Center search bar */
+            }
+
+            .categories {
+                overflow-x: visible; /* Allow wrapping */
+                flex-wrap: wrap;
+                justify-content: center; /* Center the categories */
+                padding-top: 15px; /* Adjust padding */
+                padding-bottom: 15px;
+                padding-left: 0; /* Remove padding if container handles it */
+                padding-right: 0;
+                margin-bottom: 30px; /* More space below categories */
+            }
+            .category {
+                margin-bottom: 10px; /* Add margin for wrapped items */
+                 /* Optional: Slightly larger category text */
+                 /* font-size: 14px; */
+            }
+
+            .products-container {
+                padding: 0; /* Remove padding if .container handles it */
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns */
+                gap: 25px; /* Wider gap */
+            }
+
+            .product-image {
+                height: 200px; /* Even taller images */
+            }
+            .product-card-link:hover {
+                /* Enhance hover effect slightly */
+                 box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Optional: Slightly larger fonts for readability */
+            .product-title {
+                font-size: 15px;
+                 height: 45px; /* Adjust height if needed */
+            }
+            .current-price {
+                font-size: 17px;
+            }
+            .add-to-cart {
+                font-size: 14px;
+                padding: 10px 0;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            /* --- Large Desktop Optimizations --- */
+            .products-grid {
+                grid-template-columns: repeat(5, 1fr); /* 5 columns on very wide screens */
+            }
+            .product-image {
+                height: 220px; /* Maybe even larger images */
+            }
+        }
+
+        @media (min-width: 1440px) {
+             /* --- Extra Large Desktop --- */
+             .container {
+                  max-width: 1360px; /* Slightly wider max-width */
+             }
+              .header {
+                 padding-left: max(30px, calc((100% - 1360px) / 2));
+                 padding-right: max(30px, calc((100% - 1360px) / 2));
+             }
+             /* Keep 5 columns or adjust if needed */
+        }
+        /* --- END: Desktop Styles --- */
+
+    </style>
+    <script>
+        // Firebase configuration (DO NOT REMOVE - Using your specific config)
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // Prevent zoom scripts (Keep as is)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) { event.preventDefault(); }
+            }, { passive: false });
+            document.addEventListener('touchmove', function(event) {
+                if (event.touches.length > 1) { event.preventDefault(); }
+            }, { passive: false });
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            // Initialize Firebase and Start Logic AFTER DOM is ready
+            initializeFirebaseAndApp();
+        });
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> <!-- Auth SDK is essential -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> <!-- Firestore SDK is essential -->
+
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <!-- Changed href to index.html assuming this is the main page -->
+            <a href="index.html" class="logo-link" title="Home">
+                 <!-- **** Logo path **** -->
+                <img src="assets/images/logo/logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'; console.error('Logo image not found at assets/images/logo/logo.png')">
+            </a>
+            <div class="header-title">Magnetar Store</div>
+        </div>
+        <div class="header-right">
+            <!-- --- MODIFIED START: Replaced Notification with Profile --- -->
+            <!-- Profile Icon Link -->
+            <a href="profile.html" class="header-icon profile" title="Profile">
+                <i class="fas fa-user-circle"></i> <!-- Changed icon from fa-bell -->
+            </a>
+            <!-- --- MODIFIED END --- -->
+
+            <!-- Cart Icon Link -->
+             <a href="cart.html" class="header-icon" id="cart-icon-link" title="View Cart">
+                 <i class="fas fa-shopping-cart"></i>
+                 <!-- Dynamic Cart Badge -->
+                 <div class="cart-badge hidden" id="cart-badge">
+                     <span id="cart-item-count">0</span>
+                 </div>
+             </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search products..." id="searchInput">
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="categories">
+            <!-- Categories remain the same -->
+            <div class="category active" data-category="all">All</div>
+            <div class="category" data-category="Groceries">Groceries</div>
+            <div class="category" data-category="Meat">Meat</div>
+            <div class="category" data-category="Drinks">Drinks</div>
+            <div class="category" data-category="Snacks">Snacks</div>
+            <div class="category" data-category="Household">Household</div>
+            <div class="category" data-category="Personal Care">Personal Care</div>
+            <div class="category" data-category="Frozen">Frozen Foods</div>
+            <div class="category" data-category="Digital Products">Digital Products</div>
+            <div class="category" data-category="Electronics">Electronics</div>
+            <div class="category" data-category="Clothing">Clothing</div>
+            <div class="category" data-category="Bakery">Bakery</div>
+        </div>
+
+        <!-- Products Grid Container -->
+        <div class="products-container">
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="error-message" id="errorMessage" style="display: none;">
+                <!-- Error message text will be set dynamically -->
+            </div>
+            <div class="products-grid" id="productsGrid" style="display: none;"></div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-shopping-basket"></i>
+                <h3>No Products Found</h3>
+                <p>There are currently no products matching your search or filter.</p>
+            </div>
+        </div>
+
+    </div> <!-- End .container -->
+
+    <!-- Floating Action Button - REMOVED -->
+
+    <script>
+        // --- Firebase Initialization and App Logic ---
+        let auth, db, productsCollectionRef, cartItemsCollectionRef;
+        let allProducts = []; // Stores fetched products {id, ...data}
+        let currentCategory = 'all';
+        let listenersInitialized = false;
+        let cartItemCount = 0; // Track cart count locally
+
+        // Elements
+        const productsGrid = document.getElementById('productsGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        const categories = document.querySelectorAll('.category');
+        const cartBadge = document.getElementById('cart-badge');
+        const cartItemCountSpan = document.getElementById('cart-item-count');
+
+
+        function initializeFirebaseAndApp() {
+            // --- Initialize Firebase ---
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase initialized successfully with provided config.");
+                } else {
+                     firebase.app();
+                     console.log("Firebase already initialized.");
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                productsCollectionRef = db.collection("store_products");
+                cartItemsCollectionRef = db.collection("cartItems"); // Ref for adding/counting cart items
+
+            } catch (error) {
+                console.error("CRITICAL: Firebase initialization failed:", error);
+                showError("Application setup failed. Please check configuration and console.");
+                return;
+            }
+
+            // --- Handle Authentication State ---
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    console.log("Auth State Changed: User is signed in. Anonymous:", user.isAnonymous, "UID:", user.uid);
+                    // Fetch initial cart count for the logged-in user
+                    fetchInitialCartCount(user.uid); // Fetch count associated with this user
+
+                    // Fetch products if not already loaded and no critical error shown
+                    if (allProducts.length === 0 && errorMessage.style.display === 'none') {
+                        initializeProductFetching();
+                    } else if (allProducts.length > 0) {
+                         // Products exist, ensure UI is correct state
+                         console.log("Products already available, skipping re-fetch on auth change.");
+                         hideLoading(); // Ensure loading is hidden
+                         if (productsGrid.children.length > 0) {
+                            productsGrid.style.display = 'grid'; // Show grid if it has items
+                         } else if (errorMessage.style.display === 'none'){ // Check if error isn't already shown
+                            showEmptyState(); // Show empty if no items and no error
+                         }
+                    } else {
+                        // Products empty, but maybe loading/error state is active
+                        console.log("Auth state changed, but products are empty or error/loading shown. No action.");
+                    }
+                } else {
+                    // No user signed in
+                    console.log("Auth State Changed: No user signed in. Attempting anonymous sign-in...");
+                    allProducts = []; // Clear product data
+                    productsGrid.innerHTML = ''; // Clear grid UI
+                    listenersInitialized = false; // Reset listeners flag
+                    cartItemCount = 0; // Reset cart count
+                    updateCartIcon(cartItemCount); // Update UI (hide badge)
+                    signInAnonymously(); // Attempt to sign in anonymously
+                }
+            });
+        }
+
+        function signInAnonymously() {
+            showLoading(); // Show loading during sign-in attempt
+            auth.signInAnonymously()
+                .then(() => {
+                    // Sign-in successful. onAuthStateChanged will handle the next steps.
+                    console.log("Anonymous sign-in successful. Waiting for auth state change callback...");
+                })
+                .catch((error) => {
+                    console.error("--- ANONYMOUS SIGN-IN FAILED ---", error);
+                    // Provide clear error message and instructions
+                    showError(`Authentication failed: ${error.message}. Please ensure Anonymous sign-in is enabled in your Firebase project settings.`);
+                });
+        }
+
+        // --- Product Fetching Logic ---
+        async function initializeProductFetching() {
+            // Ensure user is authenticated before fetching
+            if (!auth.currentUser) {
+                console.warn("Attempted to fetch products before user was authenticated. Waiting for auth.");
+                showLoading(); // Keep loading indicator on
+                return; // Exit and wait for auth state change
+            }
+
+            console.log("Fetching products for user:", auth.currentUser.uid);
+            showLoading(); // Ensure loading is shown before fetch starts
+            allProducts = await fetchProducts(); // Fetch products and store globally
+
+             // Only render and set up listeners if fetch was successful (no error shown)
+             if (errorMessage.style.display !== 'block') {
+                renderProducts(allProducts);
+                setupEventListeners(); // Setup listeners after first successful render
+             } else {
+                 hideLoading(); // Hide loading if an error was shown during fetch
+                 console.log("Skipping rendering and listeners due to fetch error.");
+             }
+        }
+
+        // --- Fetch Initial Cart Count ---
+        async function fetchInitialCartCount(userId) {
+             // Ensure we have a user ID and Firestore reference
+             if (!userId || !cartItemsCollectionRef) {
+                 console.warn("Cannot fetch cart count: Missing userId or cartItemsCollectionRef.");
+                 return;
+             }
+             console.log(`Fetching initial cart count for user: ${userId}`);
+             try {
+                 // Query cartItems collection for documents matching the user's ID
+                 // Use a listener for real-time updates if desired (more complex)
+                 // For initial count, .get() is fine
+                 const snapshot = await cartItemsCollectionRef.where("userId", "==", userId).get();
+                 cartItemCount = snapshot.size; // The number of documents is the item count
+                 console.log(`Initial cart count fetched: ${cartItemCount}`);
+                 updateCartIcon(cartItemCount); // Update the badge UI
+             } catch (error) {
+                 console.error("Error fetching initial cart count:", error);
+                 // Log the error, but don't disrupt the user experience for this.
+             }
+        }
+
+        // --- Setup Event Listeners ---
+        function setupEventListeners() {
+            // Prevent adding listeners multiple times
+            if (listenersInitialized) {
+                 console.log("Listeners already initialized.");
+                 return;
+            }
+
+            console.log("Setting up event listeners...");
+
+            // Search input listener with debounce
+            searchInput.addEventListener('input', debouncedApplyFilters);
+
+            // Category filter listeners
+            categories.forEach(category => {
+                category.addEventListener('click', () => {
+                    // Ignore click if already active
+                    if (category.classList.contains('active')) return;
+                    // Update active category style
+                    categories.forEach(c => c.classList.remove('active'));
+                    category.classList.add('active');
+                    // Update current category state and apply filters
+                    currentCategory = category.dataset.category;
+                    console.log("Category changed to:", currentCategory);
+                    applyFilters(); // Re-filter products immediately
+                });
+            });
+
+            // Product Grid click listener (using event delegation)
+            productsGrid.addEventListener('click', async (event) => {
+                 // Check if the clicked element is the "Add to Cart" button
+                 if (event.target.classList.contains('add-to-cart')) {
+                     event.preventDefault(); // Prevent any default button behavior
+                     event.stopPropagation(); // IMPORTANT: Stop the click from bubbling up to the product card link
+
+                     const button = event.target;
+                     const productId = button.dataset.productId; // Get product ID from button's data attribute
+
+                     if (!productId) {
+                         console.error("Add to Cart button clicked, but product ID is missing.");
+                         return; // Exit if ID is missing
+                     }
+
+                     // Visual feedback and disable button
+                     button.textContent = 'Adding...';
+                     button.disabled = true;
+
+                     // Call the async function to handle Firestore interaction
+                     await handleAddToCart(productId, button);
+
+                     // Button state reset is now handled within handleAddToCart upon success/failure
+                 }
+                 // Clicks on other parts of the product card (within the <a> tag)
+                 // will trigger the navigation to product-details.html naturally.
+             });
+
+            listenersInitialized = true; // Mark listeners as initialized
+             console.log("Event listeners setup complete.");
+        }
+
+        // --- Handle Add To Cart ---
+        async function handleAddToCart(productId, buttonElement) {
+            // 1. Check Authentication
+            if (!auth.currentUser) {
+                 console.error("User not authenticated. Cannot add to cart.");
+                 showError("Please sign in to add items to your cart.");
+                 // Reset button immediately on auth failure
+                 buttonElement.textContent = 'Add to Cart';
+                 buttonElement.disabled = false;
+                 return;
+            }
+
+            // 2. Find Product Data
+            // Use the globally stored allProducts array
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) {
+                console.error(`Product data not found in allProducts for ID: ${productId}`);
+                showError("Could not find product details. Please refresh and try again.");
+                // Reset button
+                buttonElement.textContent = 'Add to Cart';
+                buttonElement.disabled = false;
+                return;
+            }
+
+            console.log(`Attempting to add product to cart: ${product.Title || product.name}`);
+
+            // 3. Prepare Cart Item Data Object
+            const cartItem = {
+                userId: auth.currentUser.uid, // Link item to the current user
+                productId: product.id,
+                productTitle: product.Title || product.name || 'Unnamed Product',
+                productPrice: parseFloat(product['Variant Price'] ?? product.price ?? 0),
+                productImage: product['Image Src'] ?? (Array.isArray(product.imageUrls) && product.imageUrls[0]) ?? '',
+                quantity: 1, // Default quantity when adding
+                addedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // 4. Add to Firestore
+            try {
+                // Check if item already exists for this user and product
+                const querySnapshot = await cartItemsCollectionRef
+                    .where('userId', '==', auth.currentUser.uid)
+                    .where('productId', '==', productId)
+                    .limit(1)
+                    .get();
+
+                if (!querySnapshot.empty) {
+                    // Item exists, update quantity
+                    const existingDoc = querySnapshot.docs[0];
+                    const currentQuantity = existingDoc.data().quantity || 0;
+                    await existingDoc.ref.update({ quantity: currentQuantity + 1 });
+                    console.log("Product quantity updated in cart:", existingDoc.id);
+                     // We didn't add a *new* item, so don't increment cartItemCount here
+                     // If using real-time listeners for cart count, this would update automatically.
+                     // Since we are using .get() for count, we might need to re-fetch count or just rely on visual feedback.
+                } else {
+                    // Item doesn't exist, add new document
+                    const docRef = await cartItemsCollectionRef.add(cartItem);
+                    console.log("Product added to cart Firestore document with ID: ", docRef.id);
+                     cartItemCount++; // Increment local counter ONLY for new items
+                     updateCartIcon(cartItemCount); // Update header badge UI
+                }
+
+
+                // --- Success Actions (Common for add/update) ---
+                buttonElement.textContent = 'Added!';
+                setTimeout(() => {
+                    buttonElement.textContent = 'Add to Cart';
+                    buttonElement.disabled = false;
+                }, 1500);
+
+            } catch (error) {
+                // --- Error Handling ---
+                console.error("Error adding/updating product in cart Firestore:", error);
+                showError("Failed to add item to cart. Please check connection and try again.");
+                // Reset button on error
+                buttonElement.textContent = 'Add to Cart';
+                buttonElement.disabled = false;
+            }
+        }
+
+
+        // --- Fetch Products from Firestore ---
+        async function fetchProducts() {
+            if (!productsCollectionRef) {
+                 console.error("Firestore collection reference (products) is not available.");
+                 showError("Database connection error. Cannot fetch products.");
+                 return [];
+            }
+            console.log(`Querying Firestore collection: ${productsCollectionRef.path}`);
+            try {
+                // Query active products
+                const snapshot = await productsCollectionRef.where("Status", "==", "active").get();
+                const productsArray = [];
+                if (snapshot.empty) {
+                    console.log("No active products found in the Firestore collection.");
+                 } else {
+                    snapshot.forEach(doc => {
+                        productsArray.push({ id: doc.id, ...doc.data() });
+                    });
+                    console.log(`Fetched ${productsArray.length} active products from Firestore.`);
+                 }
+                return productsArray;
+            } catch (error) {
+                console.error("Error fetching products from Firestore:", error);
+                if (error.code === 'permission-denied') {
+                     showError(`Firestore permission denied. Check your Firestore Security Rules to allow reads on '${productsCollectionRef.path}'.`);
+                } else {
+                    showError(`Failed to load products: ${error.message}.`);
+                }
+                return [];
+            }
+        }
+
+        // --- Render Products ---
+        function renderProducts(products) {
+            productsGrid.innerHTML = '';
+
+            if (!Array.isArray(products)) {
+                console.error("RenderProducts received invalid data:", products);
+                showEmptyState("Error", "Could not display products due to invalid data.");
+                return;
+            }
+            if (products.length === 0) {
+                const searchTerm = searchInput.value.trim();
+                if (currentCategory === 'all' && !searchTerm) {
+                    showEmptyState("No Products Available", "There are currently no active products in the store.");
+                } else {
+                    showEmptyState("No Products Found", "No products match your current filter or search.");
+                }
+                return;
+            }
+
+            console.log(`Rendering ${products.length} products...`);
+            products.sort((a, b) => (a.Title || a.name || '').localeCompare(b.Title || b.name || ''));
+
+            const fragment = document.createDocumentFragment();
+            products.forEach(product => {
+                const currentPrice = product['Variant Price'] ?? product.price ?? null;
+                const comparePrice = product['Variant Compare At Price'] ?? product.compare_at_price ?? null;
+                const imageSrc = product['Image Src'] ?? (Array.isArray(product.imageUrls) && product.imageUrls[0]) ?? 'assets/images/placeholder.svg';
+                const title = product.Title ?? product.name ?? 'Unnamed Product';
+                const vendor = product.Vendor ?? 'General Store';
+                let tags = product.Tags ?? [];
+                if (typeof tags === 'string') {
+                     tags = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                } else if (!Array.isArray(tags)) {
+                    tags = [];
+                }
+
+                const discountPercentage = calculateDiscountPercentage(currentPrice, comparePrice);
+                const currentPriceFormatted = formatPrice(currentPrice);
+                const originalPriceFormatted = formatPrice(comparePrice);
+
+                const productLink = document.createElement('a');
+                productLink.className = 'product-card-link';
+                productLink.href = `product-details.html?id=${product.id}`;
+
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        <img src="${imageSrc}" alt="${title}" loading="lazy" onerror="this.onerror=null; this.src='assets/images/placeholder.svg'; console.warn('Image failed to load:', this.src)">
+                        ${discountPercentage ? `<div class="discount-badge">-${discountPercentage}%</div>` : ''}
+                    </div>
+                    <div class="product-details">
+                        <div class="product-title">${title}</div>
+                        <div class="product-vendor">${vendor}</div>
+                        <div class="product-price">
+                            <div class="current-price">${currentPriceFormatted}</div>
+                            ${originalPriceFormatted && discountPercentage ? `<div class="original-price">${originalPriceFormatted}</div>` : ''}
+                        </div>
+                        <div class="product-tags">
+                            ${tags.slice(0, 2).map(tag => `<div class="product-tag">${tag}</div>`).join('')}
+                        </div>
+                        <button class="add-to-cart" data-product-id="${product.id}">Add to Cart</button>
+                    </div>`;
+                productLink.appendChild(productCard);
+                fragment.appendChild(productLink);
+            });
+
+            productsGrid.appendChild(fragment);
+            hideLoading();
+            productsGrid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            errorMessage.style.display = 'none';
+            console.log("Rendering complete.");
+        }
+
+        // --- Helper Functions ---
+        function formatPrice(price) {
+             const number = parseFloat(price);
+             if (isNaN(number)) return ''; // Return empty instead of '₱0.00' or similar if invalid
+             return `₱${number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        function calculateDiscountPercentage(currentPrice, originalPrice) {
+            const current = parseFloat(currentPrice);
+            const original = parseFloat(originalPrice);
+            if (isNaN(current) || isNaN(original) || original <= 0 || original <= current) return null;
+            const discount = Math.round(((original - current) / original) * 100);
+            return discount > 0 ? discount : null;
+        }
+
+        // --- Filtering Functions ---
+        function filterProductsByCategory(products, category) {
+             if (category === 'all') return products;
+             const lowerCaseCategory = category.toLowerCase();
+             return products.filter(product => {
+                 const type = (product.Type ?? product.category ?? '').toLowerCase();
+                 const productCategory = (product['Product Category'] ?? '').toLowerCase();
+                 let tagsMatch = false;
+                 const tags = product.Tags ?? [];
+                 if (Array.isArray(tags)) {
+                     tagsMatch = tags.some(tag => String(tag).toLowerCase().includes(lowerCaseCategory));
+                 } else if (typeof tags === 'string') {
+                     tagsMatch = tags.toLowerCase().includes(lowerCaseCategory);
+                 }
+                 return type.includes(lowerCaseCategory) || productCategory.includes(lowerCaseCategory) || tagsMatch;
+             });
+         }
+         function filterProductsBySearch(products, searchTerm) {
+             if (!searchTerm) return products;
+             const lowerCaseSearchTerm = searchTerm.toLowerCase();
+             return products.filter(product => {
+                 const title = (product.Title ?? product.name ?? '').toLowerCase();
+                 const vendor = (product.Vendor ?? '').toLowerCase();
+                 const description = (product['Body (HTML)'] ?? product.description ?? '').toLowerCase();
+                 const type = (product.Type ?? product.category ?? '').toLowerCase();
+                 let tagsMatch = false;
+                 const tags = product.Tags ?? [];
+                 if (Array.isArray(tags)) {
+                      tagsMatch = tags.some(tag => String(tag).toLowerCase().includes(lowerCaseSearchTerm));
+                 } else if (typeof tags === 'string') {
+                      tagsMatch = tags.toLowerCase().includes(lowerCaseSearchTerm);
+                 }
+                 return title.includes(lowerCaseSearchTerm) || vendor.includes(lowerCaseSearchTerm) ||
+                        description.includes(lowerCaseSearchTerm) || type.includes(lowerCaseSearchTerm) || tagsMatch;
+             });
+         }
+
+        // --- UI State Functions ---
+        function showLoading() { loadingIndicator.style.display = 'flex'; productsGrid.style.display = 'none'; errorMessage.style.display = 'none'; emptyState.style.display = 'none'; }
+        function hideLoading() { loadingIndicator.style.display = 'none'; }
+        function showError(message = "An error occurred.") { hideLoading(); errorMessage.textContent = message; errorMessage.style.display = 'block'; productsGrid.style.display = 'none'; emptyState.style.display = 'none'; console.error("Error displayed to user:", message); }
+        function showEmptyState(message = "No Products Found", subMessage = "There are currently no products matching your search or filter.") { hideLoading(); emptyState.querySelector('h3').textContent = message; emptyState.querySelector('p').textContent = subMessage; emptyState.style.display = 'flex'; productsGrid.style.display = 'none'; errorMessage.style.display = 'none'; }
+
+        // --- Update Cart Icon Badge ---
+        function updateCartIcon(count) {
+             const displayCount = Math.max(0, count);
+             if (displayCount > 0) {
+                 cartItemCountSpan.textContent = displayCount > 99 ? '99+' : displayCount;
+                 cartBadge.classList.remove('hidden');
+             } else {
+                 cartItemCountSpan.textContent = '0';
+                 cartBadge.classList.add('hidden');
+             }
+             // Optional: Update localStorage if needed for other pages
+             // localStorage.setItem('cartItemCount', displayCount);
+        }
+
+
+        // --- Debounce & Filter Application ---
+        let searchTimeout;
+        function debouncedApplyFilters() { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 300); }
+        function applyFilters() {
+            const searchTerm = searchInput.value.trim();
+            console.log(`Applying filters - Category: '${currentCategory}', Search: '${searchTerm}'`);
+            showLoading();
+            // Use setTimeout to allow UI update before heavy filtering
+            setTimeout(() => {
+                let filtered = filterProductsByCategory(allProducts, currentCategory);
+                filtered = filterProductsBySearch(filtered, searchTerm);
+                renderProducts(filtered);
+            }, 10); // Small delay for UI responsiveness
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Updated Title for Admin -->
+    <title>Admin Profile - Kabarro Store</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- New Theme Variables (Inspired by Reference) --- */
+        :root {
+            --body-bg: #f8f9fa; /* Light grey background */
+            --card-bg: #ffffff;
+            --text-primary: #2d3748; /* Darker text */
+            --text-secondary: #718096; /* Lighter grey text */
+            --text-link: #4299e1; /* Primary blue for links */
+            --text-danger: #e53e3e; /* Red for logout/errors */
+            --border-light: #e2e8f0; /* Light border/underline for inputs */
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius-lg: 16px;
+            --border-radius-md: 8px;
+            --border-radius-sm: 6px;
+            --border-radius-pill: 9999px;
+            --font-sans: Helvetica, Arial, sans-serif; /* Keep existing font */
+
+            /* Icon/Badge Colors (Approximated from Reference) */
+            --icon-bg-green: #e6fffa; --icon-color-green: #38b2ac;
+            --icon-bg-yellow: #fffbeb; --icon-color-yellow: #d69e2e; /* Adjusted yellow */
+            --icon-bg-gray: #edf2f7; --icon-color-gray: #a0aec0;
+            --icon-bg-blue: #ebf8ff; --icon-color-blue: #4299e1;
+            --icon-bg-purple: #faf5ff; --icon-color-purple: #9f7aea; /* Example for Store Settings */
+            --badge-bg-orange: #fffaf0; --badge-color-orange: #ed8936;
+
+            /* Functional Colors */
+            --error-color: var(--text-danger);
+            --success-color: #48bb78; /* Green for success */
+            --warning-color: #ecc94b; /* Yellow for warnings */
+
+             /* Consistent Heights */
+             --header-height: 60px;
+        }
+
+        /* --- Global Styles & Resets --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-sans);
+            touch-action: manipulation;
+        }
+
+        html {
+            font-size: 16px; /* Base font size */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--text-primary);
+            padding-top: calc(var(--header-height) + 20px);
+            padding-bottom: 40px; /* More space at bottom */
+            line-height: 1.5;
+        }
+
+        /* --- Simplified Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            background-color: var(--body-bg); /* Match body background */
+            position: fixed;
+            top: 0; left: 0; right: 0; width: 100%; z-index: 100;
+            height: var(--header-height);
+            border-bottom: 1px solid var(--border-light); /* Subtle separator */
+        }
+        .header-left { flex: 1; text-align: left; }
+        .header-center { flex: 2; text-align: center; }
+        .header-right { flex: 1; text-align: right; }
+
+        .back-btn {
+            background: none; border: none; color: var(--text-primary);
+            cursor: pointer; padding: 10px; margin-left: -10px; /* Align edge */
+            font-size: 20px; text-decoration: none;
+        }
+        .header-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+        .header-action { /* Placeholder for potential right-side icon like '...' */
+             background: none; border: none; color: var(--text-primary);
+             font-size: 20px; padding: 10px; margin-right: -10px; /* Align edge */
+             cursor: pointer;
+        }
+         /* Hide cart icon - not relevant for admin profile */
+         .header-icon.cart-icon { display: none; }
+
+
+        /* --- Container --- */
+        .profile-container {
+            max-width: 500px; /* Narrower for mobile feel */
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* --- Base Card Style --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative; /* For loading overlay */
+            overflow: hidden;
+        }
+
+        /* --- Profile Card Specific Styles --- */
+        .profile-card {
+            text-align: center;
+            padding-top: 30px;
+        }
+        .profile-avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--icon-bg-gray); /* Placeholder bg */
+            border: 3px solid var(--card-bg); /* Border blends with card */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow on avatar */
+            display: block;
+        }
+        .profile-edit-icon { /* Simple edit icon like reference */
+             position: absolute;
+             bottom: 0;
+             right: 0;
+             background-color: var(--text-link);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-size: 12px;
+             border: 2px solid var(--card-bg);
+             cursor: pointer;
+             transition: background-color 0.2s;
+        }
+        .profile-edit-icon:hover { background-color: #2b6cb0; } /* Darker blue */
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: var(--text-primary);
+        }
+        .profile-subtitle { /* For Admin Role */
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            font-weight: 500; /* Make it slightly bolder */
+        }
+
+        /* Section Titles (Subtle) */
+        .section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: left;
+            margin-bottom: 15px;
+            padding-left: 5px; /* Slight indent */
+            text-transform: uppercase; /* Distinguish title */
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Dashboard Section (Store Activity) --- */
+        .dashboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .dashboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 5px; /* Vertical padding, horizontal aligned with title */
+            border-bottom: 1px solid var(--border-light);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: background-color 0.15s ease-in-out;
+        }
+        .dashboard-item:last-child { border-bottom: none; }
+        .dashboard-item:hover { background-color: #f8fafc; } /* Very subtle hover */
+
+        .dashboard-icon-wrapper {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .dashboard-icon-wrapper i { font-size: 16px; }
+
+        /* Icon Background/Color Pairs */
+        .icon-bg-green { background-color: var(--icon-bg-green); } .icon-color-green { color: var(--icon-color-green); }
+        .icon-bg-yellow { background-color: var(--icon-bg-yellow); } .icon-color-yellow { color: var(--icon-color-yellow); }
+        .icon-bg-gray { background-color: var(--icon-bg-gray); } .icon-color-gray { color: var(--icon-color-gray); }
+        .icon-bg-blue { background-color: var(--icon-bg-blue); } .icon-color-blue { color: var(--icon-color-blue); }
+        .icon-bg-purple { background-color: var(--icon-bg-purple); } .icon-color-purple { color: var(--icon-color-purple); }
+
+        .dashboard-label {
+            flex-grow: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .dashboard-indicator {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: var(--border-radius-pill);
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+        /* Badge Background/Color Pairs */
+        .badge-blue { background-color: var(--icon-bg-blue); color: var(--icon-color-blue); }
+        .badge-orange { background-color: var(--badge-bg-orange); color: var(--badge-color-orange); }
+        /* Add other badge colors if needed (e.g., green, yellow) */
+        .badge-green { background-color: var(--icon-bg-green); color: var(--icon-color-green); }
+        .badge-yellow { background-color: var(--icon-bg-yellow); color: var(--icon-color-yellow); }
+
+
+        .dashboard-arrow { /* Simple arrow indicator */
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+
+        /* --- Account Actions Section --- */
+        .account-actions {
+             /* No top margin/border needed if it's its own card */
+        }
+        .account-action-link {
+            display: flex; /* Use flex for icon alignment */
+            align-items: center; /* Vertically align icon and text */
+            padding: 14px 5px; /* More padding */
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: color 0.2s, background-color 0.15s;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .account-action-link:last-child { border-bottom: none; }
+
+        /* Style for icons in action links */
+        .account-action-link i {
+            margin-right: 15px; /* Space between icon and text */
+            color: var(--text-secondary); /* Default icon color */
+            width: 20px; /* Fixed width for alignment */
+            text-align: center;
+            font-size: 16px; /* Icon size */
+        }
+        .account-action-link .link-label { flex-grow: 1; } /* Text takes remaining space */
+        .account-action-link .fas.fa-chevron-right { /* Arrow style */
+             margin-left: auto; /* Push arrow to the right */
+             color: var(--text-secondary);
+             font-size: 14px;
+        }
+
+        .account-action-link.link-primary .link-label { color: var(--text-primary); } /* Standard text color */
+        .account-action-link.link-danger .link-label { color: var(--text-danger); } /* Red text for logout */
+
+        .account-action-link.link-danger i { color: var(--text-danger); } /* Red icon for logout */
+        .account-action-link.link-primary:hover { background-color: #f8fafc; }
+        .account-action-link.link-danger:hover { background-color: #fff5f5; } /* Light red hover */
+
+
+        /* --- Modal Styles (Refined) --- */
+        .modal { display: none; position: fixed; inset: 0; background-color: rgba(45, 55, 72, 0.75); /* Darker overlay */ z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            width: 100%; max-width: 400px; /* Consistent max width */
+            padding: 25px;
+            animation: modalFadeIn 0.3s ease;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Stronger shadow for modal */
+        }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 25px; text-align: center; color: var(--text-primary); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 30px; }
+        .modal-actions .modal-btn { flex-grow: 1; } /* Make modal buttons fill space */
+
+
+        /* --- Form Styles (Reference Inspired) --- */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-label {
+            display: block;
+            margin-bottom: 8px; /* More space below label */
+            font-size: 13px; /* Smaller label */
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 5px; /* Adjust padding for underline style */
+            border: none; /* Remove default border */
+            border-bottom: 2px solid var(--border-light); /* Underline */
+            border-radius: 0; /* No radius for underline */
+            font-size: 15px;
+            background-color: transparent; /* No background */
+            transition: border-color 0.2s ease-in-out;
+            outline: none; /* Remove default focus outline */
+        }
+        .form-input:focus {
+            border-bottom-color: var(--text-link); /* Highlight underline on focus */
+        }
+        .form-input:disabled {
+            background-color: transparent;
+            border-bottom-style: dashed; /* Indicate disabled */
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+        .form-hint { /* Style for hints like password requirement */
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            display: block;
+        }
+        .form-hint.error { color: var(--error-color); } /* Error hint style */
+
+        .error-text { /* General form error message */
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        /* --- Button Styles (Refined) --- */
+        .modal-btn {
+            padding: 12px 15px; /* Slightly larger modal buttons */
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            line-height: 1.2;
+        }
+         .modal-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        .btn-primary { background-color: var(--text-link); color: white; border-color: var(--text-link); }
+        .btn-primary:hover:not(:disabled) { background-color: #2b6cb0; border-color: #2b6cb0; } /* Darker blue */
+        .btn-outline { background-color: transparent; border-color: var(--border-light); color: var(--text-primary); }
+        .btn-outline:hover:not(:disabled) { background-color: var(--body-bg); border-color: var(--border-light); } /* Light hover */
+
+        /* Loading Overlay */
+        .loading-overlay { position: absolute; inset: 0; background-color: rgba(255, 255, 255, 0.85); display: flex; justify-content: center; align-items: center; z-index: 10; border-radius: inherit; transition: opacity 0.3s ease; }
+        .loading-spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top: 4px solid var(--text-link); width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Hide content initially */
+        #profileContent, #dashboardContent { display: none; }
+
+         /* Empty State Styling */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .empty-state i { font-size: 40px; color: #ccc; margin-bottom: 15px; }
+        .empty-state p { font-size: 15px; font-weight: 500;}
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <!-- Link back to admin dashboard or previous page -->
+            <a href="index.html" class="back-btn" title="Back to Dashboard">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        <div class="header-center">
+            <h1 class="header-title" id="pageTitle">Admin Profile</h1>
+        </div>
+         <div class="header-right">
+             <!-- Empty or add admin-specific actions -->
+         </div>
+    </header>
+
+    <!-- Profile Content -->
+    <main class="profile-container">
+        <!-- Profile Card -->
+        <section class="card profile-card" aria-labelledby="profile-name">
+            <!-- Loading Overlay for Profile -->
+            <div class="loading-overlay" id="profileLoading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Profile Content Area -->
+            <div id="profileContent">
+                <div class="profile-avatar-wrapper">
+                    <img src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" alt="Admin's profile avatar" class="profile-avatar" id="profileAvatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/6596/6596121.png';">
+                    <button class="profile-edit-icon" id="editProfileIconBtn" title="Edit Profile">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </div>
+                <h2 class="profile-name" id="profileName">Loading...</h2>
+                <!-- Subtitle indicates role -->
+                <p class="profile-subtitle" id="profileSubtitle">Store Owner</p>
+                <p class="profile-email" id="profileEmail" style="display:none;"></p> <!-- Still needed for logic -->
+            </div>
+        </section>
+
+        <!-- Store Activity Section (Formerly Dashboard) -->
+        <section class="card dashboard-card" aria-labelledby="dashboard-heading">
+             <div class="loading-overlay" id="dashboardLoading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Updated title for Admin Context -->
+            <h3 id="dashboard-heading" class="section-title">Store Activity</h3>
+            <ul class="dashboard-list" id="dashboardContent">
+                <!-- JS will populate this, potentially with store-wide orders -->
+            </ul>
+            <div class="empty-state" id="noDashboardItems" style="display: none;">
+                <i class="fas fa-store"></i>
+                <p>No recent store activity.</p>
+            </div>
+        </section>
+
+        <!-- Account & Store Management Actions Section -->
+        <section class="card account-actions-card" aria-labelledby="account-actions-heading">
+            <!-- Updated title -->
+            <h3 id="account-actions-heading" class="section-title">Manage Account & Store</h3>
+            <div class="account-actions">
+                <!-- ADDED: Manage Store Link -->
+                <a href="settings.html" id="manageStoreLink" class="account-action-link link-primary">
+                     <i class="fas fa-store-alt"></i> <!-- Store Icon -->
+                     <span class="link-label">Manage Store</span>
+                     <i class="fas fa-chevron-right"></i>
+                </a>
+
+                 <!-- *** EDITED LINK HERE *** -->
+                 <a href="https://magnetarstore.com/" id="createShoplinkLink" class="account-action-link link-primary" target="_blank" rel="noopener noreferrer"> <!-- href changed, target and rel added -->
+                     <i class="fas fa-link"></i> <!-- Link Icon -->
+                     <span class="link-label">Store Link</span> <!-- Text remains Store Link -->
+                     <i class="fas fa-chevron-right"></i>
+                 </a>
+                 <!-- *** END EDIT *** -->
+
+                <a href="#" id="changePasswordLink" class="account-action-link link-primary">
+                    <i class="fas fa-key"></i> <!-- Key Icon -->
+                    <span class="link-label">Change Password</span>
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <a href="#" id="logoutLink" class="account-action-link link-danger">
+                    <i class="fas fa-sign-out-alt"></i> <!-- Logout Icon -->
+                    <span class="link-label">Log Out</span>
+                    <!-- No arrow for logout -->
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal" role="dialog" aria-labelledby="editProfileTitle" aria-modal="true">
+        <div class="modal-content">
+            <h3 class="modal-title" id="editProfileTitle">Edit Profile</h3>
+            <form id="editProfileForm" novalidate>
+                <div style="text-align: center; margin-bottom: 25px;">
+                     <img src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" alt="Current profile avatar" class="profile-avatar" id="editProfileAvatarPreview" style="width: 70px; height: 70px; margin-bottom: 10px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/6596/6596121.png';">
+                     <h4 id="editProfileNamePreview" style="font-weight: 600; font-size: 18px;">Your Name</h4>
+                     <!-- Display subtitle in preview -->
+                     <p id="editProfileSubtitlePreview" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Store Owner</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="editNameInput" class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="editNameInput" required>
+                </div>
+                <!-- Subtitle is now derived from role, maybe hide this or make it non-editable for Owner -->
+                 <div class="form-group" style="display: none;"> <!-- Example: Hide subtitle edit -->
+                    <label for="editSubtitleInput" class="form-label">Role</label>
+                    <input type="text" class="form-input" id="editSubtitleInput" value="Store Owner" disabled>
+                 </div>
+                 <div class="form-group">
+                    <label for="editEmailInput" class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="editEmailInput" required disabled>
+                     <span class="form-hint">(Email cannot be changed)</span>
+                </div>
+                 <div class="form-group">
+                    <label for="editPhoneInput" class="form-label">Phone Number (Optional)</label>
+                    <input type="tel" class="form-input" id="editPhoneInput" placeholder="e.g., 09171234567">
+                </div>
+                 <div class="form-group">
+                    <label for="editPhotoInput" class="form-label">Profile Photo URL (Optional)</label>
+                    <input type="url" class="form-input" id="editPhotoInput" placeholder="https://example.com/photo.jpg">
+                </div>
+
+                 <p id="editErrorText" class="error-text" role="alert" aria-live="assertive"></p>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn btn-outline" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="modal-btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal" id="changePasswordModal" role="dialog" aria-labelledby="changePasswordTitle" aria-modal="true">
+        <div class="modal-content">
+            <h3 class="modal-title" id="changePasswordTitle">Change Password</h3>
+            <form id="changePasswordForm" novalidate>
+                <div class="form-group">
+                    <label for="currentPassword" class="form-label">Current Password</label>
+                    <input type="password" class="form-input" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword" class="form-label">New Password</label>
+                    <input type="password" class="form-input" id="newPassword" required minlength="8">
+                     <span class="form-hint">Password should contain at least 8 characters.</span>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-input" id="confirmPassword" required minlength="8">
+                </div>
+                 <p id="passwordErrorText" class="error-text" role="alert" aria-live="assertive"></p>
+                 <div class="modal-actions">
+                    <button type="button" class="modal-btn btn-outline" id="cancelPasswordBtn">Cancel</button>
+                    <button type="submit" class="modal-btn btn-primary" id="updatePasswordBtn">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // --- Constants ---
+        const DEFAULT_AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/6596/6596121.png';
+        // Decide if fetching user's orders is still relevant for admin dashboard, or fetch store orders instead.
+        // Keeping user order fetch for now as example.
+        const RECENT_ORDERS_LIMIT = 5;
+        const REQUIRED_ADMIN_EMAIL = "admin@magnetarstore.com"; // <<< Define the authorized admin email
+
+
+        // --- DOM Element References ---
+        const pageTitle = document.getElementById('pageTitle');
+        const profileLoading = document.getElementById('profileLoading');
+        const profileContent = document.getElementById('profileContent');
+        const profileName = document.getElementById('profileName');
+        const profileSubtitle = document.getElementById('profileSubtitle'); // Will display "Store Owner"
+        const profileEmail = document.getElementById('profileEmail');
+        const profileAvatar = document.getElementById('profileAvatar');
+        const editProfileIconBtn = document.getElementById('editProfileIconBtn');
+
+        const dashboardLoading = document.getElementById('dashboardLoading');
+        const dashboardContent = document.getElementById('dashboardContent');
+        const noDashboardItems = document.getElementById('noDashboardItems');
+
+        // Account Actions
+        const manageStoreLink = document.getElementById('manageStoreLink'); // New link reference
+        const changePasswordLink = document.getElementById('changePasswordLink');
+        const createShoplinkLink = document.getElementById('createShoplinkLink'); // Reference kept, even if link text/href changed
+        const logoutLink = document.getElementById('logoutLink');
+
+        // Modals & Forms
+        const editProfileModal = document.getElementById('editProfileModal');
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const editProfileForm = document.getElementById('editProfileForm');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const editNameInput = document.getElementById('editNameInput');
+        const editSubtitleInput = document.getElementById('editSubtitleInput'); // Still exists but hidden/disabled
+        const editEmailInput = document.getElementById('editEmailInput');
+        const editPhotoInput = document.getElementById('editPhotoInput');
+        const editPhoneInput = document.getElementById('editPhoneInput');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+        const editErrorText = document.getElementById('editErrorText');
+        const passwordErrorText = document.getElementById('passwordErrorText');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+
+        // Edit Modal Previews
+        const editProfileAvatarPreview = document.getElementById('editProfileAvatarPreview');
+        const editProfileNamePreview = document.getElementById('editProfileNamePreview');
+        const editProfileSubtitlePreview = document.getElementById('editProfileSubtitlePreview');
+
+        // --- Global Variables ---
+        let auth, db;
+        let currentUser = null;
+        let currentUserProfileData = {}; // Store fetched profile data
+
+        // --- Firebase Config (Keep As Is - REMEMBER SECURITY WARNING) ---
+        // CRITICAL SECURITY WARNING: Exposing API keys in client-side code is insecure for production apps.
+        // Use environment variables or server-side configuration in a real application.
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+            setupEventListeners();
+        });
+
+        function initializeFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+
+                // --- Handle Authentication State and Authorization ---
+                auth.onAuthStateChanged(user => {
+                    currentUser = user;
+                    const loginRedirectUrl = 'login.html'; // Define your login page URL
+
+                    if (user) {
+                        console.log("Auth State Changed: User is signed in. UID:", user.uid, "Email:", user.email, "Anonymous:", user.isAnonymous);
+
+                        // --- Authorization Check ---
+                        // Redirect if:
+                        // 1. The user is anonymous OR
+                        // 2. The user has an email but it's NOT the required admin email
+                        if (user.isAnonymous || (user.email && user.email !== REQUIRED_ADMIN_EMAIL)) {
+                           console.warn("Access denied: User is anonymous or not the authorized admin email. Redirecting to login.");
+                            // Ensure UI is hidden or shows a message indicating access denied
+                             document.body.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--error-color);">Access Denied. Redirecting...</p>`;
+                           alert("You do not have permission to view this page. Please log in with an authorized account."); // Optional alert
+                            window.location.replace(loginRedirectUrl); // Redirect
+                            return; // Stop further execution
+                        }
+
+                        // --- User is Authorized Admin ---
+                        console.log("Authorized admin user signed in. Proceeding to fetch data.");
+                        showLoadingStates();
+                        // Fetch profile and potentially store-related activity
+                        Promise.all([
+                            fetchUserProfile(user.uid), // Fetches basic profile
+                             // TODO: Replace fetchOrderHistoryAndRenderDashboard with admin-specific data fetch
+                            fetchOrderHistoryAndRenderDashboard(user.uid) // Keeping as placeholder
+                        ]).catch(error => {
+                            console.error("Error during initial admin data fetch:", error);
+                        });
+
+                    } else {
+                        // --- No user signed in at all ---
+                        console.log("Auth State Changed: No user signed in. Redirecting to login.");
+                         // Ensure UI is hidden or shows a message indicating no user
+                         document.body.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--error-color);">Not logged in. Redirecting...</p>`;
+                        alert("You must be logged in to view this page."); // Optional alert
+                        window.location.replace(loginRedirectUrl); // Redirect
+                        return; // Stop further execution
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                document.body.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--error-color);">Failed to initialize application. Please refresh.</p>`;
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            editProfileIconBtn?.addEventListener('click', showEditProfileModal);
+            changePasswordLink?.addEventListener('click', showChangePasswordModal);
+            logoutLink?.addEventListener('click', handleLogout);
+
+            // Standard anchor links (Manage Store, Store Link) don't require JS listeners for basic navigation.
+
+            cancelEditBtn?.addEventListener('click', () => hideModal(editProfileModal));
+            cancelPasswordBtn?.addEventListener('click', () => hideModal(changePasswordModal));
+
+            editProfileForm?.addEventListener('submit', handleProfileUpdate);
+            changePasswordForm?.addEventListener('submit', handlePasswordChange);
+
+            // Close modal on overlay click
+            editProfileModal?.addEventListener('click', (e) => { if (e.target === editProfileModal) hideModal(editProfileModal); });
+            changePasswordModal?.addEventListener('click', (e) => { if (e.target === changePasswordModal) hideModal(changePasswordModal); });
+
+            // Update preview in edit modal dynamically
+            editNameInput?.addEventListener('input', (e) => { editProfileNamePreview.textContent = e.target.value || 'Admin Name'; });
+            // Subtitle input is hidden/disabled for admin
+            editPhotoInput?.addEventListener('input', (e) => {
+                editProfileAvatarPreview.src = e.target.value || currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+            });
+        }
+
+        // --- UI State Functions ---
+        function showLoadingStates() {
+            profileLoading.style.display = 'flex';
+            profileContent.style.display = 'none'; // Hide content while loading
+            dashboardLoading.style.display = 'flex';
+            dashboardContent.style.display = 'none'; // Hide content while loading
+            noDashboardItems.style.display = 'none'; // Hide empty state while loading
+        }
+
+        function hideProfileLoading() {
+            profileLoading.style.display = 'none';
+            profileContent.style.display = 'block'; // Show content once loaded
+        }
+
+        function hideDashboardLoading(showContent = true) {
+            dashboardLoading.style.display = 'none';
+             if (showContent) {
+                 dashboardContent.style.display = 'block';
+             } else {
+                 dashboardContent.style.display = 'none';
+             }
+        }
+
+        // --- Data Fetching Functions ---
+        async function fetchUserProfile(userId) {
+            // Keep fetching user profile as before, subtitle is static in UI for admin
+            try {
+                const userDocRef = db.collection('users').doc(userId); // Assuming admins are in 'users' collection
+                const userDoc = await userDocRef.get();
+
+                if (userDoc.exists) {
+                    currentUserProfileData = userDoc.data();
+                    console.log("Fetched admin profile from Firestore:", currentUserProfileData);
+                    // TODO: Optionally check for an 'isAdmin' or 'role' field here
+                    // if (!currentUserProfileData.isAdmin) { console.warn("User is not marked as admin!"); /* Handle potentially */}
+                } else if (currentUser) {
+                    console.log("Admin doc not found in Firestore, using Auth info and creating doc.");
+                    // If the doc doesn't exist BUT the user is authenticated and is the specific admin email,
+                    // we assume this is a first-time login or missing doc and create it.
+                    currentUserProfileData = {
+                        displayName: currentUser.displayName || 'Admin User',
+                        email: currentUser.email,
+                        photoURL: currentUser.photoURL || null,
+                        phoneNumber: currentUser.phoneNumber || null,
+                        isAdmin: true, // Explicitly mark as admin
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        // Add storeName if relevant to the user document itself
+                        // storeName: "kabbarroh"
+                    };
+                    userDocRef.set(currentUserProfileData, { merge: true })
+                         .then(() => console.log("Created basic admin doc in Firestore."))
+                         .catch(err => console.error("Error creating admin doc:", err));
+                } else {
+                     // This case should ideally not be hit if onAuthStateChanged works correctly
+                     throw new Error("User not authenticated or available when trying to fetch profile");
+                }
+
+                // Update UI with fetched/created data
+                profileName.textContent = currentUserProfileData.displayName || 'Admin Name';
+                profileEmail.textContent = currentUserProfileData.email || 'No Email Set'; // Still needed for logic
+                profileAvatar.src = currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+                profileAvatar.onerror = () => { profileAvatar.src = DEFAULT_AVATAR_URL; };
+                profileSubtitle.textContent = "Store Owner"; // Set subtitle statically for admin
+
+            } catch (error) {
+                console.error("Error fetching/creating admin profile:", error);
+                 // Use user info if available, otherwise set generic error
+                if (currentUser) {
+                    profileName.textContent = currentUser.displayName || 'Error Loading Name';
+                    profileEmail.textContent = currentUser.email || 'Error Loading Email';
+                    profileAvatar.src = currentUser.photoURL || DEFAULT_AVATAR_URL;
+                } else {
+                     profileName.textContent = 'Error';
+                     profileEmail.textContent = 'Could not load profile';
+                     profileAvatar.src = DEFAULT_AVATAR_URL;
+                }
+                 profileSubtitle.textContent = "Store Owner"; // Ensure subtitle is set even on error
+                 alert("Failed to load profile data. Please check your connection."); // Inform user
+            } finally {
+                 hideProfileLoading();
+            }
+        }
+
+        // --- IMPORTANT: This function should be adapted for ADMIN context ---
+        // Currently fetches the LOGGED-IN USER'S orders, not necessarily the store's orders.
+        // For a real admin panel, you'd query the 'orders' collection without the 'userId' filter,
+        // likely with pagination and server-side logic/security rules.
+        async function fetchOrderHistoryAndRenderDashboard(userId) {
+            dashboardContent.innerHTML = ''; // Clear previous items
+
+            try {
+                 // ** TEMPORARY: Still fetching logged-in user's orders **
+                 // ** REPLACE this query with one fetching store-wide orders if needed **
+                 // Example: Fetching *all* recent orders, limited by a field like 'storeId'
+                 const ordersSnapshot = await db.collection('orders')
+                    // .where('storeId', '==', 'your_store_id') // <-- Filter by store if relevant
+                    // .where('userId', '==', userId) // <-- REMOVE this line for store-wide view
+                    .orderBy('orderTimestamp', 'desc')
+                    .limit(RECENT_ORDERS_LIMIT) // Limit recent items
+                    .get();
+
+                 // --- Render recent orders (if any) ---
+                 let hasRecentOrders = false;
+                if (!ordersSnapshot.empty) {
+                     hasRecentOrders = true;
+                    ordersSnapshot.forEach(doc => {
+                        renderOrderItemAsDashboardItem(doc.data(), doc.id); // Render each order
+                    });
+                }
+
+                // --- Add static links ---
+                 renderStaticAdminDashboardItems();
+
+                 // --- Determine final state ---
+                if (!hasRecentOrders && dashboardContent.children.length === 0) {
+                    // If no recent orders AND no static items were rendered (unlikely with renderStatic...),
+                    // show the empty state.
+                    noDashboardItems.style.display = 'block';
+                    hideDashboardLoading(false); // Hide loading, but hide content area
+                 } else {
+                    // If there were recent orders OR static items, show the content area.
+                    noDashboardItems.style.display = 'none';
+                    hideDashboardLoading(true); // Hide loading, show content area
+                 }
+
+            } catch (error) {
+                console.error("Error fetching store activity:", error);
+                 // Always render static items even on error for main navigation
+                renderStaticAdminDashboardItems();
+                 // Display specific error message if fetch failed
+                 noDashboardItems.innerHTML = `<i class="fas fa-exclamation-circle" style="color: var(--error-color);"></i><p>Failed to load recent activity.</p>`;
+                 noDashboardItems.style.display = 'block';
+                 hideDashboardLoading(false); // Hide loading, hide content area
+            }
+        }
+
+         // Rendering Function (for order items - same as before)
+        function renderOrderItemAsDashboardItem(orderData, orderId) {
+             // Check if the order data is valid
+             if (!orderData || !orderId) {
+                 console.warn("Attempted to render invalid order data:", orderData, orderId);
+                 return null; // Return null if data is invalid
+             }
+             const status = orderData.status || 'Unknown';
+            let iconClass = 'fa-receipt';
+            let iconWrapperClass = 'icon-bg-gray icon-color-gray';
+            let indicatorClass = 'badge-blue';
+            let indicatorText = status;
+
+            switch (String(status).toLowerCase()) { // Ensure status is string for toLowerCase
+                case 'completed':
+                case 'delivered':
+                    iconClass = 'fa-check-circle'; iconWrapperClass = 'icon-bg-green icon-color-green'; indicatorClass = 'badge-green'; break;
+                case 'processing':
+                case 'shipped':
+                    iconClass = 'fa-truck-loading'; iconWrapperClass = 'icon-bg-blue icon-color-blue'; indicatorClass = 'badge-blue'; break;
+                 case 'pending':
+                    iconClass = 'fa-hourglass-half'; iconWrapperClass = 'icon-bg-yellow icon-color-yellow'; indicatorClass = 'badge-yellow'; break;
+                case 'cancelled':
+                case 'failed':
+                     iconClass = 'fa-times-circle'; // Assuming red styles exist, if not use gray
+                      iconWrapperClass = 'icon-bg-red icon-color-red'; // <--- Assuming these classes exist in CSS
+                     if (!document.documentElement.style.getPropertyValue('--icon-bg-red')) { // Basic check
+                         iconWrapperClass = 'icon-bg-gray icon-color-gray'; // Fallback if red styles aren't there
+                     }
+                     indicatorClass = 'badge-orange';
+                     break;
+                default:
+                     iconClass = 'fa-receipt'; iconWrapperClass = 'icon-bg-gray icon-color-gray'; indicatorClass = 'badge-blue'; // Default fallback
+                     indicatorText = 'Other'; // Use a generic term for unhandled statuses
+                     console.warn("Unhandled order status:", status);
+
+            }
+
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <a href="order-details.html?id=${orderId}" class="dashboard-item">
+                    <span class="dashboard-icon-wrapper ${iconWrapperClass}"><i class="fas ${iconClass}"></i></span>
+                    <span class="dashboard-label">Order #${orderId.substring(0, 6)}...</span>
+                    <span class="dashboard-indicator ${indicatorClass}">${indicatorText}</span>
+                     <i class="fas fa-chevron-right dashboard-arrow"></i> <!-- Added arrow -->
+                </a>
+            `;
+            dashboardContent.appendChild(listItem);
+             return listItem; // Return the created element
+        }
+
+         // --- NEW: Function to add static admin links to dashboard ---
+         function renderStaticAdminDashboardItems() {
+             // Example: Add links to main admin sections
+             const links = [
+                 { href: 'orders.html', icon: 'fa-receipt', bg: 'icon-bg-blue', color: 'icon-color-blue', label: 'View All Orders', indicator: null }, // Link to full Orders page
+                 { href: 'products.html', icon: 'fa-tag', bg: 'icon-bg-green', color: 'icon-color-green', label: 'Manage Products', indicator: null }, // Link to full Products page
+                 { href: 'customers.html', icon: 'fa-users', bg: 'icon-bg-yellow', color: 'icon-color-yellow', label: 'Manage Customers', indicator: null } // Link to full Customers page
+             ];
+
+             links.forEach(link => {
+                const listItem = document.createElement('li');
+                 // Use link-primary class for standard links for hover effect
+                listItem.innerHTML = `
+                    <a href="${link.href}" class="dashboard-item link-primary">
+                        <span class="dashboard-icon-wrapper ${link.bg}"><i class="fas ${link.icon} ${link.color}"></i></span>
+                        <span class="dashboard-label">${link.label}</span>
+                        ${link.indicator ? `<span class="dashboard-indicator ${link.indicator.class}">${link.indicator.text}</span>` : ''}
+                        <i class="fas fa-chevron-right dashboard-arrow"></i>
+                    </a>
+                `;
+                // Prepend or append as desired
+                dashboardContent.appendChild(listItem);
+             });
+             // Note: The "no items" message is now controlled by fetchOrderHistoryAndRenderDashboard
+         }
+
+        // --- Modal Handling ---
+        function showModal(modalElement) {
+             if (modalElement) {
+                 clearErrorText(editErrorText);
+                 clearErrorText(passwordErrorText);
+                 modalElement.style.display = 'flex';
+                 // Use a small delay to ensure the modal is visible before attempting focus
+                 setTimeout(() => {
+                     const focusable = modalElement.querySelector('button, [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])');
+                     if (focusable) focusable.focus();
+                 }, 50); // 50ms delay
+             }
+         }
+         function hideModal(modalElement) {
+             if (modalElement) {
+                 modalElement.style.display = 'none';
+                 // Return focus to the element that opened the modal if needed
+             }
+         }
+         function displayErrorText(element, message) {
+             if (element) { element.textContent = message; element.style.display = 'block'; }
+         }
+         function clearErrorText(element) {
+             if (element) { element.textContent = ''; element.style.display = 'none'; }
+         }
+
+        function showEditProfileModal() {
+            if (currentUser && currentUserProfileData) {
+                editNameInput.value = currentUserProfileData.displayName || '';
+                editEmailInput.value = currentUserProfileData.email || '';
+                editPhotoInput.value = currentUserProfileData.photoURL || '';
+                 editPhoneInput.value = currentUserProfileData.phoneNumber || '';
+                // Subtitle input is hidden/disabled for admin
+
+                // Pre-fill preview section
+                editProfileAvatarPreview.src = currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+                editProfileAvatarPreview.onerror = () => { editProfileAvatarPreview.src = DEFAULT_AVATAR_URL; }; // Error handler for preview
+                editProfileNamePreview.textContent = currentUserProfileData.displayName || 'Admin Name';
+                editProfileSubtitlePreview.textContent = "Store Owner"; // Static preview
+
+                pageTitle.textContent = "Edit Profile";
+            } else {
+                 console.warn("Profile data not available for modal pre-fill.");
+                 alert("Could not load profile data for editing."); // Inform user
+                 return; // Don't show the modal if data isn't ready
+            }
+             showModal(editProfileModal);
+        }
+
+        function showChangePasswordModal() {
+            changePasswordForm.reset();
+            clearErrorText(passwordErrorText);
+            pageTitle.textContent = "Change Password";
+            showModal(changePasswordModal);
+        }
+
+        // Override hideModal to reset page title
+        const originalHideModal = hideModal;
+        hideModal = (modalElement) => {
+            originalHideModal(modalElement);
+             // Check which modal was closed before resetting title
+             if (modalElement === editProfileModal || modalElement === changePasswordModal) {
+                 pageTitle.textContent = "Admin Profile"; // Reset to admin title
+             }
+        };
+
+
+        // --- Action Handlers ---
+        async function handleProfileUpdate(e) {
+            // Keep profile update logic mostly the same, subtitle is not edited
+            e.preventDefault();
+            if (!currentUser) {
+                 console.error("Attempted profile update without authenticated user.");
+                 displayErrorText(editErrorText, "Authentication required.");
+                 return;
+             }
+
+            saveProfileBtn.disabled = true; saveProfileBtn.textContent = 'Saving...';
+            clearErrorText(editErrorText);
+
+            const newName = editNameInput.value.trim();
+            const newPhoto = editPhotoInput.value.trim();
+            const newPhone = editPhoneInput.value.trim();
+            // No subtitle update needed from form
+
+            // Only prepare updates for fields that have changed or are intentionally set
+            const authUpdates = {};
+            const firestoreUpdates = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+
+            // Check for changes before adding to update objects
+            if (newName !== (currentUserProfileData.displayName || '')) {
+                authUpdates.displayName = newName;
+                firestoreUpdates.displayName = newName; // Sync with Firestore
+            }
+            if (newPhoto !== (currentUserProfileData.photoURL || '')) {
+                 authUpdates.photoURL = newPhoto || null; // Use null if photo URL is cleared
+                 firestoreUpdates.photoURL = newPhoto || null; // Sync with Firestore
+            }
+             if (newPhone !== (currentUserProfileData.phoneNumber || '')) {
+                 firestoreUpdates.phoneNumber = newPhone || null; // Use null if phone is cleared
+             }
+
+
+            try {
+                 // Update Firebase Auth Profile
+                 if (Object.keys(authUpdates).length > 0) {
+                     console.log("Updating Auth profile:", authUpdates);
+                     await currentUser.updateProfile(authUpdates);
+                 } else {
+                     console.log("No Auth profile changes.");
+                 }
+
+                 // Update Firestore Document (only if there are updates besides timestamp)
+                 if (Object.keys(firestoreUpdates).length > 1) { // Check if displayName, photoURL, or phoneNumber were added
+                     console.log("Updating Firestore doc:", firestoreUpdates);
+                     await db.collection('users').doc(currentUser.uid).set(firestoreUpdates, { merge: true });
+                 } else {
+                      console.log("No Firestore doc changes.");
+                 }
+
+
+                // Update local cache and UI
+                // Fetch latest from Auth as updateProfile might not instantly reflect
+                await currentUser.reload(); // Ensure currentUser object is fresh
+                currentUserProfileData = {
+                     ...currentUserProfileData, // Keep existing data not updated via form (like email, isAdmin)
+                     ...firestoreUpdates,      // Add/overwrite fields updated in Firestore
+                     // Ensure Auth fields like displayName and photoURL are current
+                     displayName: currentUser.displayName,
+                     photoURL: currentUser.photoURL
+                 };
+
+                profileName.textContent = currentUserProfileData.displayName || 'Admin Name';
+                profileAvatar.src = currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+                profileAvatar.onerror = () => { profileAvatar.src = DEFAULT_AVATAR_URL; };
+                // Subtitle remains "Store Owner"
+                console.log('Profile updated successfully!');
+                 hideModal(editProfileModal); // Close modal on success
+                // Optionally show a success message banner
+                alert('Profile updated successfully!'); // Simple confirmation
+
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                // Provide more specific error message if possible
+                let errorMessage = `Update failed: ${error.message}`;
+                 if (error.code === 'auth/requires-recent-login') {
+                     errorMessage = 'Please log out and log in again to update your profile.';
+                 }
+                displayErrorText(editErrorText, errorMessage);
+
+            } finally {
+                 saveProfileBtn.disabled = false; saveProfileBtn.textContent = 'Save Changes';
+            }
+        }
+
+
+        async function handlePasswordChange(e) {
+             // Keep password change logic exactly the same
+             e.preventDefault();
+             if (!currentUser) {
+                 console.error("Attempted password change without authenticated user.");
+                 displayErrorText(passwordErrorText, "Authentication required.");
+                 return;
+             }
+             // Ensure the user is logged in with email/password for reauthentication
+             if (currentUser.providerData.some(p => p.providerId === 'password') && currentUser.email) {
+                 // User signed in with email/password, proceed with reauthentication
+             } else {
+                  console.error("Password change is only supported for Email/Password authenticated users.");
+                  displayErrorText(passwordErrorText, "This action is only available for email/password accounts.");
+                  updatePasswordBtn.disabled = false; updatePasswordBtn.textContent = 'Update Password';
+                  return;
+             }
+
+
+             updatePasswordBtn.disabled = true; updatePasswordBtn.textContent = 'Updating...';
+             clearErrorText(passwordErrorText);
+
+             const currentPassword = document.getElementById('currentPassword').value;
+             const newPassword = document.getElementById('newPassword').value;
+             const confirmPassword = document.getElementById('confirmPassword').value;
+             const minPasswordLength = 8;
+
+             if (!currentPassword || !newPassword || !confirmPassword) { displayErrorText(passwordErrorText, "All password fields required."); updatePasswordBtn.disabled = false; updatePasswordBtn.textContent = 'Update Password'; return; }
+             if (newPassword !== confirmPassword) { displayErrorText(passwordErrorText, "New passwords do not match."); updatePasswordBtn.disabled = false; updatePasswordBtn.textContent = 'Update Password'; return; }
+             if (newPassword.length < minPasswordLength) { displayErrorText(passwordErrorText, `Password must be at least ${minPasswordLength} characters.`); updatePasswordBtn.disabled = false; updatePasswordBtn.textContent = 'Update Password'; return; }
+
+             try {
+                 // Reauthenticate the user (required before changing sensitive info like password)
+                 // Use email from currentUser, not the disabled input value
+                 const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPassword);
+                 await currentUser.reauthenticateWithCredential(credential);
+
+                 // Update the password
+                 await currentUser.updatePassword(newPassword);
+
+                 // Success
+                 changePasswordForm.reset();
+                 hideModal(changePasswordModal);
+                 console.log('Password changed successfully!');
+                 alert('Password changed successfully!'); // Simple confirmation
+
+             } catch (error) {
+                 console.error("Error changing password:", error);
+                 let errorMsg = `An error occurred: ${error.message}`;
+                 if (error.code === 'auth/wrong-password') { errorMsg = 'Incorrect current password.'; }
+                 else if (error.code === 'auth/too-many-requests') { errorMsg = 'Too many attempts. Try again later.'; }
+                 else if (error.code === 'auth/weak-password') { errorMsg = 'New password is too weak.'; }
+                 else if (error.code === 'auth/requires-recent-login') { errorMsg = 'Please log out and log in again to change password.'; } // Important reauth error
+
+                 displayErrorText(passwordErrorText, errorMsg);
+             } finally {
+                  updatePasswordBtn.disabled = false; updatePasswordBtn.textContent = 'Update Password';
+             }
+         }
+
+        function handleLogout(e) {
+             // Keep logout logic exactly the same
+            e.preventDefault();
+            // Use a modern confirmation dialog if preferred over window.confirm
+            // E.g., a custom modal
+            if (window.confirm('Are you sure you want to log out?')) {
+                 // Disable link visually
+                 logoutLink.style.opacity = '0.5';
+                 logoutLink.style.pointerEvents = 'none'; // Prevent further clicks
+
+                 auth.signOut().then(() => {
+                    console.log("User signed out successfully.");
+                    // Redirect to the login page
+                    window.location.replace('login.html'); // Use replace to prevent back button to profile
+                }).catch(error => {
+                    console.error("Logout error:", error);
+                     alert('Failed to log out. Please try again.'); // Inform user of failure
+                     // Re-enable link on failure
+                     logoutLink.style.opacity = '1';
+                     logoutLink.style.pointerEvents = 'auto';
+                });
+            }
+        }
+
+        // --- Helper Functions (Keep formatPrice if used, otherwise remove) ---
+         // formatPrice doesn't seem to be used on this page, can be removed if confirmed.
+
+    </script>
+</body>
+</html>

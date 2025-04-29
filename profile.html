@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Profile - Kabarro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- New Theme Variables (Inspired by Reference) --- */
+        :root {
+            --body-bg: #f8f9fa; /* Light grey background */
+            --card-bg: #ffffff;
+            --text-primary: #2d3748; /* Darker text */
+            --text-secondary: #718096; /* Lighter grey text */
+            --text-link: #4299e1; /* Primary blue for links */
+            --text-danger: #e53e3e; /* Red for logout/errors */
+            --border-light: #e2e8f0; /* Light border/underline for inputs */
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius-lg: 16px;
+            --border-radius-md: 8px;
+            --border-radius-sm: 6px;
+            --border-radius-pill: 9999px;
+            --font-sans: Helvetica, Arial, sans-serif; /* Keep existing font */
+
+            /* Icon/Badge Colors (Approximated from Reference) */
+            --icon-bg-green: #e6fffa; --icon-color-green: #38b2ac;
+            --icon-bg-yellow: #fffbeb; --icon-color-yellow: #d69e2e; /* Adjusted yellow */
+            --icon-bg-gray: #edf2f7; --icon-color-gray: #a0aec0;
+            --icon-bg-blue: #ebf8ff; --icon-color-blue: #4299e1;
+            --badge-bg-orange: #fffaf0; --badge-color-orange: #ed8936;
+
+            /* Functional Colors */
+            --error-color: var(--text-danger);
+            --success-color: #48bb78; /* Green for success */
+            --warning-color: #ecc94b; /* Yellow for warnings */
+
+             /* Consistent Heights */
+             --header-height: 60px;
+        }
+
+        /* --- Global Styles & Resets --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-sans);
+            touch-action: manipulation;
+        }
+
+        html {
+            font-size: 16px; /* Base font size */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--text-primary);
+            padding-top: calc(var(--header-height) + 20px);
+            padding-bottom: 40px; /* More space at bottom */
+            line-height: 1.5;
+        }
+
+        /* --- Simplified Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            background-color: var(--body-bg); /* Match body background */
+            position: fixed;
+            top: 0; left: 0; right: 0; width: 100%; z-index: 100;
+            height: var(--header-height);
+            border-bottom: 1px solid var(--border-light); /* Subtle separator */
+        }
+        .header-left { flex: 1; text-align: left; }
+        .header-center { flex: 2; text-align: center; }
+        .header-right { flex: 1; text-align: right; }
+
+        .back-btn {
+            background: none; border: none; color: var(--text-primary);
+            cursor: pointer; padding: 10px; margin-left: -10px; /* Align edge */
+            font-size: 20px; text-decoration: none;
+        }
+        .header-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+        .header-action { /* Placeholder for potential right-side icon like '...' */
+             background: none; border: none; color: var(--text-primary);
+             font-size: 20px; padding: 10px; margin-right: -10px; /* Align edge */
+             cursor: pointer;
+        }
+         /* Hide cart icon - not in reference */
+         .header-icon.cart-icon { display: none; }
+
+
+        /* --- Container --- */
+        .profile-container {
+            max-width: 500px; /* Narrower for mobile feel */
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* --- Base Card Style --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-soft);
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative; /* For loading overlay */
+            overflow: hidden;
+        }
+
+        /* --- Profile Card Specific Styles --- */
+        .profile-card {
+            text-align: center;
+            padding-top: 30px;
+        }
+        .profile-avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--icon-bg-gray); /* Placeholder bg */
+            border: 3px solid var(--card-bg); /* Border blends with card */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow on avatar */
+            display: block;
+        }
+        .profile-edit-icon { /* Simple edit icon like reference */
+             position: absolute;
+             bottom: 0;
+             right: 0;
+             background-color: var(--text-link);
+             color: white;
+             width: 24px;
+             height: 24px;
+             border-radius: 50%;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             font-size: 12px;
+             border: 2px solid var(--card-bg);
+             cursor: pointer;
+             transition: background-color 0.2s;
+        }
+        .profile-edit-icon:hover { background-color: #2b6cb0; } /* Darker blue */
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: var(--text-primary);
+        }
+        .profile-subtitle { /* New element for title/role */
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+        }
+
+        /* Section Titles (Subtle) */
+        .section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: left;
+            margin-bottom: 15px;
+            padding-left: 5px; /* Slight indent */
+        }
+
+        /* --- Dashboard Section (Replaces Orders) --- */
+        .dashboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .dashboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 5px; /* Vertical padding, horizontal aligned with title */
+            border-bottom: 1px solid var(--border-light);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: background-color 0.15s ease-in-out;
+        }
+        .dashboard-item:last-child { border-bottom: none; }
+        .dashboard-item:hover { background-color: #f8fafc; } /* Very subtle hover */
+
+        .dashboard-icon-wrapper {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .dashboard-icon-wrapper i { font-size: 16px; }
+
+        /* Icon Background/Color Pairs */
+        .icon-bg-green { background-color: var(--icon-bg-green); } .icon-color-green { color: var(--icon-color-green); }
+        .icon-bg-yellow { background-color: var(--icon-bg-yellow); } .icon-color-yellow { color: var(--icon-color-yellow); }
+        .icon-bg-gray { background-color: var(--icon-bg-gray); } .icon-color-gray { color: var(--icon-color-gray); }
+        /* Add more pairs as needed */
+
+        .dashboard-label {
+            flex-grow: 1;
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .dashboard-indicator {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 10px;
+            border-radius: var(--border-radius-pill);
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+        /* Badge Background/Color Pairs */
+        .badge-blue { background-color: var(--icon-bg-blue); color: var(--icon-color-blue); }
+        .badge-orange { background-color: var(--badge-bg-orange); color: var(--badge-color-orange); }
+
+        .dashboard-arrow { /* Simple arrow indicator */
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+
+        /* --- Account Actions Section --- */
+        .account-actions {
+             margin-top: 25px; /* Space above */
+             padding-top: 15px; /* Space below divider */
+             border-top: 1px solid var(--border-light);
+        }
+        .account-action-link {
+            display: block;
+            padding: 10px 5px; /* Align with dashboard items */
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .account-action-link.link-primary { color: var(--text-link); }
+        .account-action-link.link-danger { color: var(--text-danger); }
+        .account-action-link:hover { color: var(--text-primary); }
+
+
+        /* --- Modal Styles (Refined) --- */
+        .modal { display: none; position: fixed; inset: 0; background-color: rgba(45, 55, 72, 0.75); /* Darker overlay */ z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius-lg);
+            width: 100%; max-width: 400px; /* Consistent max width */
+            padding: 25px;
+            animation: modalFadeIn 0.3s ease;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Stronger shadow for modal */
+        }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-title { font-size: 18px; font-weight: 600; margin-bottom: 25px; text-align: center; color: var(--text-primary); }
+        .modal-actions { display: flex; gap: 10px; margin-top: 30px; }
+        .modal-actions .modal-btn { flex-grow: 1; } /* Make modal buttons fill space */
+
+
+        /* --- Form Styles (Reference Inspired) --- */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-label {
+            display: block;
+            margin-bottom: 8px; /* More space below label */
+            font-size: 13px; /* Smaller label */
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 5px; /* Adjust padding for underline style */
+            border: none; /* Remove default border */
+            border-bottom: 2px solid var(--border-light); /* Underline */
+            border-radius: 0; /* No radius for underline */
+            font-size: 15px;
+            background-color: transparent; /* No background */
+            transition: border-color 0.2s ease-in-out;
+            outline: none; /* Remove default focus outline */
+        }
+        .form-input:focus {
+            border-bottom-color: var(--text-link); /* Highlight underline on focus */
+        }
+        .form-input:disabled {
+            background-color: transparent;
+            border-bottom-style: dashed; /* Indicate disabled */
+            color: var(--text-secondary);
+            cursor: not-allowed;
+        }
+        .form-hint { /* Style for hints like password requirement */
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            display: block;
+        }
+        .form-hint.error { color: var(--error-color); } /* Error hint style */
+
+        .error-text { /* General form error message */
+            color: var(--error-color);
+            font-size: 13px;
+            margin-top: 10px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+
+        /* --- Button Styles (Refined) --- */
+        .modal-btn {
+            padding: 12px 15px; /* Slightly larger modal buttons */
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            line-height: 1.2;
+        }
+         .modal-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        .btn-primary { background-color: var(--text-link); color: white; border-color: var(--text-link); }
+        .btn-primary:hover:not(:disabled) { background-color: #2b6cb0; border-color: #2b6cb0; } /* Darker blue */
+        .btn-outline { background-color: transparent; border-color: var(--border-light); color: var(--text-primary); }
+        .btn-outline:hover:not(:disabled) { background-color: var(--body-bg); border-color: var(--border-light); } /* Light hover */
+
+        /* Loading Overlay (No change needed, looks fine) */
+        .loading-overlay { position: absolute; inset: 0; background-color: rgba(255, 255, 255, 0.85); display: flex; justify-content: center; align-items: center; z-index: 10; border-radius: inherit; transition: opacity 0.3s ease; }
+        .loading-spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top: 4px solid var(--text-link); width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Hide content initially */
+        #profileContent, #dashboardContent { display: none; } /* Updated ID */
+
+         /* Empty State Styling (use existing) */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .empty-state i { font-size: 40px; color: #ccc; margin-bottom: 15px; }
+        .empty-state p { font-size: 15px; font-weight: 500;}
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="index.html" class="back-btn" title="Back">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        <div class="header-center">
+             <!-- Title changes based on context, JS can handle this if needed -->
+            <h1 class="header-title" id="pageTitle">My Profile</h1>
+        </div>
+         <div class="header-right">
+             <!-- Optional: Add a '...' button if needed -->
+             <!-- <button class="header-action"><i class="fas fa-ellipsis-h"></i></button> -->
+             <!-- Hide Cart Icon -->
+             <a href="cart.html" class="header-icon cart-icon" title="View Cart" style="display: none;">
+                <i class="fas fa-shopping-cart"></i>
+                <div class="cart-badge hidden" id="cartBadge"><span id="cartItemCount">0</span></div>
+             </a>
+         </div>
+    </header>
+
+    <!-- Profile Content -->
+    <main class="profile-container">
+        <!-- Profile Card -->
+        <section class="card profile-card" aria-labelledby="profile-name">
+            <!-- Loading Overlay for Profile -->
+            <div class="loading-overlay" id="profileLoading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Profile Content Area -->
+            <div id="profileContent">
+                <div class="profile-avatar-wrapper">
+                    <img src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" alt="User's profile avatar" class="profile-avatar" id="profileAvatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/6596/6596121.png';">
+                    <!-- Edit icon button triggering the modal -->
+                    <button class="profile-edit-icon" id="editProfileIconBtn" title="Edit Profile">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                </div>
+                <h2 class="profile-name" id="profileName">Loading...</h2>
+                <!-- Add a placeholder for subtitle, JS should populate this -->
+                <p class="profile-subtitle" id="profileSubtitle"> </p>
+                <p class="profile-email" id="profileEmail" style="display:none;"></p> <!-- Hide email from main view if not in reference -->
+
+                <!-- Moved edit/password/logout actions below -->
+            </div>
+        </section>
+
+        <!-- Dashboard Section (Replaces Order History Card) -->
+        <section class="card dashboard-card" aria-labelledby="dashboard-heading">
+             <!-- Loading Overlay for Dashboard -->
+             <div class="loading-overlay" id="dashboardLoading"> <!-- Renamed from ordersLoading -->
+                <div class="loading-spinner"></div>
+            </div>
+
+            <h3 id="dashboard-heading" class="section-title">Dashboard</h3>
+            <!-- Dashboard List Area -->
+            <ul class="dashboard-list" id="dashboardContent">
+                <!-- Static Examples / JS Populated Target -->
+                 <!-- JS will replace this with dynamic order data styled as dashboard items -->
+                 <!-- Example Structure (to be generated by JS): -->
+                 <!--
+                 <li>
+                     <a href="order-details.html?id=ORDER_ID" class="dashboard-item">
+                         <span class="dashboard-icon-wrapper icon-bg-green"><i class="fas fa-receipt icon-color-green"></i></span>
+                         <span class="dashboard-label">Order #abc123ef</span>
+                         <span class="dashboard-indicator badge-blue">Processing</span>
+                     </a>
+                 </li>
+                 <li>
+                    <a href="#" class="dashboard-item">
+                        <span class="dashboard-icon-wrapper icon-bg-yellow"><i class="fas fa-star icon-color-yellow"></i></span>
+                        <span class="dashboard-label">Achievements</span>
+                        <i class="fas fa-chevron-right dashboard-arrow"></i>
+                     </a>
+                 </li>
+                 <li>
+                    <a href="#" class="dashboard-item">
+                         <span class="dashboard-icon-wrapper icon-bg-gray"><i class="fas fa-shield-alt icon-color-gray"></i></span>
+                         <span class="dashboard-label">Privacy Settings</span>
+                         <span class="dashboard-indicator badge-orange">Action Needed</span>
+                    </a>
+                 </li>
+                 -->
+            </ul>
+            <!-- Empty State for Dashboard -->
+            <div class="empty-state" id="noDashboardItems" style="display: none;"> <!-- Renamed from noOrders -->
+                <i class="fas fa-list-alt"></i>
+                <p>No recent activity or items to show.</p>
+            </div>
+        </section>
+
+        <!-- Account Actions Section -->
+        <section class="card account-actions-card" aria-labelledby="account-actions-heading">
+            <h3 id="account-actions-heading" class="section-title">My Account</h3>
+            <div class="account-actions">
+                <a href="#" id="changePasswordLink" class="account-action-link link-primary">Change Password</a>
+                <!-- Add other links like "Switch Account" if needed -->
+                <!-- <a href="#" class="account-action-link link-primary">Switch to Other Account</a> -->
+
+                <!-- START: Added Shoplink Button -->
+                <a href="create-shoplink.html" id="createShoplinkLink" class="account-action-link link-primary">Create Shoplink</a>
+                <!-- END: Added Shoplink Button -->
+
+                <a href="#" id="logoutLink" class="account-action-link link-danger">Log Out</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal" role="dialog" aria-labelledby="editProfileTitle" aria-modal="true">
+        <div class="modal-content">
+            <h3 class="modal-title" id="editProfileTitle">Edit Profile</h3>
+            <form id="editProfileForm" novalidate>
+                <!-- Avatar/Name section similar to reference's edit screen -->
+                <div style="text-align: center; margin-bottom: 25px;">
+                     <img src="https://cdn-icons-png.flaticon.com/512/6596/6596121.png" alt="Current profile avatar" class="profile-avatar" id="editProfileAvatarPreview" style="width: 70px; height: 70px; margin-bottom: 10px;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/6596/6596121.png';">
+                     <h4 id="editProfileNamePreview" style="font-weight: 600; font-size: 18px;">Your Name</h4>
+                     <p id="editProfileSubtitlePreview" style="font-size: 13px; color: var(--text-secondary);"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="editNameInput" class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="editNameInput" required>
+                </div>
+                <div class="form-group">
+                    <label for="editSubtitleInput" class="form-label">Title / Role (Optional)</label>
+                    <input type="text" class="form-input" id="editSubtitleInput" placeholder="e.g., Senior Designer">
+                </div>
+                 <div class="form-group">
+                    <label for="editEmailInput" class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="editEmailInput" required disabled>
+                     <span class="form-hint">(Email cannot be changed)</span>
+                </div>
+                 <div class="form-group">
+                    <label for="editPhoneInput" class="form-label">Phone Number (Optional)</label>
+                    <input type="tel" class="form-input" id="editPhoneInput" placeholder="e.g., 09171234567">
+                </div>
+                 <div class="form-group">
+                    <label for="editPhotoInput" class="form-label">Profile Photo URL (Optional)</label>
+                    <input type="url" class="form-input" id="editPhotoInput" placeholder="https://example.com/photo.jpg">
+                </div>
+                <!-- Add Birth Date fields if needed, styling might be complex -->
+
+                 <p id="editErrorText" class="error-text" role="alert" aria-live="assertive"></p>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn btn-outline" id="cancelEditBtn">Cancel</button>
+                    <button type="submit" class="modal-btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal" id="changePasswordModal" role="dialog" aria-labelledby="changePasswordTitle" aria-modal="true">
+        <div class="modal-content">
+            <h3 class="modal-title" id="changePasswordTitle">Change Password</h3>
+            <form id="changePasswordForm" novalidate>
+                <div class="form-group">
+                    <label for="currentPassword" class="form-label">Current Password</label>
+                    <input type="password" class="form-input" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword" class="form-label">New Password</label>
+                    <input type="password" class="form-input" id="newPassword" required minlength="8"> <!-- Changed to 8 based on potential reference hint -->
+                     <span class="form-hint">Password should contain at least 8 characters.</span>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-input" id="confirmPassword" required minlength="8">
+                </div>
+                 <p id="passwordErrorText" class="error-text" role="alert" aria-live="assertive"></p>
+                 <div class="modal-actions">
+                    <button type="button" class="modal-btn btn-outline" id="cancelPasswordBtn">Cancel</button>
+                    <button type="submit" class="modal-btn btn-primary" id="updatePasswordBtn">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Keep As Is) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // --- Constants (Keep As Is or Adjust) ---
+        const DEFAULT_AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/6596/6596121.png';
+        const RECENT_ORDERS_LIMIT = 5; // Keep using this for fetching data
+        // const ORDER_PREVIEW_LIMIT = 4; // Not used in dashboard view
+
+        // --- DOM Element References (Update as needed) ---
+        const pageTitle = document.getElementById('pageTitle'); // New
+        const profileLoading = document.getElementById('profileLoading');
+        const profileContent = document.getElementById('profileContent');
+        const profileName = document.getElementById('profileName');
+        const profileSubtitle = document.getElementById('profileSubtitle'); // New
+        const profileEmail = document.getElementById('profileEmail'); // Still needed for logic
+        const profileAvatar = document.getElementById('profileAvatar');
+        const editProfileIconBtn = document.getElementById('editProfileIconBtn'); // New trigger
+
+        const dashboardLoading = document.getElementById('dashboardLoading'); // Renamed
+        const dashboardContent = document.getElementById('dashboardContent'); // Renamed
+        const noDashboardItems = document.getElementById('noDashboardItems'); // Renamed
+
+        // Account Actions
+        const changePasswordLink = document.getElementById('changePasswordLink'); // New trigger
+        const createShoplinkLink = document.getElementById('createShoplinkLink'); // Reference for the new link (optional, only if JS interaction needed)
+        const logoutLink = document.getElementById('logoutLink'); // New trigger
+
+        // Modals & Forms
+        const editProfileModal = document.getElementById('editProfileModal');
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const editProfileForm = document.getElementById('editProfileForm');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const editNameInput = document.getElementById('editNameInput');
+        const editSubtitleInput = document.getElementById('editSubtitleInput'); // New input
+        const editEmailInput = document.getElementById('editEmailInput');
+        const editPhotoInput = document.getElementById('editPhotoInput');
+        const editPhoneInput = document.getElementById('editPhoneInput');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+        const editErrorText = document.getElementById('editErrorText');
+        const passwordErrorText = document.getElementById('passwordErrorText');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+
+        // Edit Modal Previews
+        const editProfileAvatarPreview = document.getElementById('editProfileAvatarPreview');
+        const editProfileNamePreview = document.getElementById('editProfileNamePreview');
+        const editProfileSubtitlePreview = document.getElementById('editProfileSubtitlePreview');
+
+        // Cart elements (keep refs if cart logic is elsewhere)
+        const cartBadge = document.getElementById('cartBadge');
+        const cartItemCountSpan = document.getElementById('cartItemCount');
+
+
+        // --- Global Variables (Keep As Is) ---
+        let auth, db;
+        let currentUser = null;
+        let currentUserProfileData = {}; // Store fetched profile data including subtitle
+        let cartItemCount = 0;
+
+        // --- Firebase Config (Keep As Is - REMEMBER SECURITY WARNING) ---
+        // CRITICAL SECURITY WARNING... (keep the comment)
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+            setupEventListeners();
+        });
+
+        function initializeFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+
+                auth.onAuthStateChanged(user => {
+                    currentUser = user;
+                    if (user) {
+                        console.log("User signed in:", user.uid);
+                        showLoadingStates();
+                        Promise.all([
+                            fetchUserProfile(user.uid),
+                            fetchOrderHistoryAndRenderDashboard(user.uid), // Updated function name
+                            // fetchInitialCartCount(user.uid) // Uncomment if cart icon needed
+                        ]).catch(error => {
+                            console.error("Error during initial data fetch:", error);
+                        });
+                    } else {
+                        console.log("No user signed in. Redirecting to login.");
+                        window.location.href = 'login.html';
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                document.body.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--error-color);">Failed to initialize. Please refresh.</p>`;
+            }
+        }
+
+        // --- Event Listeners Setup (Update Triggers) ---
+        function setupEventListeners() {
+            editProfileIconBtn?.addEventListener('click', showEditProfileModal); // Use icon button
+            changePasswordLink?.addEventListener('click', showChangePasswordModal); // Use link
+            logoutLink?.addEventListener('click', handleLogout); // Use link
+
+            // No specific listener needed for createShoplinkLink unless you want JS interaction before navigating
+
+            cancelEditBtn?.addEventListener('click', () => hideModal(editProfileModal));
+            cancelPasswordBtn?.addEventListener('click', () => hideModal(changePasswordModal));
+
+            editProfileForm?.addEventListener('submit', handleProfileUpdate);
+            changePasswordForm?.addEventListener('submit', handlePasswordChange);
+
+            editProfileModal?.addEventListener('click', (e) => { if (e.target === editProfileModal) hideModal(editProfileModal); });
+            changePasswordModal?.addEventListener('click', (e) => { if (e.target === changePasswordModal) hideModal(changePasswordModal); });
+
+            // Update preview in edit modal dynamically
+            editNameInput?.addEventListener('input', (e) => { editProfileNamePreview.textContent = e.target.value || 'Your Name'; });
+            editSubtitleInput?.addEventListener('input', (e) => { editProfileSubtitlePreview.textContent = e.target.value; });
+            editPhotoInput?.addEventListener('input', (e) => {
+                editProfileAvatarPreview.src = e.target.value || currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+            });
+
+        }
+
+        // --- UI State Functions (Update for Dashboard) ---
+        function showLoadingStates() {
+            profileLoading.style.display = 'flex';
+            profileContent.style.display = 'none';
+            dashboardLoading.style.display = 'flex'; // Use dashboard loader
+            dashboardContent.style.display = 'none';
+            noDashboardItems.style.display = 'none';
+        }
+
+        function hideProfileLoading() {
+            profileLoading.style.display = 'none';
+            profileContent.style.display = 'block';
+        }
+
+        function hideDashboardLoading(showContent = true) {
+            dashboardLoading.style.display = 'none';
+             if (showContent) {
+                 dashboardContent.style.display = 'block'; // Show list container
+             } else {
+                 dashboardContent.style.display = 'none';
+             }
+        }
+
+        // --- Data Fetching Functions (Keep Profile Fetch, Modify Order Fetch) ---
+        async function fetchUserProfile(userId) {
+             // Add 'subtitle' field
+            try {
+                const userDocRef = db.collection('users').doc(userId);
+                const userDoc = await userDocRef.get();
+
+                if (userDoc.exists) {
+                    currentUserProfileData = userDoc.data();
+                    console.log("Fetched profile from Firestore:", currentUserProfileData);
+                } else if (currentUser) {
+                    console.log("User doc not found, using Auth info and creating doc.");
+                    currentUserProfileData = {
+                        displayName: currentUser.displayName || 'New User',
+                        email: currentUser.email,
+                        photoURL: currentUser.photoURL || null,
+                        phoneNumber: currentUser.phoneNumber || null,
+                        subtitle: '', // Add subtitle field
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    userDocRef.set(currentUserProfileData, { merge: true })
+                         .then(() => console.log("Created basic user doc in Firestore."))
+                         .catch(err => console.error("Error creating user doc:", err));
+                } else {
+                     throw new Error("User not authenticated or available");
+                }
+
+                // --- Update UI ---
+                profileName.textContent = currentUserProfileData.displayName || 'No Name Set';
+                profileSubtitle.textContent = currentUserProfileData.subtitle || ''; // Populate subtitle
+                profileEmail.textContent = currentUserProfileData.email || 'No Email Set'; // Keep for logic
+                profileAvatar.src = currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+                profileAvatar.onerror = () => { profileAvatar.src = DEFAULT_AVATAR_URL; };
+
+            } catch (error) {
+                console.error("Error fetching/creating user profile:", error);
+                if (currentUser) {
+                    profileName.textContent = currentUser.displayName || 'Error Loading Name';
+                    profileSubtitle.textContent = '';
+                    profileEmail.textContent = currentUser.email || 'Error Loading Email';
+                    profileAvatar.src = currentUser.photoURL || DEFAULT_AVATAR_URL;
+                } else {
+                     profileName.textContent = 'Error';
+                     profileEmail.textContent = 'Could not load profile';
+                     profileAvatar.src = DEFAULT_AVATAR_URL;
+                }
+            } finally {
+                 hideProfileLoading();
+            }
+        }
+
+        async function fetchOrderHistoryAndRenderDashboard(userId) {
+            dashboardContent.innerHTML = ''; // Clear previous items
+
+            try {
+                const ordersSnapshot = await db.collection('orders')
+                    .where('userId', '==', userId)
+                    .orderBy('orderTimestamp', 'desc')
+                    .limit(RECENT_ORDERS_LIMIT)
+                    .get();
+
+                if (ordersSnapshot.empty) {
+                    // Optional: Add other static dashboard items here even if no orders
+                    // renderStaticDashboardItems(); // Example function call
+                    noDashboardItems.style.display = 'block'; // Show "No items"
+                    hideDashboardLoading(false);
+                } else {
+                    ordersSnapshot.forEach(doc => {
+                        renderOrderItemAsDashboardItem(doc.data(), doc.id); // Render each order
+                    });
+                    // Optional: Add other static dashboard items after orders
+                    // renderStaticDashboardItems();
+                    hideDashboardLoading(true);
+                }
+            } catch (error) {
+                console.error("Error fetching order history:", error);
+                noDashboardItems.innerHTML = '<i class="fas fa-exclamation-circle"></i><p>Failed to load activity.</p>';
+                noDashboardItems.style.display = 'block';
+                hideDashboardLoading(false);
+            }
+        }
+
+         // --- Rendering Function (Updated for Dashboard Style) ---
+        function renderOrderItemAsDashboardItem(orderData, orderId) {
+            const status = orderData.status || 'Unknown';
+            // Choose icon/color based on status (example)
+            let iconClass = 'fa-receipt';
+            let iconWrapperClass = 'icon-bg-gray icon-color-gray';
+            let indicatorClass = 'badge-blue'; // Default
+            let indicatorText = status;
+
+            switch (status.toLowerCase()) {
+                case 'completed':
+                case 'delivered':
+                    iconClass = 'fa-check-circle';
+                    iconWrapperClass = 'icon-bg-green icon-color-green';
+                    indicatorClass = 'badge-green'; // Assuming you add styles for this
+                    break;
+                case 'processing':
+                case 'shipped':
+                    iconClass = 'fa-truck-loading';
+                    iconWrapperClass = 'icon-bg-blue icon-color-blue';
+                    indicatorClass = 'badge-blue';
+                    break;
+                 case 'pending':
+                    iconClass = 'fa-hourglass-half';
+                    iconWrapperClass = 'icon-bg-yellow icon-color-yellow';
+                    indicatorClass = 'badge-yellow'; // Assuming styles exist
+                    break;
+                case 'cancelled':
+                case 'failed':
+                     iconClass = 'fa-times-circle';
+                     iconWrapperClass = 'icon-bg-red icon-color-red'; // Assuming styles exist
+                     indicatorClass = 'badge-orange'; // Use orange/red badge
+                     break;
+            }
+
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <a href="order-details.html?id=${orderId}" class="dashboard-item">
+                    <span class="dashboard-icon-wrapper ${iconWrapperClass}"><i class="fas ${iconClass}"></i></span>
+                    <span class="dashboard-label">Order #${orderId.substring(0, 6)}...</span>
+                    <span class="dashboard-indicator ${indicatorClass}">${indicatorText}</span>
+                </a>
+            `;
+            dashboardContent.appendChild(listItem);
+        }
+
+        // Optional: Function to add static items like Achievements, Privacy
+        // function renderStaticDashboardItems() { ... add hardcoded items ... }
+
+
+        // --- Modal Handling (Update for New Fields/Previews) ---
+        function showModal(modalElement) {
+             if (modalElement) {
+                 clearErrorText(editErrorText);
+                 clearErrorText(passwordErrorText);
+                 modalElement.style.display = 'flex';
+                 const focusable = modalElement.querySelector('button, [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])');
+                 if (focusable) focusable.focus();
+             }
+         }
+         function hideModal(modalElement) {
+             if (modalElement) modalElement.style.display = 'none';
+         }
+         function displayErrorText(element, message) {
+             if (element) {
+                 element.textContent = message;
+                 element.style.display = 'block';
+             }
+         }
+         function clearErrorText(element) {
+             if (element) {
+                element.textContent = '';
+                element.style.display = 'none';
+             }
+         }
+
+        function showEditProfileModal() {
+            if (currentUser && currentUserProfileData) {
+                // Pre-fill standard fields
+                editNameInput.value = currentUserProfileData.displayName || '';
+                editEmailInput.value = currentUserProfileData.email || '';
+                editPhotoInput.value = currentUserProfileData.photoURL || '';
+                editPhoneInput.value = currentUserProfileData.phoneNumber || '';
+                editSubtitleInput.value = currentUserProfileData.subtitle || ''; // Pre-fill subtitle
+
+                // Pre-fill preview section
+                editProfileAvatarPreview.src = currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+                editProfileNamePreview.textContent = currentUserProfileData.displayName || 'Your Name';
+                editProfileSubtitlePreview.textContent = currentUserProfileData.subtitle || '';
+
+                pageTitle.textContent = "Edit Profile"; // Change header title
+            } else {
+                 console.warn("Profile data not available for modal pre-fill.");
+            }
+             showModal(editProfileModal);
+        }
+
+        function showChangePasswordModal() {
+            changePasswordForm.reset();
+            clearErrorText(passwordErrorText);
+            pageTitle.textContent = "Change Password"; // Change header title
+            showModal(changePasswordModal);
+        }
+
+        // Override hideModal to reset page title
+        const originalHideModal = hideModal;
+        hideModal = (modalElement) => {
+            originalHideModal(modalElement);
+            // Reset title when any modal is closed
+            pageTitle.textContent = "My Profile";
+        };
+
+
+        // --- Action Handlers (Update for Subtitle, New Triggers) ---
+        async function handleProfileUpdate(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.textContent = 'Saving...';
+            clearErrorText(editErrorText);
+
+            const newName = editNameInput.value.trim();
+            const newPhoto = editPhotoInput.value.trim();
+            const newPhone = editPhoneInput.value.trim();
+            const newSubtitle = editSubtitleInput.value.trim(); // Get subtitle
+
+            const authUpdates = {};
+            const firestoreUpdates = {
+                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (newName && newName !== (currentUserProfileData.displayName || '')) {
+                authUpdates.displayName = newName;
+                firestoreUpdates.displayName = newName;
+            }
+            if (newPhoto !== (currentUserProfileData.photoURL || '')) {
+                 authUpdates.photoURL = newPhoto || null;
+                 firestoreUpdates.photoURL = newPhoto || null;
+            }
+             if (newPhone !== (currentUserProfileData.phoneNumber || '')) {
+                 firestoreUpdates.phoneNumber = newPhone || null;
+             }
+             if (newSubtitle !== (currentUserProfileData.subtitle || '')) { // Add subtitle update
+                 firestoreUpdates.subtitle = newSubtitle || ''; // Store empty string if cleared
+             }
+
+
+            try {
+                 if (Object.keys(authUpdates).length > 0) {
+                    await currentUser.updateProfile(authUpdates);
+                 }
+                 await db.collection('users').doc(currentUser.uid).set(firestoreUpdates, { merge: true });
+
+                // Update UI and cache
+                currentUserProfileData = { ...currentUserProfileData, ...firestoreUpdates };
+                profileName.textContent = currentUserProfileData.displayName || 'No Name Set';
+                profileSubtitle.textContent = currentUserProfileData.subtitle || ''; // Update subtitle display
+                profileAvatar.src = currentUserProfileData.photoURL || DEFAULT_AVATAR_URL;
+                profileAvatar.onerror = () => { profileAvatar.src = DEFAULT_AVATAR_URL; };
+
+                hideModal(editProfileModal);
+                console.log('Profile updated successfully!');
+
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                displayErrorText(editErrorText, `Update failed: ${error.message}`);
+            } finally {
+                 saveProfileBtn.disabled = false;
+                 saveProfileBtn.textContent = 'Save Changes';
+            }
+        }
+
+        async function handlePasswordChange(e) {
+             e.preventDefault();
+             if (!currentUser) return;
+
+             updatePasswordBtn.disabled = true;
+             updatePasswordBtn.textContent = 'Updating...';
+             clearErrorText(passwordErrorText);
+
+             const currentPassword = document.getElementById('currentPassword').value;
+             const newPassword = document.getElementById('newPassword').value;
+             const confirmPassword = document.getElementById('confirmPassword').value;
+             const minPasswordLength = 8; // Match input attribute
+
+             // Validation
+             if (!currentPassword || !newPassword || !confirmPassword) {
+                displayErrorText(passwordErrorText, "All password fields required.");
+                updatePasswordBtn.disabled = false;
+                updatePasswordBtn.textContent = 'Update Password';
+                return;
+             }
+             if (newPassword !== confirmPassword) {
+                 displayErrorText(passwordErrorText, "New passwords do not match.");
+                 updatePasswordBtn.disabled = false;
+                 updatePasswordBtn.textContent = 'Update Password';
+                 return;
+             }
+             if (newPassword.length < minPasswordLength) {
+                 displayErrorText(passwordErrorText, `Password must be at least ${minPasswordLength} characters.`);
+                 updatePasswordBtn.disabled = false;
+                 updatePasswordBtn.textContent = 'Update Password';
+                 return;
+             }
+
+             try {
+                 console.log("Attempting to re-authenticate...");
+                 const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, currentPassword);
+                 await currentUser.reauthenticateWithCredential(credential);
+                 console.log("Re-authenticated. Updating password...");
+                 await currentUser.updatePassword(newPassword);
+                 console.log("Password updated.");
+
+                 changePasswordForm.reset();
+                 hideModal(changePasswordModal);
+                 console.log('Password changed successfully!');
+                 // Optionally show a success message temporarily
+                 // alert('Password changed successfully!');
+
+             } catch (error) {
+                 console.error("Error changing password:", error);
+                 let errorMsg = `An error occurred: ${error.message}`;
+                 if (error.code === 'auth/wrong-password') { errorMsg = 'Incorrect current password.'; }
+                 else if (error.code === 'auth/too-many-requests') { errorMsg = 'Too many attempts. Try again later.'; }
+                 displayErrorText(passwordErrorText, errorMsg);
+             } finally {
+                  updatePasswordBtn.disabled = false;
+                  updatePasswordBtn.textContent = 'Update Password';
+             }
+         }
+
+        function handleLogout(e) {
+            e.preventDefault(); // Prevent default link behavior
+            if (window.confirm('Are you sure you want to logout?')) {
+                 // Optional: Add visual feedback to the link/button during logout
+                 logoutLink.style.opacity = '0.5';
+                 logoutLink.style.pointerEvents = 'none';
+
+                auth.signOut().then(() => {
+                    console.log("User signed out.");
+                    window.location.href = 'login.html';
+                }).catch(error => {
+                    console.error("Logout error:", error);
+                     alert('Failed to logout. Please try again.');
+                     logoutLink.style.opacity = '1';
+                     logoutLink.style.pointerEvents = 'auto';
+                });
+            }
+        }
+
+        // --- Helper Functions (Keep formatPrice) ---
+         function formatPrice(price) {
+             if (typeof price !== 'number') return 'N/A';
+             return `₱${price.toFixed(2)}`;
+         }
+
+         // --- Cart Functions (Keep if needed elsewhere, otherwise remove) ---
+         // function fetchInitialCartCount(userId) { /* Keep as is */ }
+         // function updateCartIcon() { /* Keep as is */ }
+
+
+    </script>
+</body>
+</html>

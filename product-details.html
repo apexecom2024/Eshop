@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Product Details - Magma</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Modern Color Scheme */
+        :root {
+            --primary-color: #2a2d32;
+            --accent-color: #4CAF50;
+            --text-color: #333;
+            --text-light: #666;
+            --border-color: #e0e0e0;
+            --bg-light: #f8f9fa;
+            --star-color: #FFD700;
+            --error-color: #ff5252;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background-color: white;
+            color: var(--text-color);
+            padding-top: 70px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
+            height: 65px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            margin-right: 15px;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212b36;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: calc(100vw - 150px);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-icon {
+            position: relative;
+            font-size: 22px;
+            color: #333;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .header-icon .fa-shopping-cart {
+            color: var(--primary-color);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .cart-badge.hidden {
+            display: none;
+        }
+
+        /* Loading State */
+        .loading { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 200px; 
+            width: 100%; 
+        }
+        .loading-spinner { 
+            border: 4px solid rgba(0, 0, 0, 0.1); 
+            border-radius: 50%; 
+            border-top: 4px solid var(--primary-color); 
+            width: 40px; 
+            height: 40px; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+
+        /* Error State */
+        .error-message { 
+            text-align: center; 
+            padding: 40px 20px; 
+            color: var(--error-color); 
+            font-weight: bold; 
+            background-color: #fff; 
+            border-radius: 8px; 
+            margin: 15px; 
+            box-shadow: 0 1px 5px rgba(0,0,0,0.08); 
+        }
+
+        /* Product Gallery */
+        .product-gallery {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 350px;
+            object-fit: contain;
+            background: var(--bg-light);
+            border-radius: 12px;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .thumbnail.active {
+            border-color: var(--accent-color);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--error-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        /* Product Info */
+        .product-info {
+            padding: 20px 15px;
+            background: white;
+            margin-bottom: 15px;
+        }
+
+        .product-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .price-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .current-price {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .original-price {
+            font-size: 16px;
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+
+        .product-vendor {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+
+        .variant-selector {
+            margin: 1rem 0;
+        }
+
+        .variant-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .variant-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .variant-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .variant-btn.selected {
+            border-color: var(--accent-color);
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .product-description {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-light);
+            margin-top: 20px;
+        }
+
+        .product-description h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+
+        .product-description p {
+            margin-bottom: 1em;
+        }
+
+        .product-description ul {
+            margin-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        .product-description li {
+            margin-bottom: 0.5em;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 20px 15px;
+            background: white;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .rating-summary {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .average-rating {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
+
+        .stars {
+            color: var(--star-color);
+            font-size: 1.2rem;
+        }
+
+        .rating-count {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-left: 5px;
+        }
+
+        .review-card {
+            padding: 1.5rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-author {
+            font-weight: 600;
+        }
+
+        .review-date {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .review-text {
+            line-height: 1.6;
+        }
+
+        .reviews-placeholder {
+            text-align: center;
+            padding: 30px 15px;
+            color: var(--text-light);
+            font-size: 15px;
+        }
+
+        .reviews-placeholder i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ddd;
+        }
+
+        .review-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        .rating-input {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .star-input {
+            font-size: 1.5rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star-input.active {
+            color: var(--star-color);
+        }
+
+        .review-textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            min-height: 120px;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        /* Sticky Bottom Bar */
+        .sticky-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 1rem;
+            z-index: 99;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            padding: 0.5rem;
+        }
+
+        .quantity-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            font-size: 1rem;
+            -moz-appearance: textfield;
+        }
+
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .add-to-cart-btn {
+            flex: 1;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            opacity: 0.9;
+        }
+
+        .add-to-cart-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+    <script>
+        // Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // Initialize Firebase when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent zooming
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) event.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('touchmove', function(event) {
+                if (event.touches.length > 1) event.preventDefault();
+            }, { passive: false });
+            
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) event.preventDefault();
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            // Initialize Firebase and app
+            initializeFirebaseAndApp();
+        });
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <a href="javascript:history.back()" class="back-btn" title="Go Back">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title" id="headerTitle">Product Details</div>
+        </div>
+        <div class="header-right">
+            <a href="cart.html" class="header-icon" title="View Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <div class="cart-badge hidden" id="cartBadge">
+                    <span id="cartItemCount">0</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Loading Indicator -->
+        <div class="loading" id="loadingIndicator">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 10px; color: var(--text-light);">Loading Product...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+        <!-- Product Content (hidden until loaded) -->
+        <div id="productContent" style="display: none;">
+            <!-- Product Gallery -->
+            <section class="product-gallery" id="productGallery">
+                <!-- Main image will be inserted here -->
+                <!-- Thumbnails will be inserted here -->
+            </section>
+
+            <!-- Product Info -->
+            <section class="product-info" id="productInfo">
+                <div class="product-vendor" id="productVendor"></div>
+                <h1 class="product-title" id="productTitle"></h1>
+                
+                <div class="price-section">
+                    <span class="current-price" id="currentPrice"></span>
+                    <span class="original-price" id="originalPrice" style="display: none;"></span>
+                </div>
+
+                <!-- Variant Selector (if applicable) -->
+                <div class="variant-selector" id="variantSelector" style="display: none;">
+                    <label class="variant-label" id="variantLabel"></label>
+                    <div class="variant-options" id="variantOptions"></div>
+                </div>
+
+                <!-- Product Description -->
+                <div class="product-description" id="productDescription"></div>
+            </section>
+
+            <!-- Reviews Section -->
+            <section class="reviews-section" id="reviewsSection">
+                <h2 class="section-title">Customer Reviews</h2>
+                
+                <div class="rating-summary" id="ratingSummary">
+                    <div class="average-rating">0.0</div>
+                    <div class="stars">★★★★★</div>
+                    <span class="rating-count">(0 reviews)</span>
+                </div>
+
+                <!-- Reviews List -->
+                <div id="reviewsList"></div>
+
+                <!-- Empty Reviews State -->
+                <div class="reviews-placeholder" id="reviewsPlaceholder">
+                    <i class="far fa-comment-dots"></i>
+                    <p>No reviews yet for this product.</p>
+                </div>
+
+                <!-- Review Form (shown only for authenticated users) -->
+                <form class="review-form" id="reviewForm" style="display: none;">
+                    <h3>Write a Review</h3>
+                    <div class="rating-input">
+                        <span class="star-input" data-rating="1">★</span>
+                        <span class="star-input" data-rating="2">★</span>
+                        <span class="star-input" data-rating="3">★</span>
+                        <span class="star-input" data-rating="4">★</span>
+                        <span class="star-input" data-rating="5">★</span>
+                    </div>
+                    <input type="hidden" id="userRating" value="0">
+                    <textarea class="review-textarea" id="reviewText" placeholder="Share your experience with this product..." required></textarea>
+                    <button type="submit" class="add-to-cart-btn">Submit Review</button>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <!-- Sticky Add to Cart Bar -->
+    <div class="sticky-bar" id="stickyBar" style="display: none;">
+        <div class="quantity-selector">
+            <button class="quantity-btn" id="decreaseQty">−</button>
+            <input type="number" class="quantity-input" id="quantityInput" value="1" min="1">
+            <button class="quantity-btn" id="increaseQty">+</button>
+        </div>
+        <button class="add-to-cart-btn" id="addToCartBtn">Add to Cart</button>
+    </div>
+
+    <script>
+        // Firebase and app variables
+        let auth, db;
+        let productsCollectionRef, cartItemsCollectionRef, reviewsCollectionRef;
+        let currentProduct = null;
+        let currentUser = null;
+        let cartItemCount = 0;
+
+        // DOM Elements
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const productContent = document.getElementById('productContent');
+        const productGallery = document.getElementById('productGallery');
+        const productInfo = document.getElementById('productInfo');
+        const headerTitle = document.getElementById('headerTitle');
+        const productTitle = document.getElementById('productTitle');
+        const productVendor = document.getElementById('productVendor');
+        const currentPrice = document.getElementById('currentPrice');
+        const originalPrice = document.getElementById('originalPrice');
+        const variantSelector = document.getElementById('variantSelector');
+        const variantLabel = document.getElementById('variantLabel');
+        const variantOptions = document.getElementById('variantOptions');
+        const productDescription = document.getElementById('productDescription');
+        const reviewsSection = document.getElementById('reviewsSection');
+        const reviewsList = document.getElementById('reviewsList');
+        const reviewsPlaceholder = document.getElementById('reviewsPlaceholder');
+        const reviewForm = document.getElementById('reviewForm');
+        const stickyBar = document.getElementById('stickyBar');
+        const quantityInput = document.getElementById('quantityInput');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const cartBadge = document.getElementById('cartBadge');
+        const cartItemCountSpan = document.getElementById('cartItemCount');
+
+        // Initialize Firebase and app
+        function initializeFirebaseAndApp() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                
+                // Set up collection references
+                productsCollectionRef = db.collection("store_products");
+                cartItemsCollectionRef = db.collection("cartItems");
+                reviewsCollectionRef = db.collection("productReviews");
+                
+                // Listen for auth state changes
+                auth.onAuthStateChanged(user => {
+                    currentUser = user;
+                    if (user) {
+                        // User is signed in
+                        fetchInitialCartCount(user.uid);
+                        loadProductDetails();
+                    } else {
+                        // No user signed in, try anonymous auth
+                        auth.signInAnonymously()
+                            .then(() => {
+                                console.log("Signed in anonymously");
+                            })
+                            .catch(error => {
+                                showError("Failed to authenticate. Please refresh the page.");
+                                console.error("Anonymous sign-in error:", error);
+                            });
+                    }
+                });
+            } catch (error) {
+                showError("Failed to initialize app. Please try again later.");
+                console.error("Initialization error:", error);
+            }
+        }
+
+        // Get product ID from URL
+        function getProductIdFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // Load product details from Firestore
+        async function loadProductDetails() {
+            const productId = getProductIdFromUrl();
+            if (!productId) {
+                showError("No product specified in URL.");
+                return;
+            }
+
+            showLoading();
+            
+            try {
+                const doc = await productsCollectionRef.doc(productId).get();
+                if (!doc.exists) {
+                    showError("Product not found.");
+                    return;
+                }
+
+                currentProduct = { id: doc.id, ...doc.data() };
+                renderProductDetails();
+                loadProductReviews();
+                
+                // Show content
+                productContent.style.display = 'block';
+                stickyBar.style.display = 'flex';
+                hideLoading();
+            } catch (error) {
+                showError("Failed to load product details. Please try again.");
+                console.error("Load product error:", error);
+            }
+        }
+
+        // Render product details to the page
+        function renderProductDetails() {
+            if (!currentProduct) return;
+
+            // Set basic info
+            document.title = `${currentProduct.Title || currentProduct.name} - Magma`;
+            headerTitle.textContent = currentProduct.Title || currentProduct.name;
+            productTitle.textContent = currentProduct.Title || currentProduct.name;
+            productVendor.textContent = currentProduct.Vendor || '';
+
+            // Set prices
+            const productPrice = parseFloat(currentProduct['Variant Price'] || currentProduct.price || 0);
+            const comparePrice = parseFloat(currentProduct['Variant Compare At Price'] || currentProduct.compare_at_price || 0);
+            
+            currentPrice.textContent = formatPrice(productPrice);
+            
+            if (comparePrice > productPrice) {
+                originalPrice.textContent = formatPrice(comparePrice);
+                originalPrice.style.display = 'inline';
+                
+                // Add discount badge
+                const discountPercentage = Math.round(((comparePrice - productPrice) / comparePrice) * 100);
+                productGallery.innerHTML += `<div class="discount-badge">-${discountPercentage}%</div>`;
+            }
+
+            // Set images
+            renderProductImages();
+
+            // Set variants if available
+            renderProductVariants();
+
+            // Set description
+            renderProductDescription();
+        }
+
+        // Render product images
+        function renderProductImages() {
+            // Get images array or use single image
+            let images = [];
+            if (Array.isArray(currentProduct.imageUrls)) {
+                images = currentProduct.imageUrls;
+            } else if (currentProduct['Image Src']) {
+                images = [currentProduct['Image Src']];
+            } else {
+                images = ['assets/images/placeholder.svg'];
+            }
+
+            // Set main image
+            const mainImg = document.createElement('img');
+            mainImg.className = 'main-image';
+            mainImg.src = images[0];
+            mainImg.alt = currentProduct.Title || currentProduct.name;
+            mainImg.onerror = function() {
+                this.src = 'assets/images/placeholder.svg';
+            };
+            
+            productGallery.innerHTML = '';
+            productGallery.appendChild(mainImg);
+
+            // Add thumbnails if multiple images
+            if (images.length > 1) {
+                const thumbContainer = document.createElement('div');
+                thumbContainer.className = 'thumbnail-container';
+                
+                images.forEach((img, index) => {
+                    const thumb = document.createElement('img');
+                    thumb.className = 'thumbnail' + (index === 0 ? ' active' : '');
+                    thumb.src = img;
+                    thumb.alt = `Thumbnail ${index + 1}`;
+                    thumb.onerror = function() {
+                        this.src = 'assets/images/placeholder.svg';
+                    };
+                    thumb.addEventListener('click', () => {
+                        document.querySelector('.thumbnail.active')?.classList.remove('active');
+                        thumb.classList.add('active');
+                        mainImg.src = img;
+                    });
+                    thumbContainer.appendChild(thumb);
+                });
+                
+                productGallery.appendChild(thumbContainer);
+            }
+        }
+
+        // Render product variants
+        function renderProductVariants() {
+            // Check if product has variants
+            if (currentProduct.variants && currentProduct.variants.length > 0) {
+                variantSelector.style.display = 'block';
+                variantLabel.textContent = currentProduct.variantLabel || 'Option';
+                variantOptions.innerHTML = '';
+                
+                currentProduct.variants.forEach(variant => {
+                    const btn = document.createElement('button');
+                    btn.className = 'variant-btn';
+                    btn.textContent = variant;
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelector('.variant-btn.selected')?.classList.remove('selected');
+                        btn.classList.add('selected');
+                        // Here you would update price/stock based on variant selection
+                    });
+                    variantOptions.appendChild(btn);
+                });
+                
+                // Select first variant by default
+                variantOptions.firstChild?.classList.add('selected');
+            }
+        }
+
+        // Render product description
+        function renderProductDescription() {
+            let description = currentProduct['Body (HTML)'] || currentProduct.description || '';
+            
+            if (!description) {
+                description = '<p>No description available.</p>';
+            } else if (!description.includes('<')) {
+                // Plain text, wrap in paragraphs
+                description = description.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+            }
+            
+            productDescription.innerHTML = description;
+        }
+
+        // Load product reviews
+        async function loadProductReviews() {
+            if (!currentProduct) return;
+            
+            try {
+                const snapshot = await reviewsCollectionRef
+                    .where('productId', '==', currentProduct.id)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
+                const reviews = [];
+                snapshot.forEach(doc => {
+                    reviews.push({ id: doc.id, ...doc.data() });
+                });
+                
+                renderReviews(reviews);
+                
+                // Show review form if user is authenticated (not anonymous)
+                if (currentUser && !currentUser.isAnonymous) {
+                    reviewForm.style.display = 'block';
+                    setupReviewForm();
+                }
+            } catch (error) {
+                console.error("Error loading reviews:", error);
+            }
+        }
+
+        // Render reviews list
+        function renderReviews(reviews) {
+            if (reviews.length === 0) {
+                reviewsPlaceholder.style.display = 'block';
+                reviewsList.innerHTML = '';
+                return;
+            }
+            
+            reviewsPlaceholder.style.display = 'none';
+            reviewsList.innerHTML = '';
+            
+            // Calculate average rating
+            const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
+            const avgRating = (totalRatings / reviews.length).toFixed(1);
+            
+            // Update rating summary
+            document.querySelector('.average-rating').textContent = avgRating;
+            document.querySelector('.rating-count').textContent = `(${reviews.length} reviews)`;
+            
+            // Render star rating (simplified)
+            const starsContainer = document.querySelector('.rating-summary .stars');
+            starsContainer.innerHTML = '★★★★★'.slice(0, Math.round(avgRating)) + '☆☆☆☆☆'.slice(Math.round(avgRating));
+            
+            // Render each review
+            reviews.forEach(review => {
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'review-card';
+                
+                const date = review.createdAt?.toDate() || new Date();
+                const dateStr = date.toLocaleDateString();
+                
+                reviewCard.innerHTML = `
+                    <div class="review-header">
+                        <div class="review-author">${review.userName || 'Anonymous'}</div>
+                        <div class="stars">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
+                        <div class="review-date">${dateStr}</div>
+                    </div>
+                    <div class="review-text">${review.text}</div>
+                `;
+                
+                reviewsList.appendChild(reviewCard);
+            });
+        }
+
+        // Set up review form
+        function setupReviewForm() {
+            const starInputs = document.querySelectorAll('.star-input');
+            const userRatingInput = document.getElementById('userRating');
+            const reviewText = document.getElementById('reviewText');
+            
+            // Star rating interaction
+            starInputs.forEach(star => {
+                star.addEventListener('click', (e) => {
+                    const rating = parseInt(star.dataset.rating);
+                    userRatingInput.value = rating;
+                    
+                    starInputs.forEach((s, i) => {
+                        s.classList.toggle('active', i < rating);
+                    });
+                });
+            });
+            
+            // Form submission
+            reviewForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const rating = parseInt(userRatingInput.value);
+                const text = reviewText.value.trim();
+                
+                if (rating === 0) {
+                    alert('Please select a star rating');
+                    return;
+                }
+                
+                if (!text) {
+                    alert('Please write your review');
+                    return;
+                }
+                
+                try {
+                    // Submit review
+                    await reviewsCollectionRef.add({
+                        productId: currentProduct.id,
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'Anonymous',
+                        rating: rating,
+                        text: text,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    // Reset form
+                    userRatingInput.value = '0';
+                    reviewText.value = '';
+                    starInputs.forEach(star => star.classList.remove('active'));
+                    
+                    // Reload reviews
+                    loadProductReviews();
+                    
+                    alert('Thank you for your review!');
+                } catch (error) {
+                    console.error("Error submitting review:", error);
+                    alert('Failed to submit review. Please try again.');
+                }
+            });
+        }
+
+        // Fetch initial cart count
+        async function fetchInitialCartCount(userId) {
+            try {
+                const snapshot = await cartItemsCollectionRef
+                    .where('userId', '==', userId)
+                    .get();
+                
+                cartItemCount = snapshot.size;
+                updateCartIcon();
+            } catch (error) {
+                console.error("Error fetching cart count:", error);
+            }
+        }
+
+        // Update cart icon badge
+        function updateCartIcon() {
+            if (cartItemCount > 0) {
+                cartItemCountSpan.textContent = cartItemCount > 99 ? '99+' : cartItemCount;
+                cartBadge.classList.remove('hidden');
+            } else {
+                cartBadge.classList.add('hidden');
+            }
+        }
+
+        // Quantity selector handlers
+        document.getElementById('increaseQty').addEventListener('click', (e) => {
+            e.preventDefault();
+            quantityInput.value = parseInt(quantityInput.value) + 1;
+        });
+        
+        document.getElementById('decreaseQty').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (parseInt(quantityInput.value) > 1) {
+                quantityInput.value = parseInt(quantityInput.value) - 1;
+            }
+        });
+
+        // Add to cart handler
+        addToCartBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('Please sign in to add items to your cart');
+                return;
+            }
+            
+            if (!currentProduct) {
+                alert('Product not loaded');
+                return;
+            }
+            
+            const quantity = parseInt(quantityInput.value) || 1;
+            
+            try {
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = 'Adding...';
+                
+                // Add to cart in Firestore
+                await cartItemsCollectionRef.add({
+                    userId: currentUser.uid,
+                    productId: currentProduct.id,
+                    productTitle: currentProduct.Title || currentProduct.name,
+                    productPrice: parseFloat(currentProduct['Variant Price'] || currentProduct.price || 0),
+                    productImage: currentProduct['Image Src'] || (Array.isArray(currentProduct.imageUrls) && currentProduct.imageUrls[0]) || '',
+                    quantity: quantity,
+                    addedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Update cart count
+                cartItemCount += quantity;
+                updateCartIcon();
+                
+                // Show success feedback
+                addToCartBtn.textContent = 'Added to Cart!';
+                setTimeout(() => {
+                    addToCartBtn.textContent = 'Add to Cart';
+                    addToCartBtn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                console.error("Error adding to cart:", error);
+                alert('Failed to add to cart. Please try again.');
+                addToCartBtn.textContent = 'Add to Cart';
+                addToCartBtn.disabled = false;
+            }
+        });
+
+        // Format price
+        function formatPrice(price) {
+            if (isNaN(price)) return '';
+            return new Intl.NumberFormat('en-PH', {
+                style: 'currency',
+                currency: 'PHP',
+                minimumFractionDigits: 2
+            }).format(price);
+        }
+
+        // Show loading state
+        function showLoading() {
+            loadingIndicator.style.display = 'flex';
+            errorMessage.style.display = 'none';
+            productContent.style.display = 'none';
+            stickyBar.style.display = 'none';
+        }
+
+        // Hide loading state
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            loadingIndicator.style.display = 'none';
+            productContent.style.display = 'none';
+            stickyBar.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

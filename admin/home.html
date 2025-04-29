@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Store - Dashboard</title> <!-- Updated Title -->
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mapbox GL JS CSS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css' rel='stylesheet' />
+
+    <style>
+        /* --- START: Embedded CSS --- */
+
+        /* --- Base Variables (Light Theme Default - Adjusted for Screenshot) --- */
+        :root {
+            --font-family-base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            /* Adjusted Colors for lighter feel and blue accent */
+            --primary-color: #4A90E2; /* Brighter Blue Accent */
+            --primary-color-darker: #357ABD; /* Darker Blue */
+            --text-primary: #333333; /* Darker Grey for better contrast */
+            --text-secondary: #777777; /* Medium Grey */
+            --text-on-primary: #ffffff;
+            --background-main: #F8F9FA; /* Lighter Grey Background */
+            --background-card: #ffffff; /* Pure White Cards */
+            --background-nav: #ffffff;
+            --border-color: #EAECEF; /* Lighter Border */
+            --border-nav: #EAECEF;
+            --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 1px 2px rgba(0, 0, 0, 0.06); /* Softer Shadow */
+            --radius-card: 12px; /* Slightly more rounded cards */
+            --space-unit: 4px;
+            --header-height: 55px;
+            --navbar-height: 60px;
+            --sidebar-width: 230px;
+            --content-padding-mobile: calc(var(--space-unit) * 4);
+            --content-padding-tablet: calc(var(--space-unit) * 6);
+            --content-padding-desktop: calc(var(--space-unit) * 8);
+            --desktop-max-width: 1140px;
+            --input-background: #ffffff;
+            --input-border: #D1D5DB; /* Grey border */
+            --input-border-focus: var(--primary-color); /* Blue focus */
+            --input-text: var(--text-primary);
+            --placeholder-text: #9CA3AF; /* Lighter placeholder */
+        }
+
+        /* --- Dark Theme Overrides --- */
+        [data-theme="dark"] {
+            --primary-color: #5A9BEA; /* Adjusted Dark Theme Blue */
+            --primary-color-darker: #4A80D2;
+            --text-primary: #E5E7EB;
+            --text-secondary: #9CA3AF;
+            --background-main: #111827; /* Dark Gray */
+            --background-card: #1F2937; /* Slightly Lighter Dark Gray */
+            --background-nav: #1F2937;
+            --border-color: #374151;
+            --border-nav: #374151;
+            --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.2);
+            --input-background: #374151;
+            --input-border: #4B5563;
+            --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary);
+            --placeholder-text: #6B7280;
+        }
+
+        /* --- General Reset & Base Styles --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-family-base); background-color: var(--background-main); color: var(--text-primary);
+            font-size: 14px; line-height: 1.5; padding-top: var(--header-height);
+            padding-bottom: var(--navbar-height);
+            overflow-x: hidden; transition: background-color 0.2s ease, color 0.2s ease, padding-left 0.3s ease;
+        }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; height: auto; display: block; }
+
+        /* --- Header --- */
+        .page-header {
+            background-color: var(--background-nav); border-bottom: 1px solid var(--border-nav);
+            padding: 0 var(--content-padding-mobile); height: var(--header-height);
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; right: 0; width: 100%;
+            z-index: 100; gap: calc(var(--space-unit) * 2);
+            transition: background-color 0.2s ease, border-bottom-color 0.2s ease, left 0.3s ease, width 0.3s ease;
+        }
+        .header-left-icon { /* NEW: For the Globe icon */
+            display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px; font-size: 20px; color: var(--text-secondary);
+            flex-shrink: 0; text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .header-left-icon:hover { color: var(--text-primary); }
+        .theme-toggle-btn { /* Keep theme toggle */
+            background: none; border: none; color: var(--text-secondary); font-size: 20px; cursor: pointer;
+            padding: calc(var(--space-unit) * 1.5); line-height: 1; margin: calc(var(--space-unit) * -1.5); flex-shrink: 0;
+        }
+        .theme-toggle-btn:hover { color: var(--text-primary); }
+        .header-title { /* Center title more effectively */
+             font-size: 18px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+             position: absolute; left: 50%; transform: translateX(-50%); /* Centering */
+             width: calc(100% - 160px); /* Adjust width based on icons */
+             color: var(--text-primary);
+        }
+        .header-icons { display: flex; align-items: center; gap: calc(var(--space-unit) * 3); flex-shrink: 0; margin-left: auto; /* Push icons to right */ }
+        .header-icons i:not(.fa-globe) { font-size: 18px; color: var(--text-secondary); cursor: pointer; } /* Apply to non-globe icons */
+        .header-icons i:not(.fa-globe):hover { color: var(--text-primary); }
+        /* Hide search container by default on home */
+        .header-search-container { display: none; }
+
+        /* --- Sidebar Navigation (Hidden by Default) --- */
+        #sidebarNav {
+            display: none; flex-direction: column; position: fixed; top: var(--header-height); left: 0;
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background-color: var(--background-nav); border-right: 1px solid var(--border-nav);
+            padding: var(--content-padding-mobile) 0; z-index: 90; overflow-y: auto;
+            transition: background-color 0.2s ease, border-right-color 0.2s ease;
+        }
+        .sidebar-nav-item {
+            display: flex; align-items: center; padding: calc(var(--space-unit) * 2.5) var(--content-padding-mobile);
+            color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer;
+            border-left: 3px solid transparent; margin-bottom: var(--space-unit);
+        }
+        .sidebar-nav-item i { font-size: 18px; width: 25px; margin-right: calc(var(--space-unit) * 3); text-align: center; }
+        .sidebar-nav-item:hover { color: var(--text-primary); background-color: rgba(0, 0, 0, 0.03); }
+        [data-theme="dark"] .sidebar-nav-item:hover { background-color: rgba(255, 255, 255, 0.04); }
+        .sidebar-nav-item.active { color: var(--primary-color); border-left-color: var(--primary-color); background-color: rgba(var(--primary-color-rgb, 74, 144, 226), 0.08); } /* Use RGB for opacity */
+        [data-theme="dark"] .sidebar-nav-item.active { background-color: rgba(var(--primary-color-rgb, 90, 155, 234), 0.15); }
+
+        /* --- Main Content Area & Page Sections --- */
+        .main-content-wrapper { max-width: var(--desktop-max-width); margin: 0 auto; }
+        .page-section { padding: var(--content-padding-mobile); animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page-title { /* Less prominent, as title is in header */ display: none; }
+
+        /* --- Map Area Enhancements --- */
+        .map-controls-container { /* Container for toggles */
+            display: flex; gap: calc(var(--space-unit) * 2);
+            margin-bottom: calc(var(--space-unit) * 3);
+            padding: 0 var(--content-padding-mobile); /* Match page padding */
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+        .map-toggle-btn {
+            padding: calc(var(--space-unit) * 1.5) calc(var(--space-unit) * 3);
+            border: 1px solid var(--border-color);
+            border-radius: 20px; /* Rounded pill shape */
+            background-color: var(--background-card);
+            color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer;
+            display: inline-flex; /* Changed for better wrapping */ align-items: center; gap: calc(var(--space-unit) * 1.5);
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .map-toggle-btn:before { /* Status indicator */
+            content: ''; display: block; width: 8px; height: 8px; border-radius: 50%;
+            background-color: currentColor; /* Inherits text color */
+            opacity: 0.6;
+        }
+        .map-toggle-btn.active {
+            background-color: var(--primary-color); color: var(--text-on-primary); border-color: var(--primary-color);
+        }
+        .map-toggle-btn.active:before { opacity: 1; }
+        .map-toggle-btn:hover:not(.active) { background-color: #f1f1f1; } /* Subtle hover */
+        [data-theme="dark"] .map-toggle-btn:hover:not(.active) { background-color: #2a3749; }
+
+        .map-container {
+            height: 250px; /* Adjust height */
+            background-color: var(--border-color); margin-bottom: var(--content-padding-mobile);
+            position: relative; overflow: hidden; border-radius: var(--radius-card); box-shadow: var(--shadow-card);
+            transition: background-color 0.2s ease;
+        }
+         .map-overlay-controls { /* Container for search/button on map */
+            position: absolute; top: calc(var(--space-unit) * 3); /* Adjusted spacing */ left: calc(var(--space-unit) * 3); right: calc(var(--space-unit) * 3);
+            z-index: 10; display: flex; gap: calc(var(--space-unit) * 2); align-items: center; pointer-events: none; /* Allow map interaction */
+         }
+         .map-search-input {
+            flex-grow: 1; height: 40px; padding: 0 calc(var(--space-unit) * 3) 0 calc(var(--space-unit) * 8);
+            border: none; border-radius: var(--radius-card); background-color: var(--background-card);
+            box-shadow: var(--shadow-card); color: var(--input-text); font-size: 14px; pointer-events: auto; /* Enable input interaction */
+         }
+         .map-search-input::placeholder { color: var(--placeholder-text); }
+         .map-search-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb, 74, 144, 226), 0.4); }
+         .map-search-icon { /* Icon inside search */
+             position: absolute; left: calc(var(--space-unit) * 6); /* Adjusted positioning */ top: 50%; transform: translateY(-50%);
+             color: var(--text-secondary); font-size: 14px; z-index: 11; /* Above input */ pointer-events: none; /* Allow click through */
+         }
+         .map-layer-btn {
+            flex-shrink: 0; width: 40px; height: 40px; border: none;
+            border-radius: var(--radius-card); background-color: var(--background-card);
+            box-shadow: var(--shadow-card); color: var(--text-secondary); font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; pointer-events: auto; /* Enable button interaction */
+         }
+         .map-layer-btn:hover { background-color: #f1f1f1; }
+         [data-theme="dark"] .map-layer-btn:hover { background-color: #2a3749; }
+
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; background-color: var(--background-main); }
+        /* Mapbox controls styling */
+        .mapboxgl-ctrl-bottom-right { bottom: 0; right: 0; margin: 0 5px 2px 0 !important; }
+        .mapboxgl-ctrl-attrib { padding: 2px 5px !important; font-size: 10px !important; background: rgba(255, 255, 255, 0.7) !important; border-radius: 3px; }
+        [data-theme="dark"] .mapboxgl-ctrl-attrib { background: rgba(40, 40, 40, 0.7) !important; color: var(--text-secondary); }
+        .mapboxgl-ctrl-logo { display: none !important; }
+        /* User Marker styling */
+        .user-marker { width: 12px; height: 12px; background-color: var(--primary-color); border: 1px solid rgba(0, 0, 0, 0.2); border-radius: 50%; cursor: pointer; box-shadow: 0 0 0 rgba(var(--primary-color-rgb, 74, 144, 226), 0.4); transition: background-color 0.2s ease, border-color 0.2s ease; }
+        [data-theme="dark"] .user-marker { border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 0 0 rgba(var(--primary-color-rgb, 90, 155, 234), 0.4); }
+        .user-marker.blink { animation: pulse 1s ease-out; }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb, 74, 144, 226), 0.6); } 70% { transform: scale(1.5); box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb, 74, 144, 226), 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb, 74, 144, 226), 0); } }
+        [data-theme="dark"] @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb, 90, 155, 234), 0.6); } 70% { transform: scale(1.5); box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb, 90, 155, 234), 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb, 90, 155, 234), 0); } }
+
+        /* --- Stats Grid & Info Card --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: calc(var(--space-unit) * 3); margin-bottom: var(--content-padding-mobile); padding: 0 var(--content-padding-mobile); }
+        .info-card {
+            background-color: var(--background-card); border-radius: var(--radius-card);
+            padding: calc(var(--space-unit) * 4); /* Increased padding */
+            box-shadow: var(--shadow-card); overflow: hidden; transition: background-color 0.2s ease;
+            position: relative; /* For icon positioning */
+        }
+        .info-card .label { font-size: 13px; color: var(--text-secondary); margin-bottom: calc(var(--space-unit) * 1.5); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-card .value { font-size: 24px; font-weight: 600; color: var(--text-primary); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-card .placeholder { font-weight: 400; color: var(--text-secondary); font-size: 14px; }
+        .stat-loader { border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid var(--primary-color); width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; transition: border-top-color 0.2s ease; }
+        [data-theme="dark"] .stat-loader { border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary-color); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Small icons in stat cards */
+        .info-card .stat-icon {
+            position: absolute; top: calc(var(--space-unit) * 3); right: calc(var(--space-unit) * 3);
+            font-size: 14px; color: var(--text-secondary); opacity: 0.6;
+        }
+        /* Session progress bar */
+        .session-progress-bar {
+            height: 4px; background-color: var(--border-color); border-radius: 2px;
+            overflow: hidden; margin-top: calc(var(--space-unit) * 2);
+        }
+        .session-progress-bar-inner {
+            height: 100%; width: 30%; /* Example width */ background-color: var(--primary-color);
+            border-radius: 2px; transition: width 0.3s ease;
+        }
+        .top-locations-card { display: none; /* Hide top locations card for now */ }
+
+        /* --- Generic List Styles (Not used on Home, but keep for consistency) --- */
+        /* ... styles for data-list, data-list-item etc ... kept same as before ... */
+
+        /* --- Profile Page Styles (Not used on Home) --- */
+        /* ... styles for profile-card etc ... kept same as before ... */
+
+        /* --- Bottom Navigation --- */
+        .bottom-navbar {
+            display: flex; justify-content: space-around; background-color: var(--background-nav);
+            border-top: 1px solid var(--border-nav); padding: var(--space-unit) 0; height: var(--navbar-height);
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+            transition: background-color 0.2s ease, border-top-color 0.2s ease; box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            color: var(--text-secondary); font-size: 10px; flex: 1; padding: var(--space-unit) 2px; cursor: pointer;
+            -webkit-tap-highlight-color: transparent; line-height: 1.3; border-radius: 6px; /* Add radius for active state */
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .nav-item i { /* Using Font Awesome regular (far) or solid (fas) */
+             font-size: 22px; /* Slightly larger icons */
+             margin-bottom: calc(var(--space-unit) * 0.5); height: 26px; display: flex; align-items: center;
+             transition: color 0.2s;
+        }
+        .nav-item span { display: block; font-weight: 500; }
+        .nav-item.active { color: var(--primary-color); }
+        .nav-item:active { /* More subtle active feedback */ background-color: rgba(var(--primary-color-rgb, 74, 144, 226), 0.1); }
+        [data-theme="dark"] .nav-item:active { background-color: rgba(var(--primary-color-rgb, 90, 155, 234), 0.15); }
+
+        /* --- Responsive --- */
+        @media (min-width: 768px) { /* Tablet */
+            .page-header { padding: 0 var(--content-padding-tablet); }
+             .header-title { width: calc(100% - 200px); } /* Adjust title width */
+            .page-section { padding: var(--content-padding-tablet); }
+            .map-controls-container { padding: 0 var(--content-padding-tablet); }
+            .map-container { height: 300px; margin-bottom: var(--content-padding-tablet); }
+            .stats-grid { gap: calc(var(--space-unit) * 4); margin-bottom: var(--content-padding-tablet); padding: 0 var(--content-padding-tablet); }
+            .info-card .value { font-size: 26px; }
+        }
+        @media (min-width: 992px) { /* Desktop - Sidebar Active */
+             body { padding-left: var(--sidebar-width); padding-bottom: 0; }
+            .page-header { padding: 0 calc(var(--space-unit) * 4); left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); }
+             .header-left-icon { margin-left: 0; /* Ensure globe is aligned */ } /* Adjusted */
+             .header-title { position: static; transform: none; width: auto; margin: 0 auto; text-align: left; /* Title back to normal flow */ }
+            #sidebarNav { display: flex; }
+            .bottom-navbar { display: none; }
+            .main-content-wrapper { padding: 0; }
+            .page-section { padding: var(--content-padding-desktop); }
+            .map-controls-container { padding: 0 var(--content-padding-desktop); }
+            .map-container { height: 350px; margin-bottom: var(--content-padding-desktop); }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: calc(var(--space-unit) * 5); margin-bottom: var(--content-padding-desktop); padding: 0 var(--content-padding-desktop); }
+            .info-card .value { font-size: 28px; }
+        }
+        @media (min-width: 1200px) { /* Larger Desktop */
+            .map-container { height: 400px; }
+        }
+
+        /* --- Utility & Message Styles --- */
+        .search-hidden { display: none !important; }
+        .list-message { /* Used in other pages */
+            display: flex; justify-content: center; align-items: center;
+            padding: calc(var(--space-unit) * 5) var(--content-padding-mobile);
+            color: var(--text-secondary); font-style: italic;
+            text-align: center; width: 100%; border-bottom: none;
+        }
+        .list-message .stat-loader { margin-right: 8px; }
+
+        /* Add primary color RGB for opacity */
+        :root { --primary-color-rgb: 74, 144, 226; }
+        [data-theme="dark"] { --primary-color-rgb: 90, 155, 234; }
+
+        /* --- END: Embedded CSS --- */
+    </style>
+</head>
+<body>
+    <!-- Header (Simplified for Home) -->
+    <header class="page-header">
+        <!-- NEW: Globe Icon Link -->
+        <a href="https://magnetarstore.com/" target="_blank" class="header-left-icon" title="Go to Storefront">
+            <i class="fas fa-globe"></i>
+        </a>
+
+        <div class="header-title" id="headerTitle">Store Dashboard</div> <!-- Static Title -->
+        <!-- Search container is hidden on home via CSS -->
+        <div class="header-search-container" id="headerSearchWrapper"></div>
+        <div class="header-icons">
+            <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+            <i class="fas fa-bell" title="Notifications" id="headerNotificationsIcon"></i>
+            <!-- Filter/Add icons removed for home page -->
+        </div>
+    </header>
+
+    <!-- Sidebar Navigation (Desktop) -->
+    <nav id="sidebarNav">
+        <!-- Ensure hrefs point to correct files -->
+        <a href="home.html" data-target="page-home" data-title="Dashboard" class="sidebar-nav-item active" title="Home"><i class="fas fa-house-chimney"></i><span>Home</span></a>
+        <a href="orders.html" data-target="page-orders" data-title="Orders" class="sidebar-nav-item" title="Orders"><i class="fas fa-receipt"></i><span>Orders</span></a>
+        <a href="products.html" data-target="page-products" data-title="Products" class="sidebar-nav-item" title="Products"><i class="fas fa-tag"></i><span>Products</span></a>
+        <a href="customers.html" data-target="page-customers" data-title="Customers" class="sidebar-nav-item" title="Customers"><i class="fas fa-users"></i><span>Customers</span></a>
+        <a href="profile.html" data-target="page-profile" data-title="Profile" class="sidebar-nav-item" title="Profile"><i class="far fa-user-circle"></i><span>Profile</span></a>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content-wrapper">
+
+        <!-- Home Page Section -->
+        <section class="page-section" id="page-home">
+
+            <!-- Map Controls -->
+            <div class="map-controls-container">
+                <button class="map-toggle-btn" id="mapToggleOrders">Orders (Recent)</button>
+                <button class="map-toggle-btn active" id="mapToggleVisitors">Visitors right now</button>
+                <!-- TODO: Add JS listeners for these buttons -->
+            </div>
+
+            <!-- Map Area with Overlay -->
+            <div class="map-container">
+                <div class="map-overlay-controls">
+                    <i class="fas fa-search map-search-icon"></i>
+                    <input type="search" class="map-search-input" placeholder="Search location">
+                    <button class="map-layer-btn" title="Map Layers"><i class="fas fa-map"></i></button>
+                    <!-- TODO: Add JS listeners for search/button -->
+                </div>
+                <div id="map">
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; color: var(--text-secondary); font-style:italic; font-size: 12px; text-align: center; padding: 10px;">
+                        Map loading...
+                    </div>
+                </div>
+             </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                 <div class="info-card">
+                     <div class="label">Visitors right now</div>
+                     <div class="value" id="liveVisitors"><span class="stat-loader"></span></div>
+                     <i class="fas fa-users stat-icon"></i> <!-- Example icon -->
+                 </div>
+                 <div class="info-card">
+                     <i class="fas fa-peso-sign stat-icon"></i> <!-- Changed icon -->
+                     <div class="label">Total sales</div>
+                     <div class="value" id="totalSales"><span class="stat-loader"></span></div>
+                 </div>
+                 <div class="info-card">
+                     <div class="label">Total sessions</div> <!-- Changed label -->
+                     <div class="value" id="totalSessions"><span class="stat-loader"></span></div> <!-- Changed ID -->
+                     <i class="fas fa-chart-line stat-icon"></i> <!-- Example icon -->
+                     <!-- Progress Bar Removed for simplicity, totalSessions is more direct -->
+                     <!-- <div class="session-progress-bar">
+                         <div class="session-progress-bar-inner" id="sessionProgressBarInner"></div>
+                     </div> -->
+                 </div>
+                 <div class="info-card">
+                     <i class="fas fa-box stat-icon"></i>
+                     <div class="label">Total orders</div>
+                     <div class="value" id="totalOrders"><span class="stat-loader"></span></div>
+                 </div>
+            </div>
+            <!-- Top Locations Card removed/hidden -->
+        </section>
+
+    </div> <!-- End Main Content Wrapper -->
+
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-navbar">
+        <!-- Using different icons for potentially smoother look -->
+        <a href="home.html" data-target="page-home" data-title="Dashboard" class="nav-item active" title="Home"><i class="fas fa-house-chimney"></i><span>Home</span></a>
+        <a href="orders.html" data-target="page-orders" data-title="Orders" class="nav-item" title="Orders"><i class="fas fa-receipt"></i><span>Orders</span></a>
+        <a href="products.html" data-target="page-products" data-title="Products" class="nav-item" title="Products"><i class="fas fa-tag"></i><span>Products</span></a>
+        <a href="customers.html" data-target="page-customers" data-title="Customers" class="nav-item" title="Customers"><i class="fas fa-users"></i><span>Users</span></a>
+        <a href="profile.html" data-target="page-profile" data-title="Profile" class="nav-item" title="Profile"><i class="far fa-user-circle"></i><span>Me</span></a>
+    </nav>
+
+    <!-- SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js'></script>
+
+    <!-- Embedded Combined JavaScript -->
+    <script>
+        // --- START: Embedded JS ---
+
+        // --- Global State & Variables ---
+        let map; let mapInitialized = false;
+        let firebaseApp; let database; let firestore;
+        const activeMarkers = {}; // For RTDB live users
+        // Add state for order markers if needed for the toggle
+        // const activeOrderMarkers = {};
+        let rtdbListener = null; // To store the listener reference
+        const CURRENT_PAGE_ID = 'page-home';
+        const CURRENT_PAGE_TITLE = 'Store Dashboard'; // Match header
+
+        // --- Firebase Config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // --- Mapbox Token ---
+        const mapboxAccessToken = 'pk.eyJ1IjoiY2VvMjAyNCIsImEiOiJjbTBxb3Jvbm0wMGJiMmpyNGxiMGh0MnExIn0.7Hcu6U7wLSP99hrTVRsI6w'; // YOUR PUBLIC TOKEN
+
+        // --- Utility Functions (Keep all previously defined utilities) ---
+        function updateThemeIcon(theme, button) {
+            if (!button) return;
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+        function setMapThemeStyle(theme) {
+            if (!mapInitialized || !map) return;
+            const style = theme === 'dark' ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/light-v11';
+            map.setStyle(style);
+            console.log(`Map style set to: ${style}`);
+            // Note: If using custom layers/sources, may need to re-add or update them on style change
+        }
+        function triggerBlink(markerElement) {
+            if (!markerElement) return;
+            markerElement.classList.remove('blink');
+            // Use setTimeout to ensure the class removal is processed before adding it again
+            setTimeout(() => {
+                markerElement.classList.add('blink');
+            }, 10); // A small delay
+        }
+        function initializeSearch(listContainerSelector, itemSelector, searchInputSelector) { /* ... same ... */ }
+        function handleNoResults(listContainer, hasVisibleItems, searchTerm) { /* ... same ... */ }
+        function displayListMessage(listElementId, message, isLoading = false) { /* ... same ... */ }
+
+        // --- Page Content Loading/Population Functions ---
+        async function loadHomePageData() {
+            console.log("Loading Home Page Data (Map: RTDB, Stats: Firestore)");
+            if (!firestore || !database) {
+                console.warn("Firestore or Realtime DB not initialized for Home Page.");
+                loadPlaceholderStats(); return;
+            }
+            if (!mapInitialized) {
+                initializeMap(); // Map initialization will trigger RTDB listener on load if DB is ready
+            } else {
+                // Ensure listener is active if map is already initialized
+                startFirebaseMapListener();
+                // Give map a moment to be potentially visible if navigating back
+                setTimeout(() => { try { map.resize(); } catch(e) { console.warn("Map resize error:", e)} }, 100);
+            }
+
+            // --- Stats (Uses Firestore) ---
+            document.getElementById('totalSales').innerHTML = '<span class="stat-loader"></span>';
+            document.getElementById('totalSessions').innerHTML = '<span class="stat-loader"></span>'; // Updated ID
+            document.getElementById('totalOrders').innerHTML = '<span class="stat-loader"></span>';
+            // Live visitors is handled by RTDB listener
+
+            try {
+                 // Get Total Orders count and calculate Total Sales
+                 const ordersCollectionRef = firestore.collection('orders'); // Assuming 'orders' collection
+                 const ordersSnapshot = await ordersCollectionRef.get();
+                 let totalSalesValue = 0;
+                 let validOrdersCount = 0;
+
+                 ordersSnapshot.forEach(doc => {
+                     const data = doc.data();
+                     // Ensure 'total' field exists and is a number before adding
+                     if (data && typeof data.total === 'number') {
+                         totalSalesValue += data.total;
+                         validOrdersCount++;
+                     } else if (data && typeof data.total === 'string') {
+                         // Attempt to parse if it's a string representation
+                         const parsedTotal = parseFloat(data.total);
+                         if (!isNaN(parsedTotal)) {
+                            totalSalesValue += parsedTotal;
+                            validOrdersCount++;
+                         } else {
+                            console.warn(`Order ${doc.id} has non-numeric 'total' field: ${data.total}`);
+                         }
+                     } else {
+                         console.warn(`Order ${doc.id} is missing 'total' field or it's not a number.`);
+                     }
+                 });
+                 const totalOrdersCount = ordersSnapshot.size; // Count all docs fetched
+
+                 document.getElementById('totalOrders').textContent = totalOrdersCount; // Display total fetched count
+                 document.getElementById('totalSales').textContent = `₱${totalSalesValue.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                 // Get Total Sessions/Users count (using 'users' collection as proxy for sessions)
+                 // ** Adjust 'users' if you have a different collection for user profiles or sessions **
+                 const usersCollectionRef = firestore.collection('users'); // Assuming 'users' collection
+                 const usersSnapshot = await usersCollectionRef.get();
+                 const totalSessionsCount = usersSnapshot.size; // Using user count as session count placeholder
+                 document.getElementById('totalSessions').textContent = totalSessionsCount;
+
+            } catch (error) {
+                 console.error("Error fetching Firestore stats:", error);
+                 document.getElementById('totalSales').textContent = 'Error';
+                 document.getElementById('totalSessions').textContent = 'Error'; // Updated ID
+                 document.getElementById('totalOrders').textContent = 'Error';
+            }
+        }
+
+        // Define other page load functions (won't be called here)
+        function populateOrdersList() { console.log("Populate Orders (Not Active Page)"); }
+        function populateProductsList() { console.log("Populate Products (Not Active Page)"); }
+        function populateCustomersList() { console.log("Populate Customers (Not Active Page)"); }
+        function loadProfileData() { console.log("Load Profile (Not Active Page)"); }
+
+        function loadPlaceholderStats() {
+            const ids = ['liveVisitors', 'totalSales', 'totalSessions', 'totalOrders']; // Use updated ID
+            ids.forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = '<span class="placeholder">-</span>'; });
+        }
+
+        // --- Map Specific Functions (Using Realtime Database for live visitors) ---
+        function initializeMap() {
+            if (mapInitialized || !document.getElementById('map')) return;
+            console.log("Initializing Mapbox Map...");
+            try {
+                mapboxgl.accessToken = mapboxAccessToken;
+                const currentTheme = document.body.getAttribute('data-theme') || 'light';
+                const initialStyle = currentTheme === 'dark' ? 'mapbox://styles/mapbox/dark-v11' : 'mapbox://styles/mapbox/light-v11';
+
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: initialStyle,
+                    center: [121.0244, 14.5547], // Metro Manila approx. center
+                    zoom: 5,
+                    pitch: 0,
+                    bearing: 0,
+                    attributionControl: false,
+                    interactive: true
+                 });
+                map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
+
+                map.on('load', () => {
+                    console.log('Map loaded fully.');
+                    mapInitialized = true;
+                    const mapLoadingText = document.querySelector('#map div');
+                    if(mapLoadingText) mapLoadingText.style.display = 'none';
+
+                    // Start the listener for live visitors by default
+                    if(database) {
+                        startFirebaseMapListener();
+                    } else {
+                        console.warn("Realtime DB not ready when map loaded. Listener not started.");
+                        document.getElementById('liveVisitors').textContent = 'N/A';
+                    }
+
+                    // Optional: Fly to a more zoomed-in location after load
+                    map.flyTo({ center: [121.0244, 14.5547], zoom: 9, duration: 1500 });
+                });
+                map.on('error', (e) => {
+                    console.error("Map load error:", e);
+                    mapInitialized = false; // Reset flag on error
+                    const mapLoadingText = document.querySelector('#map div');
+                    if(mapLoadingText) {
+                        mapLoadingText.style.display = 'flex'; // Make visible again
+                        mapLoadingText.innerHTML = 'Error loading map.';
+                    }
+                });
+            } catch (e) {
+                 console.error("Mapbox setup error:", e);
+                 const mapLoadingText = document.querySelector('#map div');
+                 if(mapLoadingText) {
+                    mapLoadingText.style.display = 'flex';
+                    mapLoadingText.innerHTML = 'Error setting up map.';
+                 }
+            }
+        }
+
+        function startFirebaseMapListener() {
+            if (!database) { console.warn("RTDB map listener failed: DB not ready."); document.getElementById('liveVisitors').innerHTML = '<span class="placeholder">N/A</span>'; return; }
+            // Detach any existing listener before attaching a new one
+            if (rtdbListener) {
+                console.log("Detaching previous RTDB listener...");
+                try {
+                    const oldRef = database.ref('/liveUsers'); // Use the same ref path to detach
+                    oldRef.off('value', rtdbListener);
+                } catch (e) { console.warn("Minor error detaching listener:", e); }
+                rtdbListener = null;
+            }
+            clearMapMarkers(); // Clear existing markers before starting listener
+
+            console.log("Starting Firebase Realtime Database Map Listener for /liveUsers");
+            const usersRef = database.ref('/liveUsers'); // VERIFY PATH is correct
+            rtdbListener = usersRef.on('value', (snapshot) => {
+                const usersData = snapshot.val() || {};
+                console.log("RTDB /liveUsers data received:", Object.keys(usersData).length, "users");
+                updateMapMarkers(usersData);
+                const liveCount = Object.keys(usersData).length;
+                const liveVisitorsEl = document.getElementById('liveVisitors');
+                if (liveVisitorsEl) {
+                    // Update only if the number changed or it was loading
+                    if (liveVisitorsEl.querySelector('.stat-loader') || liveVisitorsEl.textContent !== liveCount.toString()) {
+                        liveVisitorsEl.textContent = liveCount;
+                    }
+                }
+                 // The 15-minute filter logic would ideally happen server-side by removing old entries from /liveUsers.
+                 // Client-side filtering is inefficient as it requires downloading all data.
+            }, (error) => {
+                console.error("Firebase RTDB map listener error:", error);
+                document.getElementById('liveVisitors').innerHTML = '<span class="placeholder">Error</span>';
+                rtdbListener = null; // Clear listener on error
+            });
+        }
+
+        function updateMapMarkers(usersData) {
+            if (!mapInitialized || !map) return;
+            const currentUsers = Object.keys(usersData);
+            const usersOnMap = Object.keys(activeMarkers);
+
+            // Remove markers for users no longer in the data
+            usersOnMap.forEach(id => {
+                if (!usersData[id]) {
+                    if(activeMarkers[id]) {
+                         try { activeMarkers[id].remove(); } catch(e) { /* Ignore minor error */ }
+                    }
+                    delete activeMarkers[id];
+                }
+            });
+
+            // Add or update markers for current users
+            currentUsers.forEach(id => {
+                const d = usersData[id];
+                // Validate coordinates exist and are numbers
+                if (d && typeof d.lat === 'number' && typeof d.lng === 'number' && !isNaN(d.lat) && !isNaN(d.lng)){
+                    const c = [d.lng, d.lat];
+                    if (activeMarkers[id]) {
+                        // Marker exists, update position and blink
+                        try { activeMarkers[id].setLngLat(c); triggerBlink(activeMarkers[id].getElement()); }
+                        catch(e) { console.error("Error updating marker position:", e); }
+                    } else {
+                        // New user, create marker
+                        const el = document.createElement('div');
+                        el.className = 'user-marker';
+                        // Add tooltip on hover (optional)
+                        const popup = new mapboxgl.Popup({ offset: 15, closeButton: false, closeOnClick: false })
+                            .setText(`User: ${id.substring(0, 6)}...`); // Show partial ID or fetch name if available
+
+                        try {
+                            const m = new mapboxgl.Marker(el)
+                                .setLngLat(c)
+                                .setPopup(popup) // Add popup
+                                .addTo(map);
+                            activeMarkers[id] = m;
+                            triggerBlink(el);
+
+                            // Add hover events for popup
+                            const markerElement = m.getElement();
+                             markerElement.addEventListener('mouseenter', () => { if(m.getPopup()) m.togglePopup(); });
+                             markerElement.addEventListener('mouseleave', () => { if(m.getPopup() && m.getPopup().isOpen()) m.togglePopup(); });
+
+                        } catch(e){ console.error("Error adding new marker:", e); }
+                    }
+                } else {
+                    console.warn(`User ${id} has invalid or missing coordinates:`, d);
+                    // Optionally remove existing marker if coordinates become invalid
+                    if (activeMarkers[id]) {
+                        try { activeMarkers[id].remove(); } catch(e) { /* ignore */ }
+                        delete activeMarkers[id];
+                    }
+                }
+            });
+        }
+
+        function clearMapMarkers() {
+             console.log("Clearing map markers...");
+             Object.keys(activeMarkers).forEach(id => {
+                 if (activeMarkers[id]) {
+                     try { activeMarkers[id].remove(); } catch (e) { /* Ignore */ }
+                 }
+             });
+             for (const markerId in activeMarkers) { // Clear the object itself
+                delete activeMarkers[markerId];
+             }
+             // Also clear order markers if you implement that toggle
+             // clearOrderMarkers();
+        }
+
+        // --- Header Update Function ---
+        function configureHeader() {
+            const headerTitleElement = document.getElementById('headerTitle');
+            if (headerTitleElement) headerTitleElement.textContent = CURRENT_PAGE_TITLE;
+            // Header icons (theme, notifications, globe) are always visible on home per design change
+            // Search, filter, add are hidden via CSS/HTML structure
+        }
+
+        // --- Main Initialization on DOMContentLoaded ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Firebase
+            try {
+                if (!firebase.apps.length) { firebaseApp = firebase.initializeApp(firebaseConfig); console.log("Firebase Initialized."); }
+                else { firebaseApp = firebase.app(); console.log("Firebase App already exists."); }
+                database = firebase.database(); firestore = firebase.firestore(); console.log("Firestore and Realtime DB services obtained.");
+                // Enable offline persistence for Firestore (optional but recommended)
+                firestore.enablePersistence({ synchronizeTabs: true })
+                   .then(() => console.log("Firestore offline persistence enabled."))
+                   .catch((err) => {
+                       if (err.code == 'failed-precondition') { console.warn("Firestore Persistence failed: Multiple tabs open?"); }
+                       else if (err.code == 'unimplemented') { console.warn("Firestore Persistence failed: Browser not supported."); }
+                       else { console.warn("Firestore persistence error:", err); }
+                   });
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                alert("Critical Error: Could not connect to Firebase services.");
+                loadPlaceholderStats();
+            }
+
+            // Get references
+            const themeToggleButton = document.getElementById('themeToggleBtn');
+            const bodyElement = document.body;
+            const bottomNavLinks = document.querySelectorAll('.bottom-navbar .nav-item');
+            const sidebarNavLinks = document.querySelectorAll('#sidebarNav .sidebar-nav-item');
+            const mapToggleOrdersBtn = document.getElementById('mapToggleOrders');
+            const mapToggleVisitorsBtn = document.getElementById('mapToggleVisitors');
+
+            // Initialize Theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            bodyElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon(currentTheme, themeToggleButton);
+
+            // Theme Toggle Listener
+            if (themeToggleButton) {
+                themeToggleButton.addEventListener('click', () => {
+                    let newTheme = bodyElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    bodyElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme);
+                    updateThemeIcon(newTheme, themeToggleButton); setMapThemeStyle(newTheme);
+                });
+            }
+
+             // --- Set Active Nav Link for THIS page ---
+            [...bottomNavLinks, ...sidebarNavLinks].forEach(link => {
+                link.classList.toggle('active', link.dataset.target === CURRENT_PAGE_ID);
+            });
+
+            // --- Configure Header for THIS page ---
+            configureHeader(); // Call header setup
+
+            // --- Load Data for THIS page ---
+            loadHomePageData(); // Only call the home page data function
+
+             // --- Listeners for Map Toggles ---
+             if (mapToggleOrdersBtn && mapToggleVisitorsBtn) {
+                mapToggleOrdersBtn.addEventListener('click', () => {
+                    if (mapToggleOrdersBtn.classList.contains('active')) return; // Do nothing if already active
+                    mapToggleOrdersBtn.classList.add('active');
+                    mapToggleVisitorsBtn.classList.remove('active');
+                    console.log("Order toggle clicked - Showing recent orders on map (Placeholder)");
+                    // 1. Detach RTDB listener if active
+                    if (rtdbListener && database) {
+                        database.ref('/liveUsers').off('value', rtdbListener);
+                        rtdbListener = null;
+                         console.log("Detached RTDB listener.");
+                    }
+                    // 2. Clear existing (visitor) markers
+                    clearMapMarkers();
+                    document.getElementById('liveVisitors').innerHTML = '<span class="placeholder">-</span>'; // Indicate RTDB not active
+                    // 3. Fetch recent orders from Firestore and display them (IMPLEMENT THIS)
+                    // fetchAndDisplayOrderMarkers(); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ADD FUNCTION CALL HERE
+                    alert("Displaying recent orders on map is not yet implemented.");
+                });
+
+                mapToggleVisitorsBtn.addEventListener('click', () => {
+                     if (mapToggleVisitorsBtn.classList.contains('active')) return; // Do nothing if already active
+                    mapToggleVisitorsBtn.classList.add('active');
+                    mapToggleOrdersBtn.classList.remove('active');
+                    console.log("Visitor toggle clicked - Showing live visitors");
+                    // 1. Clear existing (order) markers (IMPLEMENT THIS)
+                    // clearOrderMarkers(); // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ADD FUNCTION CALL HERE
+                    clearMapMarkers(); // Placeholder - Clears any marker type for now
+                    // 2. Start RTDB listener
+                    startFirebaseMapListener();
+                });
+             } else {
+                 console.warn("Map toggle buttons not found.");
+             }
+
+
+        }); // End DOMContentLoaded
+
+        // --- END: Embedded JS ---
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        /* Basic Auth Page Styles */
+        :root {
+            --font-family-base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --primary-color: #008060;
+            --primary-color-darker: #006E51;
+            --text-primary: #202223;
+            --text-secondary: #5C5F62;
+            --background-main: #F6F6F7;
+            --background-card: #ffffff;
+            --border-color: #E1E3E5;
+            --input-border: #C9CCCF;
+            --input-border-focus: #595ED4; /* Keeping blue focus from dashboard theme */
+            --error-color: #d72c0d;
+            --space-unit: 4px;
+            --radius-card: 8px;
+        }
+        /* Basic Dark theme support */
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --text-primary: #E3E5E7; --text-secondary: #9EA3A8;
+            --background-main: #161718; --background-card: #202223;
+            --border-color: #393B3D; --input-border: #4D4F51;
+            --input-border-focus: #7C82F7; /* Dark theme blue focus */
+            --error-color: #e5484d;
+          }
+        }
+        body {
+            font-family: var(--font-family-base); background-color: var(--background-main);
+            color: var(--text-primary); display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; padding: calc(var(--space-unit) * 4);
+        }
+        .auth-container {
+            background-color: var(--background-card); padding: calc(var(--space-unit) * 8);
+            border-radius: var(--radius-card); box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        h1 { font-size: 24px; margin-bottom: calc(var(--space-unit) * 6); color: var(--text-primary); }
+        .input-group { margin-bottom: calc(var(--space-unit) * 4); text-align: left; }
+        label { display: block; margin-bottom: var(--space-unit); font-weight: 500; font-size: 14px; color: var(--text-secondary); }
+        input[type="email"], input[type="password"] {
+            width: 100%; padding: calc(var(--space-unit) * 2.5); font-size: 14px;
+            border: 1px solid var(--input-border); border-radius: 6px; background-color: var(--background-main); color: var(--text-primary);
+             /* Use background-main for inputs to match dashboard style */
+        }
+        input[type="email"]:focus, input[type="password"]:focus { outline: none; border-color: var(--input-border-focus); box-shadow: 0 0 0 1px var(--input-border-focus); }
+        .auth-button {
+            width: 100%; padding: calc(var(--space-unit) * 3); background-color: var(--primary-color); color: white;
+            border: none; border-radius: 6px; font-size: 16px; font-weight: 500; cursor: pointer;
+            margin-top: calc(var(--space-unit) * 2); transition: background-color 0.2s ease;
+             /* Use primary-color from root */
+        }
+        .auth-button:hover:not(:disabled) { background-color: var(--primary-color-darker); }
+        .auth-button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .links { margin-top: calc(var(--space-unit) * 6); font-size: 13px; }
+        .links a { color: var(--primary-color); text-decoration: none; margin: 0 calc(var(--space-unit) * 1.5); } /* Use primary-color */
+        .links a:hover { text-decoration: underline; }
+        .error-message { color: var(--error-color); font-size: 13px; margin-top: calc(var(--space-unit) * 3); min-height: 1.5em; /* Prevent layout shift */ }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>Admin Login</h1>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <!-- Updated placeholder -->
+                <input type="email" id="email" name="email" required placeholder="admin@magnetarstore.com">
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <p class="error-message" id="errorMessage"></p>
+            <button type="submit" class="auth-button" id="loginButton">Login</button>
+        </form>
+        <div class="links">
+            <!-- Links for creating account/reset password - Consider if these should be accessible -->
+            <!-- Updated signup link -->
+            <a href="admin-signup.html">Create Account</a> | <a href="admin-resetpassword.html">Forgot Password?</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <script>
+        // --- START: Embedded JS for login.html ---
+
+        // --- Define the required admin email ---
+        const REQUIRED_ADMIN_EMAIL = "admin@magnetarstore.com"; // <<< Set the exact required email here
+
+        // --- Firebase Config (Embedded - SECURE FOR PRODUCTION) ---
+        // CRITICAL SECURITY WARNING: Exposing API keys in client-side code is insecure for production apps.
+        // Use environment variables or server-side configuration in a real application.
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+
+        // --- Initialize Firebase ---
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            const auth = firebase.auth(); // Get Auth service
+
+            // --- Check if already logged in ---
+            // If an authorized user is already logged in, redirect immediately.
+            // This check will run AFTER the form submit logic, so it doesn't interfere with the initial login attempt.
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    console.log("Auth state changed. User:", user.uid, "Email:", user.email);
+                    // Check if the logged-in user is the authorized admin email
+                    if (user.email === REQUIRED_ADMIN_EMAIL) {
+                         console.log("Authorized admin user already logged in, redirecting to dashboard.");
+                         // Redirect to the main dashboard page after successful login or on reload
+                         window.location.href = 'home.html'; // <<< Redirect target after successful auth
+                    } else {
+                        // Logged in user is NOT the required admin email
+                        console.warn("User already logged in, but email is not the required admin email. Logging out.");
+                        // Log out the unauthorized user
+                        auth.signOut().then(() => {
+                            console.log("Unauthorized user logged out.");
+                             // Optionally display a message or update UI
+                             const errorMessageElement = document.getElementById('errorMessage');
+                             const loginButton = document.getElementById('loginButton');
+                             if (errorMessageElement) {
+                                 errorMessageElement.textContent = 'Access denied. Please log in with an authorized account.';
+                             }
+                             if (loginButton) {
+                                 loginButton.disabled = false;
+                                 loginButton.textContent = 'Login';
+                             }
+                        }).catch((error) => {
+                            console.error("Error logging out unauthorized user:", error);
+                             const errorMessageElement = document.getElementById('errorMessage');
+                              if (errorMessageElement) {
+                                 errorMessageElement.textContent = 'Login failed. Please try again or contact support.'; // Generic error
+                             }
+                             const loginButton = document.getElementById('loginButton');
+                             if (loginButton) {
+                                 loginButton.disabled = false;
+                                 loginButton.textContent = 'Login';
+                             }
+                        });
+                    }
+                }
+            });
+
+
+            // --- Login Form Logic ---
+            const loginForm = document.getElementById('loginForm');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const loginButton = document.getElementById('loginButton');
+            const errorMessageElement = document.getElementById('errorMessage');
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent form submission
+                errorMessageElement.textContent = ''; // Clear previous errors
+                loginButton.disabled = true;
+                loginButton.textContent = 'Logging in...';
+
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+
+                // --- Check if the entered email is the required admin email ---
+                if (email !== REQUIRED_ADMIN_EMAIL) {
+                    console.warn("Attempted login with unauthorized email:", email);
+                    errorMessageElement.textContent = 'Access denied. Invalid email address.'; // Specific error message
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Login';
+                    return; // Stop the function here
+                }
+
+                // --- If the email is the required admin email, proceed with Firebase authentication ---
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed in successfully with the CORRECT email
+                        console.log("Login successful:", userCredential.user.uid);
+                         // The onAuthStateChanged listener will catch this state change and redirect.
+                         // We can optionally redirect here too, but relying on the listener is safer
+                         // as it handles redirects after reloads or sign-in state persistence.
+                         // window.location.href = 'home.html'; // Optional: Redirect directly
+                    })
+                    .catch((error) => {
+                        // Handle authentication errors (e.g., wrong password for the admin email)
+                        console.error("Firebase Login error:", error.code, error.message);
+                        let userMessage = 'Login failed. Please check your password.'; // More specific for the admin email
+                        // You can refine this based on Firebase error codes if needed
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                             userMessage = 'Invalid password for the admin email.';
+                        } else if (error.code === 'auth/invalid-email') {
+                             // This case should theoretically not be hit if the email check above works,
+                             // but keeping it is safer.
+                            userMessage = 'Please enter a valid email address.';
+                        } else if (error.code === 'auth/too-many-requests') {
+                            userMessage = 'Too many failed login attempts. Please try again later.';
+                        }
+
+                        errorMessageElement.textContent = userMessage;
+                        loginButton.disabled = false;
+                        loginButton.textContent = 'Login';
+                    });
+            });
+
+        } catch (error) {
+            console.error("Firebase initialization error on login page:", error);
+            const errorMessageElement = document.getElementById('errorMessage');
+            const loginButton = document.getElementById('loginButton');
+            if (errorMessageElement) errorMessageElement.textContent = 'Error initializing authentication service.';
+            if (loginButton) loginButton.disabled = true;
+        }
+        // --- END: Embedded JS for login.html ---
+    </script>
+</body>
+</html>

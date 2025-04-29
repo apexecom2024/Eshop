@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kabarro Customers - Dashboard</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- No Mapbox CSS needed -->
+
+    <style>
+        /* --- START: Embedded CSS (Copied/Adapted from Products Page) --- */
+
+        /* --- Base Variables (Consistent Light Theme) --- */
+        :root {
+            --font-family-base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --primary-color: #4A90E2; --primary-color-darker: #357ABD;
+            --text-primary: #333333; --text-secondary: #777777; --text-on-primary: #ffffff;
+            --background-main: #F8F9FA; --background-card: #ffffff; --background-nav: #ffffff;
+            --border-color: #EAECEF; --border-nav: #EAECEF;
+            --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 1px 2px rgba(0, 0, 0, 0.06);
+            --radius-card: 12px; --space-unit: 4px; --header-height: 55px; --navbar-height: 60px;
+            --sidebar-width: 230px;
+            --content-padding-mobile: calc(var(--space-unit) * 4); /* 16px */
+            --content-padding-tablet: calc(var(--space-unit) * 6); /* 24px */
+            --content-padding-desktop: calc(var(--space-unit) * 8); /* 32px */
+            --desktop-max-width: 1140px;
+            --input-background: #ffffff; --input-border: #D1D5DB; --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary); --placeholder-text: #9CA3AF;
+            --danger-color: #ef4444; --danger-text: #b91c1c; --danger-bg: #fee2e2; /* Kept from Products */
+            --primary-color-rgb: 74, 144, 226; /* Added RGB var */
+             /* Status Tag Colors - Not directly used for customer list, but kept for potential future use or consistency */
+            --status-unfulfilled-bg: #FEF3C7; --status-unfulfilled-text: #92400E;
+            --status-payment-pending-bg: #FFE4C4; --status-payment-pending-text: #9A3412;
+            --status-fulfilled-bg: #D1FAE5; --status-fulfilled-text: #065F46;
+            --status-default-bg: #E5E7EB; --status-default-text: #374151;
+        }
+
+        /* --- Dark Theme Overrides --- */
+        [data-theme="dark"] {
+            --primary-color: #5A9BEA; --primary-color-darker: #4A80D2;
+            --text-primary: #E5E7EB; --text-secondary: #9CA3AF;
+            --background-main: #111827; --background-card: #1F2937; --background-nav: #1F2937;
+            --border-color: #374151; --border-nav: #374151;
+            --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.2);
+            --input-background: #374151; --input-border: #4B5563; --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary); --placeholder-text: #6B7280;
+            --danger-color: #f87171; --danger-text: #fecaca; --danger-bg: #450a0a; /* Kept from Products */
+            --primary-color-rgb: 90, 155, 234; /* Added RGB var */
+             /* Dark Theme Status Tags - Not directly used for customer list */
+            --status-unfulfilled-bg: #4d4420; --status-unfulfilled-text: #fde68a;
+            --status-payment-pending-bg: #593d2b; --status-payment-pending-text: #fed7aa;
+            --status-fulfilled-bg: #064E3B; --status-fulfilled-text: #6EE7B7;
+            --status-default-bg: #374151; --status-default-text: #D1D5DB;
+        }
+
+        /* --- General Reset & Base Styles (Copied from Products) --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-family-base); background-color: var(--background-main); color: var(--text-primary);
+            font-size: 14px; line-height: 1.5; padding-top: var(--header-height);
+            padding-bottom: var(--navbar-height); /* Ensure space for bottom navbar */
+            overflow-x: hidden; transition: background-color 0.2s ease, color 0.2s ease, padding-left 0.3s ease;
+        }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; height: auto; display: block; }
+
+        /* --- Header (Copied/Adapted from Products) --- */
+        .page-header {
+            background-color: var(--background-nav); border-bottom: 1px solid var(--border-nav);
+            padding: 0 var(--content-padding-mobile); height: var(--header-height);
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; right: 0; width: 100%;
+            z-index: 100; gap: calc(var(--space-unit) * 3);
+            transition: background-color 0.2s ease, border-bottom-color 0.2s ease, left 0.3s ease, width 0.3s ease;
+        }
+        .header-action-icon {
+            color: var(--text-primary); font-size: 20px; cursor: pointer;
+            padding: calc(var(--space-unit) * 1.5); line-height: 1; margin: calc(var(--space-unit) * -1.5); flex-shrink: 0;
+            transition: color 0.2s ease;
+             /* Added back-icon style explicitly */
+        }
+         .header-action-icon.back-icon { color: var(--text-primary);} /* Ensured consistency */
+        .header-action-icon:hover { color: var(--primary-color); }
+        .header-title {
+             font-size: 18px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+             flex-grow: 1; color: var(--text-primary);
+        }
+        .header-icons { display: flex; align-items: center; gap: calc(var(--space-unit) * 4); flex-shrink: 0; }
+
+
+        /* --- Filters Bar (Copied from Products - Kept the same structure for potential future use or consistency) --- */
+        .filters-container {
+            padding: calc(var(--space-unit) * 2) var(--content-padding-mobile);
+            background-color: var(--background-nav);
+            border-bottom: 1px solid var(--border-nav);
+            position: sticky; top: var(--header-height); /* Stick below header */
+            z-index: 99;
+            white-space: nowrap;
+            overflow-x: auto;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .filters-container::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            display: inline-block; padding: calc(var(--space-unit) * 1.5) calc(var(--space-unit) * 3);
+            margin-right: calc(var(--space-unit) * 2); border: 1px solid var(--input-border);
+            border-radius: 20px; background-color: var(--input-background); color: var(--text-secondary);
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+         /* Adjusted active style to match the new customer filter logic */
+        .filter-btn.active {
+            background-color: var(--primary-color); color: var(--text-on-primary); border-color: var(--primary-color);
+        }
+        [data-theme="dark"] .filter-btn.active {
+            background-color: var(--primary-color); color: var(--text-on-primary); border-color: var(--primary-color);
+        }
+        .filter-btn:hover:not(.active) { border-color: var(--text-secondary); }
+
+
+        /* --- Search & Sort Bar (Copied from Products - Renamed and adapted) --- */
+        .search-sort-container { /* Kept class name for consistency */
+            padding: calc(var(--space-unit) * 3) var(--content-padding-mobile);
+            display: flex; gap: calc(var(--space-unit) * 2); align-items: center;
+             background-color: var(--background-main);
+        }
+        .search-input-wrapper { position: relative; flex-grow: 1; }
+        .search-input {
+            width: 100%; height: 40px; padding: 0 calc(var(--space-unit) * 3) 0 calc(var(--space-unit) * 9);
+            border: 1px solid var(--input-border); border-radius: var(--radius-card); background-color: var(--input-background);
+            color: var(--input-text); font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input::placeholder { color: var(--placeholder-text); }
+        .search-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); }
+        .search-icon {
+             position: absolute; left: calc(var(--space-unit) * 3); top: 50%; transform: translateY(-50%);
+             color: var(--text-secondary); font-size: 16px; pointer-events: none;
+        }
+         /* Removed sort/filter button styles as they are not in the HTML for this page */
+        /* .sort-filter-btn {} */
+
+
+        /* --- Customer List Styles (Adapted from Order List/Previous Customer List) --- */
+         /* Reused section header styles */
+        .customer-section-header { /* Renamed */
+            display: flex; justify-content: space-between; align-items: center;
+            padding: calc(var(--space-unit)*3) var(--content-padding-mobile) calc(var(--space-unit)*1);
+            margin-top: calc(var(--space-unit)*2); /* Space above section */
+        }
+        .customer-section-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+
+
+        .customer-list-container { /* Renamed */
+             background-color: var(--background-card);
+             /* Mobile: No shadow/radius here, applied on desktop */
+         }
+        .customer-list { /* Renamed */
+             list-style: none; padding: 0; margin: 0;
+             /* This list will be the direct target for JS rendering */
+         }
+        .customer-list-item { /* Renamed */
+            padding: calc(var(--space-unit) * 3) var(--content-padding-mobile);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: calc(var(--space-unit) * 1); /* Reduced gap */
+            cursor: pointer; transition: background-color 0.1s ease;
+        }
+        .customer-list-item:last-child { border-bottom: none; }
+        .customer-list-item:hover { background-color: rgba(0,0,0,0.02); }
+        [data-theme="dark"] .customer-list-item:hover { background-color: rgba(255,255,255,0.03); }
+
+        .customer-uid { /* Renamed */
+             font-weight: 600; color: var(--text-primary); font-size: 15px;
+             word-break: break-all; /* Allow long UIDs to wrap */
+         }
+        .customer-details { /* Renamed */
+             font-size: 13px; color: var(--text-secondary);
+             margin-top: calc(var(--space-unit) * 0.5);
+         }
+         .customer-details span { margin-right: calc(var(--space-unit) * 2); } /* Space between details */
+         .customer-details span:last-child { margin-right: 0; }
+
+
+        /* Loading / Message Styles (Reused) */
+        .list-message-container { padding: calc(var(--space-unit) * 5) var(--content-padding-mobile); text-align: center; color: var(--text-secondary); display: flex; align-items:center; justify-content: center; flex-wrap: wrap; gap: var(--space-unit) }
+        .stat-loader { border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid var(--primary-color); width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        [data-theme="dark"] .stat-loader { border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary-color); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+        /* Sidebar Styles (Copied from Products) */
+        #sidebarNav {
+            display: none; flex-direction: column; position: fixed; top: var(--header-height); left: 0;
+            width: var(--sidebar-width); height: calc(100vh - var(--header-height));
+            background-color: var(--background-nav); border-right: 1px solid var(--border-nav);
+            padding: var(--content-padding-mobile) 0; z-index: 90; overflow-y: auto;
+            transition: background-color 0.2s ease, border-right-color 0.2s ease;
+        }
+        .sidebar-nav-item {
+            display: flex; align-items: center; padding: calc(var(--space-unit) * 2.5) var(--content-padding-mobile);
+            color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer;
+            border-left: 3px solid transparent; margin-bottom: var(--space-unit);
+             transition: color 0.2s ease, background-color 0.2s ease, border-left-color 0.2s ease; /* Added transition */
+        }
+        .sidebar-nav-item i { font-size: 18px; width: 25px; margin-right: calc(var(--space-unit) * 3); text-align: center; }
+         .sidebar-nav-item span { flex-grow: 1; } /* Added flex-grow */
+        .sidebar-nav-item:hover { color: var(--text-primary); background-color: rgba(0, 0, 0, 0.03); }
+        [data-theme="dark"] .sidebar-nav-item:hover { background-color: rgba(255, 255, 255, 0.04); }
+        .sidebar-nav-item.active { color: var(--primary-color); border-left-color: var(--primary-color); background-color: rgba(var(--primary-color-rgb, 74, 144, 226), 0.08); }
+        [data-theme="dark"] .sidebar-nav-item.active { background-color: rgba(var(--primary-color-rgb, 90, 155, 234), 0.15); }
+
+        /* --- Bottom Navigation (Matching Home/Orders/Products) --- */
+         .bottom-navbar {
+            display: flex; justify-content: space-around; align-items: center; /* Align items vertically */
+            background-color: var(--background-nav);
+            border-top: 1px solid var(--border-nav); padding: var(--space-unit) 0; height: var(--navbar-height);
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+            transition: background-color 0.2s ease, border-top-color 0.2s ease; box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            color: var(--text-secondary); font-size: 10px; /* Font size for label */ flex: 1; padding: calc(var(--space-unit)*0.5) 2px; /* Adjusted padding */
+            cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 6px;
+            transition: color 0.2s, background-color 0.2s; line-height: 1.3;
+        }
+        .nav-item i { /* Using Font Awesome regular (far) or solid (fas) */
+             font-size: 22px; /* Slightly smaller icon */
+             margin-bottom: calc(var(--space-unit) * 0.5); /* Space between icon and label */
+             height: 26px; display: flex; align-items: center;
+             transition: color 0.2s;
+        }
+        /* --- THIS IS THE KEY CHANGE --- */
+        .nav-item span {
+             display: block; /* Make label visible */
+             font-weight: 500;
+             white-space: nowrap; /* Prevent wrapping */
+        }
+        /* --- END KEY CHANGE --- */
+
+
+        .nav-item.active { color: var(--primary-color); }
+        .nav-item:active { background-color: rgba(var(--primary-color-rgb, 74, 144, 226), 0.1); }
+        [data-theme="dark"] .nav-item:active { background-color: rgba(var(--primary-color-rgb, 90, 155, 234), 0.15); }
+
+
+        /* Responsive (Copied/Adapted from Products) */
+        @media (min-width: 768px) { /* Tablet adjustments */
+             /* Tablet does NOT show sidebar, does show bottom nav */
+             body { padding-left: 0; padding-top: var(--header-height); padding-bottom: var(--navbar-height); }
+            .page-header { padding: 0 var(--content-padding-tablet); left: 0; width: 100%; height: var(--header-height); align-items: center; padding-bottom: 0; } /* Reset header height/padding */
+            .header-title { font-size: 18px; text-align: center; margin: 0 auto; flex-grow: 1;} /* Reset title styles */ /* Adjusted margin and flex */
+            .header-action-icon.back-icon { display: block; } /* Show back icon on tablet */
+            .filters-container { top: var(--header-height); left: 0; width: 100%; padding: calc(var(--space-unit)*2) var(--content-padding-tablet); border-bottom: 1px solid var(--border-nav); }
+            .search-sort-container { padding: calc(var(--space-unit) * 3) var(--content-padding-tablet); }
+            .customer-section-header { padding: calc(var(--space-unit)*3) var(--content-padding-tablet) calc(var(--space-unit)*1); }
+            .customer-list-item { padding: calc(var(--space-unit) * 3) var(--content-padding-tablet); }
+
+            #sidebarNav { display: none; } /* Hide sidebar */
+            .bottom-navbar { display: flex; } /* Show bottom nav */
+        }
+
+        @media (min-width: 992px) { /* Desktop */
+             /* Desktop shows sidebar, hides bottom nav */
+             body { padding-left: var(--sidebar-width); padding-top: 0; padding-bottom: 0; } /* Reset padding */
+
+            .page-header {
+                left: var(--sidebar-width);
+                width: calc(100% - var(--sidebar-width));
+                padding: 0 var(--content-padding-desktop);
+                height: var(--header-height); /* Keep header standard height */
+                align-items: center; /* Re-center items vertically */
+                padding-bottom: 0; /* Remove desktop bottom padding */
+                border-bottom: 1px solid var(--border-nav); /* Ensure border is there */
+            }
+             .header-title {
+                 font-size: 18px; /* Keep header title size consistent with mobile/tablet */
+                 text-align: center; /* Center title */
+                 margin: 0 auto; /* Center title */
+                 flex-grow: 1; /* Allow title to take space */
+                 position: static; transform: none; width: auto; /* Remove absolute positioning */
+             }
+            .header-action-icon.back-icon { display: none; } /* Hide back icon on desktop */
+
+
+            .filters-container {
+                 top: var(--header-height); /* Stick below header */
+                 left: var(--sidebar-width);
+                 width: calc(100% - var(--sidebar-width));
+                 padding: calc(var(--space-unit)*2) var(--content-padding-desktop);
+                 border-bottom: 1px solid var(--border-nav); /* Keep border */
+                 background-color: var(--background-nav); /* Keep background */
+                 position: sticky; top: var(--header-height); /* Ensure stickiness */
+            }
+
+            /* Adjust main content padding to push content below header+search */
+             body { padding-top: var(--header-height); } /* Add header padding to body */
+             .page-header { top: 0; } /* Header is fixed at top */
+             #sidebarNav { top: var(--header-height); height: calc(100vh - var(--header-height)); } /* Sidebar below header */
+             .filters-container { top: var(--header-height); } /* Filters stick below header */
+             .search-sort-container { margin-top: calc(var(--space-unit) * 3); } /* Add space between filters and search */
+
+
+            .search-sort-container { padding: calc(var(--space-unit) * 3) var(--content-padding-desktop); }
+
+            /* Apply max width and horizontal centering to content sections */
+             .main-content-wrapper { padding-top: 0; max-width: none; margin: 0;} /* Remove wrapper padding/margin */
+             .filters-container, .search-sort-container, .customer-section-header, .customer-list-container { /* Apply max width to main content sections */
+                max-width: var(--desktop-max-width);
+                margin-left: auto;
+                margin-right: auto;
+             }
+             /* Override margin for list container to allow box-shadow/radius */
+             .customer-list-container { margin: 0 var(--content-padding-desktop); }
+              /* Adjust padding within containers */
+             .filters-container { padding-left: 0; padding-right: 0; }
+             .search-sort-container { padding-left: 0; padding-right: 0; }
+             .customer-section-header { padding-left: 0; padding-right: 0; }
+             .customer-list-item { padding-left: var(--content-padding-desktop); padding-right: var(--content-padding-desktop); } /* Padding inside list items */
+
+            .customer-list-container {
+                 background-color: var(--background-card);
+                 border-radius: var(--radius-card);
+                 box-shadow: var(--shadow-card);
+                 margin-left: var(--content-padding-desktop); /* Add horizontal margin */
+                 margin-right: var(--content-padding-desktop);
+                 overflow: hidden; /* Hide border-radius overflow */
+             }
+
+
+            #sidebarNav { display: flex; } /* Show sidebar */
+            .bottom-navbar { display: none; } /* Hide bottom nav */
+        }
+         @media (min-width: 1200px) { /* Larger desktop adjustments */
+              /* Adjust padding and margins for wider screens */
+              body { padding-top: var(--header-height); }
+              .page-header { padding: 0 calc(var(--space-unit) * 10); } /* Larger header padding */
+               #sidebarNav { top: var(--header-height); height: calc(100vh - var(--header-height)); }
+              .filters-container { top: var(--header-height); padding: calc(var(--space-unit)*2) calc(var(--space-unit) * 10); }
+               .search-sort-container { padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 10); }
+               .customer-section-header { padding: calc(var(--space-unit)*4) calc(var(--space-unit) * 10) calc(var(--space-unit)*2); }
+               .customer-list-container { margin-left: calc(var(--space-unit) * 10); margin-right: calc(var(--space-unit) * 10); }
+               .customer-list-item { padding-left: calc(var(--space-unit) * 10); padding-right: calc(var(--space-unit) * 10); }
+
+              /* Adjust max-width for very large screens if needed */
+             /* :root { --desktop-max-width: 1360px; } */
+         }
+
+         /* Ensure loading/empty/error messages also respect desktop padding */
+         .main-content-wrapper > .list-message-container {
+              margin: calc(var(--space-unit) * 5) auto; /* Center messages */
+              max-width: var(--desktop-max-width); /* Apply max width */
+              padding: calc(var(--space-unit) * 5) var(--content-padding-desktop); /* Adjust padding */
+         }
+         @media (max-width: 991px) { /* Apply mobile padding below desktop breakpoint */
+             .main-content-wrapper > .list-message-container {
+                  margin: calc(var(--space-unit) * 5) var(--content-padding-mobile);
+                  padding: calc(var(--space-unit) * 5) 0; /* Padding is handled by container margin */
+             }
+             @media (min-width: 768px) and (max-width: 991px) { /* Tablet */
+                  .main-content-wrapper > .list-message-container {
+                       margin: calc(var(--space-unit) * 5) var(--content-padding-tablet);
+                  }
+             }
+         }
+
+        /* --- END: Embedded CSS --- */
+    </style>
+</head>
+<body data-theme="light"> <!-- Default theme -->
+    <!-- Header (Copied from Products) -->
+    <header class="page-header">
+         <!-- Using history.back() for simplicity on mobile -->
+         <a href="javascript:history.back()" class="header-action-icon back-icon" title="Go Back">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="header-title" id="headerTitle">Kabarro Customers</div> <!-- Updated Title -->
+        <div class="header-icons">
+             <button class="header-action-icon" title="Add Customer" id="addCustomerBtn"> <!-- Updated ID/Title -->
+                <i class="fas fa-user-plus"></i> <!-- Changed icon -->
+            </button>
+            <button class="header-action-icon" title="More Options" id="moreOptionsBtn"> <!-- Kept but may not be needed -->
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar (Desktop - Copied from Products) -->
+    <nav id="sidebarNav">
+        <!-- Ensure hrefs point to correct files -->
+        <!-- Note: Consider if admin should access index.html (storefront) -->
+        <a href="home.html" data-target="page-home" data-title="Dashboard" class="sidebar-nav-item" title="Home"><i class="fas fa-house-chimney"></i><span>Home</span></a>
+        <a href="orders.html" data-target="page-orders" data-title="Orders" class="sidebar-nav-item" title="Orders"><i class="fas fa-receipt"></i><span>Orders</span></a>
+        <a href="products.html" data-target="page-products" data-title="Products" class="sidebar-nav-item" title="Products"><i class="fas fa-tag"></i><span>Products</span></a>
+        <a href="customers.html" data-target="page-customers" data-title="Customers" class="sidebar-nav-item active" title="Customers"><i class="fas fa-users"></i><span>Customers</span></a> <!-- Active class here -->
+        <a href="profile.html" data-target="page-profile" data-title="Profile" class="sidebar-nav-item" title="Profile"><i class="far fa-user-circle"></i><span>Profile</span></a>
+    </nav>
+
+    <!-- Filters Bar (Copied from Products - Adapted for Customers) -->
+    <div class="filters-container">
+        <button class="filter-btn active" data-filter="all">All Kabarro</button> <!-- Updated text -->
+        <button class="filter-btn" data-filter="anonymous">Anonymous</button> <!-- Updated text/filter -->
+        <button class="filter-btn" data-filter="registered">Registered</button> <!-- Updated text/filter -->
+         <!-- Removed archived filter as it's not relevant here -->
+    </div>
+
+     <!-- Search & Sort Bar (Copied from Products - Adapted) -->
+    <div class="search-sort-container">
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="search" id="searchInput" class="search-input" placeholder="Search customers"> <!-- Updated Placeholder -->
+        </div>
+        <!-- Removed sort/filter buttons as they are not used -->
+         <!-- <button class="sort-filter-btn" id="sortBtn" title="Sort Customers"><i class="fas fa-sort-alpha-down"></i></button> -->
+         <!-- <button class="sort-filter-btn" id="filterBtn" title="More Filters"><i class="fas fa-filter"></i></button> -->
+    </div>
+
+    <!-- Main Content Wrapper (Copied from Products) -->
+    <div class="main-content-wrapper">
+        <!-- Customer List Section (Adapted from Products/Orders List Section) -->
+        <!-- Removed the separate section header div as the main list container can handle it -->
+        <!-- <div class="customer-section-header">
+            <h2 class="customer-section-title">Customers</h2>
+        </div> -->
+        <div class="customer-list-container"> <!-- Renamed -->
+             <ul class="customer-list" id="customersList">
+                 <!-- Initial state message will be inserted here by JS before auth check -->
+                 <li class="list-message-container loading">Checking authentication status...</li>
+             </ul>
+         </div>
+    </div> <!-- End Main Content Wrapper -->
+
+    <!-- Bottom Navigation (Updated to match other pages) -->
+    <nav class="bottom-navbar">
+        <a href="home.html" data-target="page-home" data-title="Dashboard" class="nav-item" title="Home">
+            <i class="fas fa-house-chimney"></i>
+            <span>Home</span>
+        </a>
+        <a href="orders.html" data-target="page-orders" data-title="Orders" class="nav-item" title="Orders">
+            <i class="fas fa-receipt"></i>
+            <span>Orders</span>
+        </a>
+        <a href="products.html" data-target="page-products" data-title="Products" class="nav-item" title="Products">
+            <i class="fas fa-tag"></i>
+            <span>Products</span>
+        </a>
+        <a href="customers.html" data-target="page-customers" data-title="Customers" class="nav-item active" title="Customers">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+        </a>
+        <a href="profile.html" data-target="page-profile" data-title="Profile" class="nav-item" title="Profile">
+            <i class="far fa-user-circle"></i>
+            <span>Me</span>
+        </a>
+    </nav>
+
+    <!-- SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> <!-- Auth needed for check -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Embedded JavaScript -->
+    <script>
+        // --- START: Embedded JS (Adapted for Customers) ---
+
+        // --- Global State & Variables ---
+        let firebaseApp;
+        let auth; // Need auth for the authorization check
+        let firestore;
+        let usersCollectionRef; // Reference to the 'users' collection
+        let allCustomers = []; // Store fetched customers for filtering
+        let currentFilter = 'all'; // Filter state for customers
+
+        const COLLECTION_NAME = 'users'; // The collection where user data is stored
+        const CURRENT_PAGE_ID = 'page-customers'; // Identifier for this page
+        const STORE_NAME_FILTER = 'magnetarshop'; // The specific store name to filter by
+        // --- Define the required admin email - MUST MATCH LOGIN PAGE ---
+        const REQUIRED_ADMIN_EMAIL = "admin@magnetarstore.com";
+        const LOGIN_PAGE_URL = 'login.html'; // URL of your login page
+
+
+        // --- Firebase Config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // --- Utility Functions (Keep only necessary ones) ---
+        function formatTimestamp(timestamp) {
+            // Check if timestamp is valid and has toDate method (Firebase Timestamp)
+            if (!timestamp || typeof timestamp.toDate !== 'function') {
+                return 'No date'; // Return a default string if invalid
+            }
+            try {
+                const date = timestamp.toDate();
+                const optionsDate = { month: 'short', day: 'numeric', year: 'numeric' };
+                const optionsTime = { hour: 'numeric', minute: '2-digit', hour12: true };
+                // Combine date and time, converting time to lowercase
+                return `${date.toLocaleDateString('en-US', optionsDate)} at ${date.toLocaleTimeString('en-US', optionsTime).toLowerCase()}`;
+            } catch (e) {
+                console.error("Error formatting timestamp:", e, timestamp);
+                return 'Invalid date'; // Return error string if toDate fails
+            }
+        }
+
+
+        function renderCustomerListItem(customer) { // Takes a customer object {id, ...data}
+            const customerId = customer.id; // This should be the UID
+            const storeName = customer.storeName ?? 'N/A';
+            const createdAt = customer.createdAt ? formatTimestamp(customer.createdAt) : 'N/A'; // Use formatted timestamp
+            // Safely check for isAnonymous, default to false
+            const isAnonymous = (customer.isAnonymous === true || customer.isAnonymous === 'true'); // Handle potential string 'true' from Firebase
+
+
+            const li = document.createElement('li');
+            li.className = 'customer-list-item';
+            li.dataset.customerId = customerId; // Store ID for potential click handler
+            // Add data attributes for filtering/searching
+            li.dataset.storeName = String(storeName).toLowerCase(); // Ensure string
+            li.dataset.isAnonymous = isAnonymous; // Store as boolean in dataset
+
+
+            li.innerHTML = `
+                <div class="customer-uid">UID: ${customerId}</div> <!-- Full UID maybe? Or shortened: ${customerId.substring(0, 8)}... -->
+                <div class="customer-details">
+                    <span>Store: ${storeName}</span>
+                    ${customer.createdAt ? `<span>Created: ${createdAt}</span>` : ''}
+                    <span>Type: ${isAnonymous ? 'Anonymous' : 'Registered'}</span>
+                </div>
+                `;
+
+            // Add click event listener if navigating to customer details
+            li.addEventListener('click', () => {
+                // Example: Navigate to a customer details page
+                alert(`Viewing details for customer: ${customerId}`);
+                // window.location.href = `customer-details.html?id=${customerId}`;
+            });
+
+            return li;
+        }
+
+        // --- Apply Filters & Search ---
+        function applyFiltersAndSearch() {
+            const customerListElement = document.getElementById('customersList');
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let hasVisibleItems = false;
+
+            // Clear previous messages (loading, empty, error) *only if they are inside the list*
+             // Find and remove only the message containers directly within the UL
+             customerListElement.querySelectorAll('.customer-list > .list-message-container').forEach(el => el.remove());
+
+
+            // Filter the local 'allCustomers' array first
+            let filteredCustomers = allCustomers;
+
+            // Apply Category Filter based on currentFilter state
+             if (currentFilter === 'anonymous') {
+                 filteredCustomers = filteredCustomers.filter(customer => (customer.isAnonymous === true || customer.isAnonymous === 'true'));
+             } else if (currentFilter === 'registered') {
+                 filteredCustomers = filteredCustomers.filter(customer => !(customer.isAnonymous === true || customer.isAnonymous === 'true'));
+             }
+             // 'all' filter uses the base 'allCustomers' array
+
+
+            // Apply Search Filter to the already category-filtered list
+             if (searchTerm) {
+                 filteredCustomers = filteredCustomers.filter(customer => {
+                     const uid = customer.id.toLowerCase();
+                     const storeName = (customer.storeName ?? '').toLowerCase();
+                     const createdAt = customer.createdAt ? formatTimestamp(customer.createdAt).toLowerCase() : ''; // Search by formatted date
+                     const isAnonymousString = (customer.isAnonymous ? 'anonymous' : 'registered').toLowerCase();
+                     // Add more fields if you add them to the user document (e.g., displayName, email)
+                     const displayName = (customer.displayName ?? '').toLowerCase();
+                     const email = (customer.email ?? '').toLowerCase();
+
+                     return uid.includes(searchTerm) ||
+                            storeName.includes(searchTerm) ||
+                            createdAt.includes(searchTerm) ||
+                            isAnonymousString.includes(searchTerm) ||
+                            displayName.includes(searchTerm) ||
+                            email.includes(searchTerm);
+                 });
+             }
+
+            // Clear the rendered list items before displaying filtered results
+             // Keep potential messages if they were rendered *before* the filter/search was applied
+            customerListElement.innerHTML = ''; // This *will* clear messages too if they were the only children
+
+            // Render the filtered results or show empty state
+            if (filteredCustomers.length === 0) {
+                 // If search term is active OR a specific category filter is active, show "No matching..."
+                 let messageTitle = "No Customers Found";
+                 let messageSub = "No customers matched your search or filter criteria.";
+
+                 if (searchTerm && currentFilter !== 'all') {
+                     messageTitle = `No Matching "${currentFilter}" Customers`;
+                     messageSub = `No customers of type "${currentFilter}" were found matching "${searchTerm}".`;
+                 } else if (searchTerm) {
+                     messageTitle = "No Matching Customers";
+                     messageSub = `No customers were found matching "${searchTerm}".`;
+                 } else if (currentFilter !== 'all') {
+                      messageTitle = `No "${currentFilter}" Customers Found`;
+                      messageSub = `No customers of type "${currentFilter}" were found.`;
+                 } else {
+                      // This case means currentFilter is 'all' and searchTerm is empty, but allCustomers is empty
+                      // This happens if the initial fetch found no users for STORE_NAME_FILTER
+                      messageTitle = "No Customers Available";
+                      messageSub = `No users with storeName '${STORE_NAME_FILTER}' were found.`;
+                 }
+
+                showEmptyState(messageTitle, messageSub); // Use refined empty state
+            } else {
+                 filteredCustomers.forEach(customer => {
+                     customerListElement.appendChild(renderCustomerListItem(customer));
+                 });
+            }
+
+            // Ensure list container is visible (in case it was hidden by a global error/message)
+            customerListElement.style.display = 'block';
+        }
+
+         // Debounce for search input
+         let searchTimeout;
+         function debouncedApplyFiltersAndSearch() {
+             clearTimeout(searchTimeout);
+             // Only apply search filter after a slight delay
+             searchTimeout = setTimeout(applyFiltersAndSearch, 300);
+         }
+
+
+        // --- Data Fetching ---
+        async function fetchKabarroCustomers() {
+            const customerListElement = document.getElementById('customersList');
+
+            // Ensure elements exist and Firestore is ready
+            if (!firestore || !customerListElement) {
+                 console.error("Required DOM elements or Firestore not ready during fetch.");
+                 showError("Page setup error. Cannot load customers.");
+                 return;
+            }
+
+            // Initial state: show loading, clear previous content
+            showLoading(); // Use helper to add loading spinner to the list
+
+
+            try {
+                // --- IMPORTANT: Query the 'users' collection ---
+                usersCollectionRef = firestore.collection(COLLECTION_NAME); // Define or re-confirm collection name
+
+                // Fetch documents where 'storeName' equals 'kabbarroh'
+                console.log(`Attempting to fetch users from '${COLLECTION_NAME}' where 'storeName' == '${STORE_NAME_FILTER}'`);
+                const querySnapshot = await usersCollectionRef.where("storeName", "==", STORE_NAME_FILTER).get();
+
+                allCustomers = []; // Clear previous data
+                if (querySnapshot.empty) {
+                    console.log(`No users with storeName '${STORE_NAME_FILTER}' found.`);
+                } else {
+                     querySnapshot.forEach(doc => {
+                         // Store the document ID (which is the UID) and the data
+                         allCustomers.push({ id: doc.id, ...doc.data() });
+                     });
+                     console.log(`Fetched ${allCustomers.length} customers with storeName '${STORE_NAME_FILTER}'.`);
+                }
+
+                // Render the initial list (which is all fetched customers, before search/filter)
+                // This also sets up the initial view based on the 'all' filter and empty search
+                applyFiltersAndSearch(); // Now calls renderCustomers internally based on currentFilter='all' and empty search
+
+             } catch (error) {
+                 console.error("Error fetching customers: ", error);
+                 // Pass the error message to showError helper
+                 showError(`Failed to load customers: ${error.message}`);
+             }
+         }
+
+         // Helper to create consistent message elements (loading, empty, error) for insertion into list
+         function createMessageElement(text, showSpinner = false, isError = false, subMessage = "") {
+             const messageLi = document.createElement('li'); // Use li so it fits in the ul
+             messageLi.className = 'list-message-container'; // Reusing this class for styling
+             messageLi.style.display = 'flex'; // Ensure it's flex
+             messageLi.style.flexDirection = showSpinner ? 'row' : 'column'; // Layout
+             messageLi.style.alignItems = 'center'; // Centering
+             messageLi.style.justifyContent = 'center'; // Centering
+             messageLi.style.padding = '40px 20px'; // Add some padding
+             messageLi.style.textAlign = 'center'; // Center text
+             messageLi.style.borderBottom = 'none'; // Messages shouldn't have borders
+              messageLi.style.width = '100%'; /* Ensure it takes full width for centering */
+
+
+             if (showSpinner) {
+                  messageLi.classList.add('loading');
+                  messageLi.innerHTML = `<span class="stat-loader"></span> ${text}`;
+                  messageLi.style.color = 'var(--text-secondary)'; // Standard text color
+             } else if (isError) {
+                  messageLi.classList.add('error');
+                  messageLi.innerHTML = `
+                    <i class="fas fa-exclamation-circle" style="font-size: 50px; color: var(--danger-color); margin-bottom: 15px;"></i>
+                    <h3>Error</h3>
+                    <p>${text}</p>
+                  `;
+                   /* Color is handled by .error class CSS rule now */
+             } else { // Empty state message
+                   messageLi.innerHTML = `
+                        <i class="fas fa-users" style="font-size: 50px; color: var(--text-secondary); opacity: 0.5; margin-bottom: 15px;"></i>
+                        <h3>${text}</h3>
+                         ${subMessage ? `<p>${subMessage}</p>` : ''} <!-- Optional sub-message -->
+                   `;
+                  messageLi.style.color = 'var(--text-secondary)'; // Standard text color
+                  messageLi.style.fontStyle = 'normal'; // Remove italics
+             }
+             return messageLi;
+         }
+
+
+        // --- UI State Functions (Modified to render inside the list UL) ---
+        // The original emptyState and errorMessage divs in HTML are no longer used for state display.
+        function showLoading() {
+             const customerListElement = document.getElementById('customersList');
+             if(customerListElement) {
+                 customerListElement.innerHTML = ''; // Clear list (and any previous messages)
+                 customerListElement.appendChild(createMessageElement('Loading customers...', true)); // Add loading message with spinner
+                 customerListElement.style.display = 'block'; // Ensure list container is visible
+             }
+        }
+
+        function hideLoading() {
+             // Loading is hidden when showEmptyState, showError, or applyFiltersAndSearch are called,
+             // as they clear the list or overwrite its content.
+        }
+
+        function showError(message = "An error occurred.") {
+             hideLoading(); // Ensure spinner is gone
+             const customerListElement = document.getElementById('customersList');
+             if (customerListElement) {
+                  customerListElement.innerHTML = ''; // Clear list
+                  customerListElement.appendChild(createMessageElement(message, false, true)); // Add error message
+                  customerListElement.style.display = 'block'; // Ensure list container is visible
+             }
+        }
+         // showEmptyState is called by applyFiltersAndSearch when results are empty
+        function showEmptyState(message = "No Customers Found", subMessage = "") {
+             hideLoading(); // Ensure spinner is gone
+             const customerListElement = document.getElementById('customersList');
+             if (customerListElement) {
+                  customerListElement.innerHTML = ''; // Clear list
+                  // Use the createMessageElement to add a styled empty state message
+                  customerListElement.appendChild(createMessageElement(message, false, false, subMessage)); // Pass subMessage
+                  customerListElement.style.display = 'block'; // Ensure list container is visible
+             }
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+             console.log("DOM Content Loaded for Customers page.");
+
+             // Get the list element early to update its initial state
+             const customerListElement = document.getElementById('customersList');
+
+            // Initialize Firebase
+            try {
+                if (!firebase.apps.length) {
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase Initialized.");
+                } else {
+                    firebaseApp = firebase.app();
+                    console.log("Firebase App already exists.");
+                }
+                auth = firebase.auth(); // Get Auth service
+                firestore = firebase.firestore();
+                console.log("Firestore service obtained.");
+
+                 // Enable offline persistence (optional)
+                 firestore.enablePersistence({ synchronizeTabs: true })
+                    .then(() => console.log("Firestore offline persistence enabled."))
+                    .catch((err) => {
+                         if (err.code == 'failed-precondition') { console.warn("Firestore Persistence failed: Multiple tabs open?"); }
+                         else if (err.code == 'unimplemented') { console.warn("Firestore Persistence failed: Browser not supported."); }
+                         else { console.warn("Firestore persistence error:", err); }
+                     });
+
+                 // --- Handle Authentication State and Authorization ---
+                 // This listener is crucial and will run when the page loads
+                 auth.onAuthStateChanged(user => {
+                     console.log("Auth State Changed:", user ? user.uid : "No user", user ? "Email: " + user.email : "", user ? "Anonymous: " + user.isAnonymous : "");
+
+                     // Clear any initial "Checking status..." message
+                     if (customerListElement) customerListElement.innerHTML = '';
+
+                     if (user) {
+                         // --- Authorization Check ---
+                         // Redirect if:
+                         // 1. The user is anonymous OR
+                         // 2. The user has an email but it's NOT the required admin email
+                         if (user.isAnonymous || (user.email && user.email !== REQUIRED_ADMIN_EMAIL)) {
+                            console.warn("Access denied: User is anonymous or not the authorized admin email. Redirecting to login.");
+                             // Use showError to display message before redirecting
+                             showError("Access denied. Please log in with an authorized account.");
+                             setTimeout(() => { window.location.href = LOGIN_PAGE_URL; }, 3000); // Redirect after a delay
+                             return; // Stop further execution
+                         }
+
+                         // --- User is Authorized Admin ---
+                         console.log("Authorized admin user signed in. Proceeding to fetch data.");
+                         // Now that we know the user is authorized, fetch the data
+                         fetchKabarroCustomers();
+
+                     } else {
+                         // --- No user signed in at all ---
+                         console.log("Auth State Changed: No user signed in. Redirecting to login.");
+                         // Use showError to display message before redirecting
+                         showError("You must be logged in to view this page. Redirecting...");
+                         setTimeout(() => { window.location.href = LOGIN_PAGE_URL; }, 3000); // Redirect after a delay
+                         return; // Stop further execution
+                     }
+                 });
+
+
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                // Use showError to indicate critical initialization error
+                showError("Critical Error: Could not connect to authentication services.");
+            }
+
+
+            // --- Set Active Navigation Item ---
+            // Combine selectors for bottom and sidebar nav items
+            document.querySelectorAll('.nav-item[data-target], .sidebar-nav-item[data-target]').forEach(link => {
+                link.classList.toggle('active', link.dataset.target === CURRENT_PAGE_ID);
+            });
+
+
+            // --- Event Listeners ---
+            // Add Customer Button (Placeholder) - Only useful if user is authorized,
+            // but attaching listener doesn't hurt even if the user gets redirected.
+            document.getElementById('addCustomerBtn')?.addEventListener('click', () => {
+                // In a real app, you might check auth status here too, but relying on
+                // the initial onAuthStateChanged check on page load is often sufficient.
+                if (auth.currentUser && auth.currentUser.email === REQUIRED_ADMIN_EMAIL) {
+                     alert('Functionality to add a new customer is not yet implemented.');
+                    // Example: window.location.href = 'add-customer.html';
+                } else {
+                    alert('You must be logged in as an authorized admin to perform this action.');
+                    // Redirect might happen automatically if not logged in
+                }
+
+            });
+
+            // Search Input Listener (using debounced function) - Also relies on data being loaded by authorized user
+            document.getElementById('searchInput')?.addEventListener('input', debouncedApplyFiltersAndSearch);
+
+
+            // Filter Button Listeners (using applyFiltersAndSearch directly) - Also relies on data being loaded
+            const filterButtons = document.querySelectorAll('.filters-container .filter-btn');
+            filterButtons.forEach(button => {
+                 button.addEventListener('click', function() {
+                      // Check if data has been loaded before applying filters
+                      if (allCustomers.length > 0 || document.getElementById('customersList').querySelector('.list-message-container')) {
+                          // Remove active from all filters in the same container
+                          filterButtons.forEach(btn => btn.classList.remove('active'));
+                          // Add active to the clicked button
+                          this.classList.add('active');
+                          // Update current filter state
+                          currentFilter = this.dataset.filter;
+                          console.log("Filter changed to:", currentFilter);
+                          // Apply filters based on the new active state and current search term
+                          applyFiltersAndSearch();
+                       } else {
+                           console.warn("Filter clicked before data was loaded or failed to load.");
+                           // Optionally show a temporary message
+                       }
+                 });
+            });
+
+            // Placeholder Listeners for More Options Button
+            document.getElementById('moreOptionsBtn')?.addEventListener('click', () => alert('More options not implemented.'));
+
+
+        }); // End DOMContentLoaded
+        // --- END: Embedded JS ---
+    </script>
+
+</body>
+</html>

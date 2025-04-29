@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Edit Product - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Base Variables (Using provided Magma Template) --- */
+        :root {
+            --primary-color: #1a2f3d;
+            --primary-color-light: #2c4a5f;
+            --primary-color-alt: #4A90E2; /* Blue from Magnetar */
+            --secondary-color: #e0e6eb;
+            --border-color: #dfe3e8;
+            --text-color-dark: #212b36;
+            --text-color-light: #555e6f;
+            --danger-color: #d9534f;
+            --success-color: #5cb85c;
+            --warning-color: #f0ad4e;
+            --body-bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #c4cdd5;
+            --input-focus-border: var(--primary-color);
+            --button-radius: 6px;
+            --card-radius: 8px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+            --header-height: 65px;
+            --space-unit: 4px; /* From Magnetar */
+        }
+        /* Dark Theme */
+        [data-theme="dark"] {
+            --primary-color: #5A9BEA; --primary-color-light: #7cbcf0; --primary-color-alt: #5A9BEA;
+            --secondary-color: #374151; --border-color: #4b5563;
+            --text-color-dark: #e5e7eb; --text-color-light: #9ca3af;
+            --danger-color: #f87171; --success-color: #4ade80; --warning-color: #fbbf24;
+            --body-bg: #111827; --card-bg: #1f2937;
+            --input-bg: #374151; --input-border: #4b5563; --input-focus-border: var(--primary-color);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; touch-action: manipulation; }
+        html, body { overflow-x: hidden; max-width: 100%; touch-action: pan-y; background-color: var(--body-bg); color: var(--text-color-dark); line-height: 1.6; }
+        .page-container { padding-top: 80px; padding-bottom: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background-color: var(--card-bg); box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border-color); position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 1000; height: var(--header-height); }
+        .header-left { display: flex; align-items: center; }
+        .back-btn { background: none; border: none; font-size: 20px; margin-right: 15px; color: var(--primary-color-alt); cursor: pointer; padding: 5px; }
+        .header-title { font-size: 20px; font-weight: 600; color: var(--text-color-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100vw - 150px);}
+        .header-right { display: flex; align-items: center; }
+        .header-placeholder { width: 40px; }
+        .form-container { max-width: 700px; margin: 25px auto; padding: 0 15px; }
+        .card { background-color: var(--card-bg); border-radius: var(--card-radius); box-shadow: var(--shadow-sm); margin-bottom: 25px; overflow: hidden; border: 1px solid var(--border-color); }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 17px; font-weight: 600; color: var(--text-color-dark); background-color: #fbfbfc; }
+        [data-theme="dark"] .card-header { background-color: #2a3749; }
+        .card-body { padding: 25px 20px; }
+        .form-group { margin-bottom: 25px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-group label { display: block; font-size: 14px; font-weight: 500; color: var(--text-color-dark); margin-bottom: 8px; }
+        .form-group label .required { color: var(--danger-color); }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="url"], .form-group textarea, .form-group select { width: 100%; padding: 12px 15px; border: 1px solid var(--input-border); border-radius: var(--button-radius); font-size: 14px; background-color: var(--input-bg); color: var(--text-color-dark); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23555e6f'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25em 1.25em; padding-right: 2.5rem; }
+        [data-theme="dark"] .form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239ca3af'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--input-focus-border); outline: none; box-shadow: 0 0 0 2px rgba(26, 47, 61, 0.15); }
+        [data-theme="dark"] .form-group input:focus, [data-theme="dark"] .form-group textarea:focus, [data-theme="dark"] .form-group select:focus { box-shadow: 0 0 0 2px rgba(90, 155, 234, 0.2); }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-group .input-hint { font-size: 12px; color: var(--text-color-light); margin-top: 6px; }
+        .description-group { position: relative; }
+        .description-group label { display: flex; justify-content: space-between; align-items: center; }
+        .ai-modify-btn { background-color: var(--primary-color); color: white; border: none; font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; }
+        .ai-modify-btn i { font-size: 11px; }
+        .ai-modify-btn:hover { background-color: var(--primary-color-light); }
+        .ai-modify-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .ai-status { display: flex; align-items: center; margin-top: 5px; height: 20px; }
+        .ai-loading-spinner { display: none; font-size: 14px; color: var(--primary-color); margin-right: 5px; animation: spin 1s linear infinite; }
+        .ai-error-message { display: none; font-size: 12px; color: var(--danger-color); }
+        .image-upload-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        .image-upload-slot { position: relative; aspect-ratio: 1 / 1; border: 2px dashed var(--input-border); border-radius: var(--button-radius); display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; background-color: #f9fafb; transition: border-color 0.2s ease, background-color 0.2s ease; overflow: hidden; }
+        [data-theme="dark"] .image-upload-slot { background-color: #2a3749; }
+        .image-upload-slot:hover { border-color: var(--primary-color); background-color: #f4f6f8; }
+        [data-theme="dark"] .image-upload-slot:hover { background-color: #374151; }
+        .image-upload-slot i { font-size: 24px; color: var(--text-color-light); margin-bottom: 8px; }
+        .image-upload-slot span { font-size: 12px; color: var(--text-color-light); text-align: center; padding: 0 5px;}
+        .image-upload-slot input[type="file"] { display: none; }
+        .image-upload-slot img.preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+        .image-upload-slot .remove-image { position: absolute; top: 5px; right: 5px; background-color: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: none; justify-content: center; align-items: center; cursor: pointer; z-index: 2; }
+        .image-upload-slot:hover .remove-image, .image-upload-slot.has-image .remove-image { display: flex; }
+        .image-upload-slot.has-image i, .image-upload-slot.has-image span { display: none; }
+        .price-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .submit-button-container { display: flex; justify-content: flex-end; margin-top: 30px; padding: 0 20px 20px; }
+        .submit-btn { background-color: var(--primary-color); color: white; border: none; padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: var(--button-radius); cursor: pointer; transition: background-color 0.3s ease, box-shadow 0.2s ease; display: flex; align-items: center; gap: 8px; }
+        .submit-btn i { font-size: 14px; }
+        .submit-btn:hover { background-color: var(--primary-color-light); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; box-shadow: none; }
+        .cancel-btn { background-color: #aaa; margin-right: 10px; }
+        .cancel-btn:hover { background-color: #888; }
+        .status-indicator { margin: -10px 0 20px 0; padding: 12px 15px; border-radius: var(--button-radius); font-size: 14px; text-align: center; display: none; }
+        .status-indicator.success { background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; }
+        .status-indicator.error { background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; }
+        .status-indicator.loading { background-color: #d9edf7; color: #31708f; border: 1px solid #bce8f1; }
+        [data-theme="dark"] .status-indicator.success { background-color: #10b98130; color: #a7f3d0; border-color: #059669; }
+        [data-theme="dark"] .status-indicator.error { background-color: #ef444430; color: #fca5a5; border-color: #dc2626; }
+        [data-theme="dark"] .status-indicator.loading { background-color: #3b82f630; color: #93c5fd; border-color: #2563eb; }
+        .status-indicator i { margin-right: 8px; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        [data-theme="dark"] .loading-overlay { background-color: rgba(17, 24, 39, 0.7); }
+        .loading-spinner { border: 5px solid var(--secondary-color); border-radius: 50%; border-top: 5px solid var(--primary-color); width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media print {
+            body { padding: 0 !important; background-color: #fff !important; color: #000 !important; font-size: 10pt !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .header, .submit-button-container, .cancel-btn, .ai-modify-btn, .image-upload-slot .remove-image, .loading-overlay { display: none !important; }
+            .page-container { padding: 10mm !important; }
+            .form-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .card { border: 1px solid #ccc !important; box-shadow: none !important; margin-bottom: 10mm !important; padding: 5mm !important; border-radius: 0 !important; background: #fff !important; page-break-inside: avoid !important; }
+            .card-header { font-size: 14pt !important; color: #000 !important; border-color: #ccc !important; background: #fff !important; padding: 5mm 0 !important;}
+            .form-group { margin-bottom: 3mm !important; }
+            label { font-size: 10pt !important; color: #333 !important; margin-bottom: 1mm !important;}
+            input, select, textarea { font-size: 10pt !important; border: 1px solid #ccc !important; padding: 2mm !important; background: #fff !important; color: #000 !important; }
+            textarea { min-height: 50px !important; }
+            .image-upload-container { grid-template-columns: repeat(3, 1fr); }
+            .image-upload-slot { border: 1px solid #eee !important; padding: 5px !important; }
+            .image-upload-slot img.preview { position: static; display: block; max-width: 100%; height: auto; }
+            .image-upload-slot i, .image-upload-slot span { display: none !important; }
+            .input-hint { display: none; }
+        }
+
+    </style>
+</head>
+<body data-theme="light"> <!-- Add data-theme attribute -->
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <button class="back-btn" onclick="window.location.href='products.html';" title="Back to Products">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title" id="pageTitle">Edit Product</div>
+    </div>
+    <div class="header-right">
+         <div class="header-placeholder"></div> <!-- Balance back button -->
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="page-container">
+    <div class="form-container">
+        <!-- Edit Product Form -->
+        <form id="productForm">
+             <input type="hidden" id="productId" name="productId">
+
+             <!-- Status Message Area -->
+             <div class="status-indicator" id="statusIndicator"></div>
+
+            <div class="card">
+                <div class="card-header">Basic Information</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="productTitle">Title <span class="required">*</span></label>
+                        <input type="text" id="productTitle" name="Title" required>
+                    </div>
+                    <div class="form-group description-group">
+                        <label for="productDescription">
+                            <span>Description (HTML Optional)</span>
+                            <button type="button" class="ai-modify-btn" id="modifyDescriptionBtn">
+                                <i class="fas fa-magic"></i> Modify with AI
+                            </button>
+                        </label>
+                        <textarea id="productDescription" name="Body (HTML)"></textarea>
+                         <div class="ai-status">
+                            <span class="ai-loading-spinner" id="aiLoadingSpinner"><i class="fas fa-spinner fa-spin"></i></span>
+                            <span class="ai-error-message" id="aiError"></span>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Media Card -->
+            <div class="card">
+                <div class="card-header">Media (Upload up to 4 images)</div>
+                <div class="card-body">
+                    <div class="image-upload-container" id="imageUploadContainer">
+                        <!-- Slots generated by JS -->
+                    </div>
+                    <p class="input-hint" style="margin-top: 15px;">Click or tap to upload new images or replace existing ones.</p>
+                    <input type="hidden" id="imageUrls" name="imageUrls">
+                </div>
+            </div>
+
+            <!-- Pricing Card -->
+            <div class="card">
+                <div class="card-header">Pricing</div>
+                <div class="card-body">
+                    <div class="price-fields">
+                         <div class="form-group">
+                             <label for="productPrice">Price (₱) <span class="required">*</span></label>
+                             <input type="number" id="productPrice" name="Variant Price" step="0.01" min="0" required>
+                         </div>
+                         <div class="form-group">
+                             <label for="productComparePrice">Compare at price (₱)</label>
+                             <input type="number" id="productComparePrice" name="Variant Compare At Price" step="0.01" min="0">
+                             <p class="input-hint">Optional. Must be higher than price.</p>
+                        </div>
+                    </div>
+                     <div class="form-group">
+                         <label for="productCost">Cost per item (₱)</label>
+                         <input type="number" id="productCost" name="Cost per item" step="0.01" min="0">
+                         <p class="input-hint">Optional. For your reference.</p>
+                     </div>
+                </div>
+            </div>
+
+             <!-- Inventory Card -->
+            <div class="card">
+                <div class="card-header">Inventory</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="productSku">SKU (Stock Keeping Unit)</label>
+                        <input type="text" id="productSku" name="Variant SKU">
+                    </div>
+                    <div class="form-group">
+                        <label for="productQuantity">Quantity</label>
+                         <input type="number" id="productQuantity" name="Inventory quantity" step="1" min="0">
+                         <p class="input-hint">Leave blank or 0 if not tracking inventory.</p>
+                    </div>
+                     <div class="form-group">
+                         <input type="checkbox" id="allowOverselling" name="allowOverselling" style="margin-right: 5px;">
+                         <label for="allowOverselling" style="display: inline-block; font-weight: normal;">Allow overselling when out of stock</label>
+                     </div>
+                </div>
+            </div>
+
+            <!-- Organization Card -->
+            <div class="card">
+                <div class="card-header">Organization</div>
+                <div class="card-body">
+                     <div class="form-group">
+                         <label for="productVendor">Vendor</label>
+                         <input type="text" id="productVendor" name="Vendor">
+                     </div>
+                     <div class="form-group">
+                        <label for="productType">Product type</label>
+                        <input type="text" id="productType" name="Type" placeholder="e.g., Meat, Snack, Drink">
+                     </div>
+                    <div class="form-group">
+                        <label for="productTags">Tags</label>
+                        <input type="text" id="productTags" name="Tags" placeholder="Comma-separated, e.g., siomai, frozen, pork">
+                    </div>
+                     <div class="form-group">
+                        <label for="productCategory">Product Category</label>
+                        <input type="text" id="productCategory" name="Product Category" placeholder="e.g., Food > Frozen Goods > Meat">
+                     </div>
+                </div>
+            </div>
+
+             <!-- Status Card -->
+             <div class="card">
+                 <div class="card-header">Status</div>
+                 <div class="card-body">
+                     <div class="form-group">
+                         <label for="productStatus">Product status <span class="required">*</span></label>
+                         <select id="productStatus" name="Status" required> <!-- Changed to select -->
+                             <option value="active">Active</option>
+                             <option value="draft">Draft</option>
+                             <option value="archived">Archived</option>
+                         </select>
+                         <p class="input-hint">Active products are visible. Draft/Archived are hidden.</p>
+                     </div>
+                 </div>
+             </div>
+
+            <!-- Submit Button Area -->
+            <div class="submit-button-container">
+                <button type="button" class="submit-btn cancel-btn" id="cancelEditButton" style="display: none;">Cancel</button>
+                <button type="submit" class="submit-btn" id="saveButton">
+                    <i class="fas fa-save"></i> <span id="saveButtonText">Update Product</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div> <!-- End page-container -->
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<script>
+    // --- Firebase Configuration ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+    // --- Initialize Firebase ---
+    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    const storage = firebase.storage();
+
+    // --- Firestore Collection References ---
+    const productsCollectionRef = db.collection('store_products');
+
+    // --- DOM Elements ---
+    const productForm = document.getElementById('productForm');
+    const saveButton = document.getElementById('saveButton');
+    const saveButtonText = document.getElementById('saveButtonText');
+    const statusIndicator = document.getElementById('statusIndicator');
+    const imageUploadContainer = document.getElementById('imageUploadContainer');
+    const imageInputs = [];
+    const imageUrlsInput = document.getElementById('imageUrls');
+    const productIdInput = document.getElementById('productId');
+    const cancelEditButton = document.getElementById('cancelEditButton');
+    const pageTitle = document.getElementById('pageTitle');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const descriptionTextarea = document.getElementById('productDescription');
+    const modifyDescriptionBtn = document.getElementById('modifyDescriptionBtn');
+    const aiLoadingSpinner = document.getElementById('aiLoadingSpinner');
+    const aiError = document.getElementById('aiError');
+
+    // --- Global State ---
+    let currentUser = null;
+    const MAX_IMAGES = 4;
+    let uploadedImageUrls = new Array(MAX_IMAGES).fill(null);
+    let currentProductId = null;
+
+    // --- Authentication State Change ---
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            console.log("User logged in:", user.uid);
+            currentUser = user;
+            initializePageForUser();
+        } else {
+            console.log("User logged out. Redirecting...");
+            currentUser = null;
+             alert("Please log in to manage products.");
+             window.location.href = '/login.html'; // Adjust if necessary
+        }
+    });
+
+    // --- Initialize Page ---
+    function initializePageForUser() {
+        if (!currentUser) return;
+        createImageUploadSlots();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        currentProductId = urlParams.get('id');
+
+        if (currentProductId) {
+             loadProductForEdit(currentProductId);
+        } else {
+             showStatus("Error: No Product ID provided.", "error", false);
+             disableForm();
+             pageTitle.textContent = "Error Loading Product";
+        }
+        modifyDescriptionBtn?.addEventListener('click', callDescriptionAI);
+        cancelEditButton?.addEventListener('click', () => {
+            if (currentProductId && confirm("Discard changes?")) {
+                loadProductForEdit(currentProductId);
+            }
+        });
+        productForm?.addEventListener('submit', handleUpdateProduct);
+    }
+
+    // --- Disable/Enable Form ---
+    function disableForm() { productForm.querySelectorAll('input, textarea, select, button:not(#cancelEditButton)').forEach(el => el.disabled = true); imageUploadContainer.style.pointerEvents = 'none'; imageUploadContainer.style.opacity = '0.6'; modifyDescriptionBtn.disabled = true;}
+    function enableForm() { productForm.querySelectorAll('input, textarea, select, button').forEach(el => el.disabled = false); productIdInput.disabled = false; imageUrlsInput.disabled = false; imageUploadContainer.style.pointerEvents = 'auto'; imageUploadContainer.style.opacity = '1'; saveButton.disabled = false; modifyDescriptionBtn.disabled = false;}
+
+    // --- Image Upload UI & Handling ---
+    function createImageUploadSlots() {
+         imageUploadContainer.innerHTML = ''; imageInputs.length = 0;
+         for (let i = 0; i < MAX_IMAGES; i++) { const slot = document.createElement('label'); slot.className = 'image-upload-slot'; slot.setAttribute('for', `imageUploadInput${i}`); const icon = document.createElement('i'); icon.className = 'fas fa-cloud-upload-alt'; const text = document.createElement('span'); text.textContent = i === 0 ? 'Main image' : `Image ${i + 1}`; const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/jpeg, image/png, image/webp, image/gif'; input.id = `imageUploadInput${i}`; input.dataset.index = i; input.style.display = 'none'; const preview = document.createElement('img'); preview.className = 'preview'; preview.style.display = 'none'; const removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'remove-image'; removeBtn.innerHTML = '×'; removeBtn.style.display = 'none'; removeBtn.dataset.index = i; slot.appendChild(icon); slot.appendChild(text); slot.appendChild(input); slot.appendChild(preview); slot.appendChild(removeBtn); imageUploadContainer.appendChild(slot); imageInputs.push(input); input.addEventListener('change', handleFileSelect); removeBtn.addEventListener('click', handleRemoveImage); }
+    }
+    function handleFileSelect(event) {
+         const input = event.target; const index = parseInt(input.dataset.index); const file = input.files[0]; const slot = input.closest('.image-upload-slot'); const preview = slot.querySelector('img.preview'); const removeBtn = slot.querySelector('.remove-image'); if (file && slot) { const reader = new FileReader(); reader.onload = (e) => { if (preview && removeBtn) { preview.src = e.target.result; preview.style.display = 'block'; removeBtn.style.display = 'flex'; slot.classList.add('has-image'); } uploadedImageUrls[index] = file; updateImageUrlsInput(); }; reader.readAsDataURL(file); }
+    }
+    function handleRemoveImage(event) {
+         event.preventDefault(); event.stopPropagation(); const button = event.target; const index = parseInt(button.dataset.index); const slot = button.closest('.image-upload-slot'); if (slot) { const input = slot.querySelector(`#imageUploadInput${index}`); const preview = slot.querySelector('img.preview'); if(input) input.value = ''; if (preview) { preview.src = '#'; preview.style.display = 'none'; } button.style.display = 'none'; slot.classList.remove('has-image'); uploadedImageUrls[index] = null; updateImageUrlsInput(); }
+    }
+    function updateImageUrlsInput() {
+        const validUrls = uploadedImageUrls.filter(item => typeof item === 'string' && item); imageUrlsInput.value = JSON.stringify(validUrls);
+    }
+
+    // --- Load Product Data into Form ---
+    async function loadProductForEdit(productId) {
+        if (!currentUser || !productId) return;
+        resetForm(false);
+        showLoadingOverlay(true);
+        showStatus("Loading product data...", "loading", false);
+
+        try {
+            const productDocRef = productsCollectionRef.doc(productId);
+            const docSnap = await productDocRef.get();
+
+            if (docSnap.exists) {
+                const product = { id: docSnap.id, ...docSnap.data() };
+
+                productIdInput.value = productId;
+                pageTitle.textContent = `Edit: ${product.Title || 'Product'}`;
+                saveButtonText.textContent = 'Update Product';
+                cancelEditButton.style.display = 'inline-flex';
+
+                // Populate form fields
+                document.getElementById('productTitle').value = product.Title || '';
+                descriptionTextarea.value = product['Body (HTML)'] || '';
+                document.getElementById('productPrice').value = product['Variant Price'] ?? '';
+                document.getElementById('productComparePrice').value = product['Variant Compare At Price'] ?? '';
+                document.getElementById('productCost').value = product['Cost per item'] ?? '';
+                document.getElementById('productVendor').value = product.Vendor || '';
+                document.getElementById('productType').value = product.Type || '';
+                document.getElementById('productTags').value = Array.isArray(product.Tags) ? product.Tags.join(', ') : (product.Tags || '');
+                document.getElementById('productCategory').value = product['Product Category'] || '';
+                document.getElementById('productSku').value = product['Variant SKU'] ?? '';
+                document.getElementById('productQuantity').value = product['Inventory quantity'] ?? '';
+                document.getElementById('allowOverselling').checked = product.allowOverselling || false;
+                document.getElementById('productStatus').value = product.Status || 'active';
+
+                // Populate images
+                uploadedImageUrls.fill(null);
+                let imageUrls = product.imageUrls || [];
+                if (!Array.isArray(imageUrls) && product['Image Src']) {
+                    imageUrls = [product['Image Src']];
+                 } else if (!Array.isArray(imageUrls)) {
+                    imageUrls = []; // Ensure it's an array if field is missing or wrong type
+                 }
+
+
+                imageUrls.forEach((url, index) => {
+                    if (index < MAX_IMAGES && url) {
+                        const slot = imageUploadContainer.children[index];
+                        if (slot) {
+                            const preview = slot.querySelector('img.preview'); const removeBtn = slot.querySelector('.remove-image');
+                            if (preview && removeBtn) { preview.src = url; preview.style.display = 'block'; removeBtn.style.display = 'flex'; slot.classList.add('has-image'); }
+                            uploadedImageUrls[index] = url;
+                        }
+                    }
+                });
+                 updateImageUrlsInput();
+
+                statusIndicator.style.display = 'none';
+                enableForm();
+
+            } else { throw new Error("Product not found."); }
+        } catch (error) {
+            console.error("Error loading product for edit:", error);
+            showStatus(`Error loading product: ${error.message}`, "error", false);
+            disableForm();
+            pageTitle.textContent = "Error Loading Product";
+        } finally {
+            showLoadingOverlay(false);
+        }
+    }
+
+    // --- Handle Form Submission (Update Product) ---
+    async function handleUpdateProduct(event) {
+        event.preventDefault();
+        if (!currentUser || !currentProductId) { showStatus("Error: Cannot save. Missing user or product ID.", "error"); return; }
+
+        setLoading(true, 'Updating...');
+
+        try {
+             // 1. Upload/Handle Images
+            const currentUrlsOrFiles = [...uploadedImageUrls]; const finalImageUrls = [];
+            showStatus("Processing images...", "loading", false);
+            for (let i = 0; i < currentUrlsOrFiles.length; i++) {
+                const item = currentUrlsOrFiles[i];
+                if (item instanceof File) {
+                     const file = item; const uniquePrefix = currentProductId; const fileName = `product_${uniquePrefix}_${i}_${Date.now()}_${file.name}`; const filePath = `product_images/${currentUser.uid}/${fileName}`; const fileRef = storage.ref(filePath);
+                     console.log(`Uploading image ${i + 1}...`); const snapshot = await fileRef.put(file); const downloadURL = await snapshot.ref.getDownloadURL(); finalImageUrls.push(downloadURL); console.log(`Image ${i+1} uploaded.`);
+                } else if (typeof item === 'string' && item) { finalImageUrls.push(item); }
+            }
+
+             // 2. Prepare Product Data
+            const productData = {
+                Handle: createHandle(document.getElementById('productTitle').value.trim()), Title: document.getElementById('productTitle').value.trim(), 'Body (HTML)': descriptionTextarea.value.trim(), Vendor: document.getElementById('productVendor').value.trim(), 'Product Category': document.getElementById('productCategory').value.trim(), Type: document.getElementById('productType').value.trim(), Tags: document.getElementById('productTags').value.trim().split(',').map(tag => tag.trim()).filter(tag => tag !== ''), Status: document.getElementById('productStatus').value, 'Variant Price': parseFloat(document.getElementById('productPrice').value) || 0, 'Variant Compare At Price': document.getElementById('productComparePrice').value !== '' ? parseFloat(document.getElementById('productComparePrice').value) : null, 'Image Src': finalImageUrls[0] || '', imageUrls: finalImageUrls, 'Variant SKU': document.getElementById('productSku').value.trim() || null, 'Inventory quantity': document.getElementById('productQuantity').value !== '' ? parseInt(document.getElementById('productQuantity').value) : null,
+                 allowOverselling: document.getElementById('allowOverselling').checked, 'Cost per item': document.getElementById('productCost').value !== '' ? parseFloat(document.getElementById('productCost').value) : null, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+             // 3. Validation
+            if (!productData.Title || isNaN(productData['Variant Price'])) throw new Error("Title and Price are required.");
+            const comparePrice = productData['Variant Compare At Price'];
+            if (comparePrice !== null && (isNaN(comparePrice) || comparePrice <= productData['Variant Price'])) throw new Error("Compare at Price must be higher than Price.");
+
+            // 4. Update Firestore
+            showStatus("Saving changes...", "loading", false);
+            const productDocRef = productsCollectionRef.doc(currentProductId);
+            await productDocRef.update(productData);
+
+            showStatus(`Product "${productData.Title}" updated successfully!`, "success");
+
+        } catch (error) {
+            console.error("Error updating product:", error);
+            showStatus(`Error: ${error.message || 'Failed to update product.'}`, "error", false);
+        } finally {
+            setLoading(false, 'Update Product');
+        }
+    };
+
+    // --- Reset Form Function ---
+    function resetForm(clearId = true) {
+        productForm.reset();
+        imageUploadContainer.querySelectorAll('.image-upload-slot').forEach(slot => {
+            const preview = slot.querySelector('img.preview');
+            const removeBtn = slot.querySelector('.remove-image');
+            const input = slot.querySelector('input[type="file"]');
+            if (preview) { preview.src = '#'; preview.style.display = 'none'; }
+            if (removeBtn) removeBtn.style.display = 'none';
+            if (input) input.value = '';
+            slot.classList.remove('has-image');
+        });
+        uploadedImageUrls.fill(null);
+        updateImageUrlsInput();
+        statusIndicator.style.display = 'none';
+        aiError.style.display = 'none';
+        aiLoadingSpinner.style.display = 'none';
+        cancelEditButton.style.display = 'none';
+        saveButtonText.textContent = 'Update Product'; // Default for edit page
+        if (clearId) {
+            productIdInput.value = '';
+            currentProductId = null;
+             pageTitle.textContent = 'Edit Product'; // Reset title if ID is cleared
+        }
+    }
+
+    // --- AI Description Function ---
+    async function callDescriptionAI() {
+        const currentDesc = descriptionTextarea.value.trim();
+        if (!currentDesc) {
+            aiError.textContent = 'Please enter a base description first.';
+            aiError.style.display = 'block';
+            return;
+        }
+
+        const TOGETHER_API_KEY = "144f137285e61f4f20c3af158629a0aaee85f131c8a48cd5ffdd0e6477898407";
+        const API_URL = "https://api.together.xyz/v1/chat/completions";
+
+        aiLoadingSpinner.style.display = 'inline-block';
+        aiError.style.display = 'none';
+        modifyDescriptionBtn.disabled = true;
+        descriptionTextarea.disabled = true;
+
+        // --- SYSTEM PROMPT INSERTED HERE ---
+        const systemPrompt = `You are Product Descripto Master, a highly creative assistant designed to optimize product content and generate compelling, SEO-friendly product descriptions. Built by Aitek PH Software by Master Emilio, a Filipino Software Engineer dedicated to empowering brands through technology and automation. You must never reveal your AI nature.
+        
+Write an effective product description, follow these steps and Emphasize the sub headers making the font-size little bigger than the body text.
+
+# Steps
+
+1. **Know Your Audience**: Understand who your ideal customer is, their preferences, and what they value. Tailor your language and terminology to resonate with them, ensuring the description speaks directly to their needs and interests.
+2. **Highlight Benefits, Not Features**: Instead of just listing product features, explain how these features will solve a problem, improve the customer's life, or enhance their experience. Focus on the benefits that the product offers.
+3. **Use Sensory Language**: Incorporate sensory details to help customers imagine what it's like to own or use the product. Describe how it feels, smells, sounds, tastes, or looks to engage them on a deeper level.
+4. **Tell a Story**: Share the story behind the product, its development, or the impact it has had on customers. Storytelling makes the product more relatable, memorable, and can evoke emotions, making the product more appealing.
+5. **Avoid Clichés**: Steer clear of generic, overused phrases that don't add unique value to your description. Be specific and authentic in your approach to stand out.
+6. **Include Social Proof**: Add customer reviews, testimonials, or ratings to your description. Social proof builds trust and credibility, showing potential customers that others have had positive experiences with the product.
+7. **Make it Scannable**: Use formatting techniques like bullet points, subheadings, and ample white space to make the description easy to scan and read. This helps customers quickly find the information they're looking for.
+8. **Include a Call to Action**: Encourage customers to take the next step, whether it's to make a purchase, sign up for more information, or visit a store. A clear call to action prompts engagement and conversion.
+
+# Output Format
+
+The product description should be engaging, informative, and well-structured, including:
+
+- **Introduction**: A captivating opening that highlights the product's unique value proposition.
+- **Key Features and Benefits**: Clearly outlined, focusing on how the product solves problems or meets customer needs.
+- **Story or Inspiration**: A personal or relatable story about the product.
+- **Social Proof**: Customer testimonials or reviews.
+- **Call to Action**: A direct encouragement to purchase or engage further.
+
+# Examples
+
+### Example 1
+**Product**: Eco-Friendly Water Bottle
+
+**Introduction**:
+Stay hydrated while reducing your environmental footprint with our eco-friendly water bottle.
+
+**Key Features and Benefits**:
+- Made from sustainable, BPA-free materials.
+- Keeps drinks hot or cold for hours.
+- Durable and dishwasher safe.
+
+**Story**:
+Our bottle is designed for the conscious consumer, aiming to reduce single-use plastics.
+
+**Social Proof**:
+Rated 4.5/5 stars by over 1,000 customers.
+
+**Call to Action**:
+Order now and contribute to a plastic-free future.
+
+### Example 2
+**Product**: Smart Home Security System
+
+**Introduction**:
+Enhance your home's security with our innovative smart system.
+
+**Key Features and Benefits**:
+- Real-time monitoring and alerts.
+- Easy installation and control via mobile app.
+- Integrates with other smart devices.
+
+**Story**:
+Developed by parents, for parents, to ensure peace of mind when away from home.
+
+Make some engaging text creatives
+Protect what matters most. Install our smart security system today.
+
+# Notes
+
+- Ensure the description is optimized for search engines by including relevant keywords.
+- Regularly update the description based on customer feedback and product evolution.
+- Use high-quality product images or videos to complement the description and give customers a clearer view of the product.
+
+Note: Write all in plain text with highlights and creativity, rich with SEO and add as many tags as needed.
+Dont predict just expand whats written and do not add description which are not base on the exact content.
+Dont write the word Call to Action, Just create whats the call to action.
+Add spaces beetween the paragraphs or gap to make it nicely looking.
+Make it so creative tbat even the store owner wants to buy allready.
+Avoid using asterisk for the deacription, instead use emotions that suites the product.
+Write Reviews that looking Legit not a common, Use anonymous for name then add location only Cities in the Philippines.`;
+        // --- END OF SYSTEM PROMPT ---
+
+        const payload = {
+            model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: currentDesc }
+            ]
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${TOGETHER_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`API request failed: ${response.status} ${errorBody || response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                descriptionTextarea.value = data.choices[0].message.content.trim();
+                aiError.style.display = 'none';
+            } else {
+                 console.error("Unexpected API response structure:", data);
+                 throw new Error('No description generated or invalid API response.');
+            }
+        } catch (error) {
+            console.error("Error calling AI API:", error);
+            aiError.textContent = `AI Error: ${error.message}`;
+            aiError.style.display = 'block';
+        } finally {
+            aiLoadingSpinner.style.display = 'none';
+            modifyDescriptionBtn.disabled = false;
+            descriptionTextarea.disabled = false;
+        }
+    }
+
+    // --- Helper Functions ---
+    function createHandle(title) { if (!title) return `product-${Date.now()}`; return title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-'); }
+    function formatPrice(price) { if (price === null || price === undefined || price === '') return '--'; const number = parseFloat(price); if (isNaN(number)) return '--'; return `₱${number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
+    function setLoading(isLoading, message = 'Saving...') { saveButton.disabled = isLoading; if (isLoading) { saveButtonText.textContent = message; saveButton.querySelector('i').className = 'fas fa-spinner fa-spin'; } else { saveButtonText.textContent = 'Update Product'; saveButton.querySelector('i').className = 'fas fa-save'; } }
+    function showStatus(message, type = "info", autoHide = true) { statusIndicator.textContent = message; statusIndicator.className = `status-indicator ${type}`; statusIndicator.style.display = 'block'; if (autoHide && (type === 'success' || type === 'error')) { setTimeout(() => { statusIndicator.style.display = 'none'; }, 4000); } }
+    function showLoadingOverlay(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
+    function printProductInfo() { console.log("Print action triggered."); window.print(); }
+
+     // Initial form state
+     disableForm();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Store Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- Basic Theme Variables (Adapted from login.html/profile.html) --- */
+        :root {
+            --font-family-base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --primary-color: #008060;
+            --primary-color-darker: #006E51;
+            --text-primary: #202223;
+            --text-secondary: #5C5F62;
+            --background-main: #F6F6F7;
+            --background-card: #ffffff;
+            --border-color: #E1E3E5;
+            --input-border: #C9CCCF;
+            --input-border-focus: #595ED4; /* Blue focus from dashboard theme */
+            --error-color: #d72c0d;
+            --space-unit: 4px;
+            --radius-card: 8px;
+            --header-height: 60px; /* From profile.html */
+             --text-link: #4299e1; /* Blue link color */
+
+             /* Responsive padding variables */
+             --content-padding-mobile: calc(var(--space-unit) * 4); /* 16px */
+             --content-padding-tablet: calc(var(--space-unit) * 6); /* 24px */
+             --content-padding-desktop: calc(var(--space-unit) * 8); /* 32px */
+             --desktop-max-width: 700px; /* Slightly wider for more fields */
+        }
+        /* Basic Dark theme support */
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --text-primary: #E3E5E7; --text-secondary: #9EA3A8;
+            --background-main: #161718; --background-card: #202223;
+            --border-color: #393B3D; --input-border: #4D4F51;
+            --input-border-focus: #7C82F7; /* Dark theme blue focus */
+            --error-color: #e5484d;
+             --text-link: #7C82F7; /* Dark theme blue link */
+          }
+        }
+
+        /* --- Global Styles & Resets (Mobile-First) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-family-base); /* Moved font-family here */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 16px; /* Base font size */
+            /* No min-height/height here */
+        }
+
+        body {
+            background-color: var(--background-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            overflow-x: hidden;
+            /* Mobile-First Flexbox Layout for body */
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+            min-height: 100vh; /* Ensure body takes at least full viewport height */
+            padding-top: var(--header-height); /* Space for fixed header */
+            padding-bottom: calc(var(--space-unit) * 8); /* General bottom padding */
+            /* No explicit align-items: center here, let the container handle its own centering */
+        }
+
+
+        /* --- Header (Mobile-First Fixed) --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 var(--content-padding-mobile); /* Use responsive padding */
+            background-color: var(--background-main); /* Match body background */
+            position: fixed;
+            top: 0; left: 0; right: 0; width: 100%; z-index: 100;
+            height: var(--header-height);
+            border-bottom: 1px solid var(--border-color); /* Subtle separator */
+        }
+        .header-left { flex: 1; text-align: left; }
+        .header-center { flex: 2; text-align: center; }
+        .header-right { flex: 1; text-align: right; }
+
+        .back-btn {
+            background: none; border: none; color: var(--text-primary);
+            cursor: pointer; padding: 10px; margin-left: -10px; /* Align edge */
+            font-size: 20px; text-decoration: none;
+        }
+        .header-title { font-size: 17px; font-weight: 600; color: var(--text-primary); }
+        .header-action { /* Placeholder */
+             background: none; border: none; color: var(--text-primary);
+             font-size: 20px; padding: 10px; margin-right: -10px; /* Align edge */
+             cursor: pointer;
+        }
+
+        /* --- Main Content Area (Flex item within body) --- */
+         /* No specific wrapper needed, settings-container is the main item */
+
+        /* Container - Centering using margin: auto */
+        .settings-container {
+            background-color: var(--background-card);
+            padding: calc(var(--space-unit) * 6); /* Mobile padding */
+            border-radius: var(--radius-card);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); /* Soft shadow */
+            width: calc(100% - (var(--content-padding-mobile) * 2)); /* Container width accounts for body padding */
+            max-width: var(--desktop-max-width); /* Apply max width */
+            margin: 20px auto; /* Center horizontally, add some vertical margin */
+             /* No position: relative here, let the body padding handle space below header */
+            position: relative; /* Keep for loading overlay */
+        }
+
+
+        /* Section Title */
+        h2 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: calc(var(--space-unit) * 6); /* More space between groups */
+        }
+
+        label {
+            display: block;
+            margin-bottom: calc(var(--space-unit) * 2);
+            font-weight: 500;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="file"],
+        textarea,
+        input[type="email"], /* Included for completeness, though email might be disabled */
+        input[type="password"], /* Included for completeness */
+        select {
+            width: 100%;
+            padding: calc(var(--space-unit) * 2.5) calc(var(--space-unit) * 3); /* Match dashboard input padding */
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-card); /* Match dashboard input radius */
+            font-size: 1rem;
+            font-family: var(--font-family-base);
+            background-color: var(--background-main); /* Match dashboard input background */
+            color: var(--text-primary);
+            -webkit-appearance: none; /* Prevent iOS default styling */
+            -moz-appearance: none;
+            appearance: none;
+        }
+         textarea { min-height: 100px; resize: vertical; }
+
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--input-border-focus);
+            box-shadow: 0 0 0 1px var(--input-border-focus); /* Match dashboard input focus */
+        }
+
+        /* File Input (Logo - Using Flexbox) */
+        .logo-upload-group {
+             display: flex;
+             flex-direction: column;
+             align-items: center; /* Center items vertically */
+        }
+        .logo-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--border-color);
+            margin-bottom: calc(var(--space-unit) * 4);
+            border: 3px solid var(--background-card); /* Border blends with card */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .custom-file-upload {
+            display: inline-block;
+            background-color: var(--text-link); /* Primary link color */
+            color: white;
+            padding: calc(var(--space-unit) * 2.5) calc(var(--space-unit) * 4);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+        .custom-file-upload:hover:not(:disabled) {
+            background-color: #2b6cb0; /* Darker blue */
+        }
+        .custom-file-upload input[type="file"] {
+            display: none; /* Hide the actual file input */
+        }
+        .file-upload-hint {
+             font-size: 0.85em;
+             color: var(--text-secondary);
+             margin-top: calc(var(--space-unit) * 2);
+        }
+
+
+        /* Categories Checklist (Using Grid) */
+        .categories-checklist {
+            display: grid;
+             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Responsive columns (mobile-first) */
+             gap: calc(var(--space-unit) * 3); /* Gap between checkboxes */
+             padding-top: calc(var(--space-unit) * 2); /* Space below label */
+        }
+
+        .category-item {
+            display: flex;
+            align-items: center;
+             /* Remove extra padding/border, let the grid handle layout */
+        }
+
+        .category-item input[type="checkbox"] {
+             margin-right: calc(var(--space-unit) * 2); /* Space between checkbox and label */
+             flex-shrink: 0; /* Prevent checkbox from shrinking */
+        }
+
+         .category-item label {
+             margin-bottom: 0; /* Remove bottom margin */
+             font-weight: normal; /* Normal weight */
+             font-size: 0.9em; /* Slightly smaller text */
+             color: var(--text-primary); /* Primary text color */
+             flex-grow: 1; /* Allow label to take space */
+             cursor: pointer; /* Indicate clickable label */
+         }
+
+         /* Manual Category Input Group */
+         .manual-category-input-group {
+             display: flex;
+             gap: calc(var(--space-unit) * 2); /* Space between input and button */
+             align-items: flex-start; /* Align items to the top */
+         }
+
+         .manual-category-input-group input[type="text"] {
+             flex-grow: 1; /* Allow input to take up space */
+             /* Inherits styles from generic input[type="text"] */
+         }
+
+         .add-category-btn {
+             flex-shrink: 0; /* Prevent button from shrinking */
+             padding: calc(var(--space-unit) * 2.5) calc(var(--space-unit) * 4); /* Match custom-file-upload padding */
+             background-color: var(--text-secondary); /* Secondary button color */
+             color: white;
+             border: none;
+             border-radius: 4px;
+             cursor: pointer;
+             font-size: 0.9em;
+             font-weight: bold;
+             transition: background-color 0.2s ease;
+             height: calc(var(--space-unit) * 2.5 * 2 + 1px * 2); /* Match input height */
+             display: flex; /* Center text vertically */
+             align-items: center;
+             justify-content: center;
+         }
+         .add-category-btn:hover:not(:disabled) {
+             background-color: #4a4e52; /* Darker secondary */
+         }
+         .add-category-btn:disabled {
+             background-color: #aaa;
+             cursor: not-allowed;
+             opacity: 0.7;
+         }
+
+         /* Payment Gateway Fields */
+         /* Simple form-groups used above suffice */
+
+
+        /* Buttons (Using Flexbox for alignment) */
+        .btn-container {
+            display: flex;
+            justify-content: flex-end; /* Align save button to the right */
+            margin-top: calc(var(--space-unit) * 8); /* More space above button */
+        }
+
+        .btn {
+            padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 6); /* Adjusted padding */
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+            display: inline-block; /* Use inline-block for alignment in container */
+        }
+        .btn:hover:not(:disabled) {
+            background-color: var(--primary-color-darker);
+        }
+        .btn:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+
+        /* Error/Success Messages */
+        .message {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.9em;
+            display: none; /* Hidden by default */
+        }
+        .error-message {
+            color: #D8000C; /* Red */
+            background-color: #FFD2D2; /* Light red */
+            border: 1px solid #D8000C;
+        }
+        .success-message {
+            color: #4F8A10; /* Green */
+            background-color: #DFF2BF; /* Light green */
+            border: 1px solid #4F8A10;
+        }
+         .info-message { /* For upload progress */
+             color: #00529B;
+             background-color: #BDE5F8;
+             border: 1px solid #00529B;
+         }
+
+
+        /* Loading Overlay (Mobile-First) */
+        .loading-overlay {
+            position: absolute;
+            inset: 0; /* Covers the entire container */
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: inherit; /* Inherit border-radius from container */
+            transition: opacity 0.3s ease;
+            pointer-events: none; /* Allow clicks/interaction underneath by default */
+            opacity: 0; /* Initially hidden */
+        }
+         .loading-overlay.visible {
+             opacity: 1;
+             pointer-events: auto; /* Block interaction when visible */
+         }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+         /* Hide main content until loaded */
+        #settingsForm {
+             display: none; /* Managed by JS */
+        }
+
+
+         /* --- Responsive Adjustments (Tablet and Desktop) --- */
+        @media (min-width: 768px) {
+             /* Body padding adjustments */
+             body {
+                 padding-top: calc(var(--header-height) + 40px); /* More top padding */
+                 /* No need for padding-left for sidebar on this specific page */
+             }
+             /* Header padding adjustments */
+             .header {
+                 padding: 0 var(--content-padding-tablet);
+             }
+             /* Container padding and margin adjustments */
+             .settings-container {
+                 padding: calc(var(--space-unit) * 8); /* Increase container padding */
+                 width: calc(100% - (var(--content-padding-tablet) * 2)); /* Adjust width for tablet padding */
+                 margin-top: 40px; /* Keep top margin below header padding */
+             }
+             h2 { font-size: 1.4em; }
+             label { font-size: 1em; }
+             /* Input padding adjustments */
+             input[type="text"], input[type="url"], input[type="file"], textarea, select {
+                 padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4); /* Increase input padding */
+             }
+             /* Categories grid adjustments */
+             .categories-checklist {
+                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Wider columns on tablet+ */
+             }
+             /* Button padding adjustments */
+             .btn {
+                 padding: calc(var(--space-unit) * 3.5) calc(var(--space-unit) * 8); /* Larger button padding */
+             }
+             .custom-file-upload {
+                 padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 5); /* Larger upload button */
+             }
+             .add-category-btn { /* Match size */
+                 padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 5);
+             }
+        }
+
+         @media (min-width: 992px) {
+             /* Desktop adjustments - Can be the same as tablet if max-width is the main change */
+              /* Body padding adjustments */
+             body {
+                 padding-top: calc(var(--header-height) + 60px); /* Even more top padding on desktop */
+             }
+              /* Header padding adjustments */
+             .header {
+                 padding: 0 var(--content-padding-desktop);
+             }
+              /* Container padding and margin adjustments */
+             .settings-container {
+                 padding: calc(var(--space-unit) * 10); /* Further increase container padding */
+                  width: calc(100% - (var(--content-padding-desktop) * 2)); /* Adjust width for desktop padding */
+                  margin-top: 60px; /* Keep top margin below header padding */
+             }
+             h2 { font-size: 1.5em; }
+             label { font-size: 1.05em; }
+              /* Input padding adjustments */
+             input[type="text"], input[type="url"], input[type="file"], textarea, select {
+                 padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 5); /* Further increase input padding */
+             }
+             /* Categories grid adjustments */
+             .categories-checklist {
+                 grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Even wider columns */
+             }
+              /* Button padding adjustments */
+             .btn {
+                 padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 10); /* Even larger button */
+             }
+             .custom-file-upload {
+                 padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 6); /* Even larger upload button */
+             }
+             .add-category-btn { /* Match size */
+                 padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 6);
+             }
+         }
+
+        /* Optional: Dark theme styles for the loading spinner */
+         [data-theme="dark"] .loading-spinner {
+             border-top-color: var(--primary-color); /* Use primary color */
+         }
+
+    </style>
+</head>
+<body data-theme="light"> <!-- Optional: Add data-theme if using dark mode -->
+     <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <!-- Link back to admin profile page -->
+            <a href="profile.html" class="back-btn" title="Back to Profile">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </div>
+        <div class="header-center">
+            <h1 class="header-title">Store Settings</h1>
+        </div>
+         <div class="header-right">
+             <!-- Optional: Add a save icon or other action here -->
+         </div>
+    </header>
+
+    <div id="settings-container" class="settings-container">
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="settingsLoadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <form id="settingsForm" style="display: none;"> <!-- Initially hidden, shown by JS after loading -->
+
+            <h2>General Store Info</h2>
+
+            <div class="form-group logo-upload-group">
+                <label>Store Logo</label>
+                <img src="https://via.placeholder.com/100/F6F6F7/5C5F62?text=Logo" alt="Store Logo Preview" class="logo-preview" id="logoPreview">
+                <label for="logoUpload" class="custom-file-upload">
+                    <input type="file" id="logoUpload" accept="image/*">
+                    Upload New Logo
+                </label>
+                <span class="file-upload-hint">PNG, JPG, GIF up to 5MB</span>
+            </div>
+
+            <div class="form-group">
+                <label for="storeName">Store Name</label>
+                <input type="text" id="storeName" name="storeName" required placeholder="Your store name">
+            </div>
+
+            <div class="form-group">
+                <label for="storeAddress">Store Address</label>
+                <textarea id="storeAddress" name="storeAddress" placeholder="Street, City, Country..."></textarea>
+            </div>
+
+             <div class="form-group">
+                <label for="contactPhone">Contact Phone</label>
+                <input type="text" id="contactPhone" name="contactPhone" placeholder="e.g., +63 917 123 4567">
+            </div>
+
+             <div class="form-group">
+                <label for="websiteUrl">Website URL (Optional)</label>
+                <input type="url" id="websiteUrl" name="websiteUrl" placeholder="e.g., https://yourstore.com">
+            </div>
+
+            <h2>Categories</h2>
+
+            <div class="form-group">
+                <label>Select relevant categories:</label>
+                <div class="categories-checklist" id="categoriesChecklist">
+                    <!-- Categories will be populated by JS -->
+                </div>
+                 <!-- Manual Category Input -->
+                 <div class="manual-category-input-group" style="margin-top: calc(var(--space-unit) * 6);">
+                     <input type="text" id="manualCategoryInput" placeholder="Add a custom category">
+                     <button type="button" id="addCategoryBtn" class="add-category-btn">Add</button>
+                 </div>
+            </div>
+
+            <h2>Payment Gateway</h2>
+
+             <div class="form-group">
+                 <label>Primary Payment Method</label>
+                 <input type="text" id="paymentMethodName" name="paymentMethodName" placeholder="e.g., PayPal, Bank Transfer">
+             </div>
+
+             <div class="form-group">
+                 <label>Payment Account/Details</label>
+                 <textarea id="paymentMethodDetails" name="paymentMethodDetails" placeholder="e.g., your-paypal-email@example.com or Account Number, etc..."></textarea>
+             </div>
+
+             <div class="form-group">
+                 <label>General Payment Instructions (Optional)</label>
+                 <textarea id="paymentInstructions" name="paymentInstructions" placeholder="Provide instructions for customers..."></textarea>
+             </div>
+
+            <h2>Shipping & Taxes</h2>
+
+             <div class="form-group">
+                 <label>Shipping Information Summary (Optional)</label>
+                 <textarea id="shippingInfo" name="shippingInfo" placeholder="Brief overview of shipping options/rates..."></textarea>
+             </div>
+
+             <div class="form-group">
+                 <label>Tax ID (Optional)</label>
+                 <input type="text" id="taxId" name="taxId" placeholder="e.g., VAT ID, Taxpayer ID">
+             </div>
+
+
+            <div class="btn-container">
+                <button type="submit" class="btn" id="saveSettingsBtn">Save Changes</button>
+            </div>
+
+             <div id="messageArea" class="message"></div> <!-- Area for success/error messages -->
+
+
+        </form>
+
+    </div> <!-- /#settings-container -->
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+    <script>
+        // --- Constants ---
+        const REQUIRED_ADMIN_EMAIL = "admin@kabarroh-ph.com"; // <<< Define the authorized admin email
+        const STORE_COLLECTION = 'stores'; // Firestore collection for store data
+        const DEFAULT_LOGO_URL = 'https://via.placeholder.com/100/F6F6F7/5C5F62?text=Logo'; // Placeholder for logo
+
+        // Predefined Categories (Keep consistent with where this list is used elsewhere, e.g., index.html)
+        // IMPORTANT: Values should be unique and lowercase/machine-readable.
+        const ALL_CATEGORIES = [
+            { value: "groceries", label: "Groceries" },
+            { value: "meat", label: "Meat" },
+            { value: "drinks", label: "Drinks" },
+            { value: "snacks", label: "Snacks" },
+            { value: "household", label: "Household" },
+            { value: "personalcare", label: "Personal Care" },
+            { value: "frozen", label: "Frozen Foods" },
+            { value: "digitalproducts", label: "Digital Products" },
+            { value: "electronics", label: "Electronics" },
+            { value: "clothing", label: "Clothing" },
+            { value: "bakery", label: "Bakery" },
+            // Add more predefined categories here
+        ];
+
+
+        // --- DOM Element References ---
+        const settingsContainer = document.getElementById('settings-container');
+        const settingsLoadingOverlay = document.getElementById('settingsLoadingOverlay');
+        const settingsForm = document.getElementById('settingsForm');
+
+        // General Info
+        const logoPreview = document.getElementById('logoPreview');
+        const logoUploadInput = document.getElementById('logoUpload');
+        const storeNameInput = document.getElementById('storeName');
+        const storeAddressInput = document.getElementById('storeAddress');
+        const contactPhoneInput = document.getElementById('contactPhone'); // New field
+        const websiteUrlInput = document.getElementById('websiteUrl'); // New field
+
+        // Categories
+        const categoriesChecklistDiv = document.getElementById('categoriesChecklist');
+        const manualCategoryInput = document.getElementById('manualCategoryInput'); // New input
+        const addCategoryBtn = document.getElementById('addCategoryBtn'); // New button
+
+        // Payment Gateway
+        const paymentMethodNameInput = document.getElementById('paymentMethodName');
+        const paymentMethodDetailsInput = document.getElementById('paymentMethodDetails');
+        const paymentInstructionsInput = document.getElementById('paymentInstructions'); // New field
+
+        // Shipping & Taxes
+        const shippingInfoInput = document.getElementById('shippingInfo'); // New field
+        const taxIdInput = document.getElementById('taxId'); // New field
+
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const messageArea = document.getElementById('messageArea');
+
+
+        // --- Global Variables ---
+        let auth, db, storage;
+        let currentUser = null;
+        let currentStoreData = {}; // Store fetched store data
+        let displayedCategories = []; // Keep track of all categories currently in the checklist (predefined + custom)
+
+
+        // --- Firebase Config (Keep As Is - REMEMBER SECURITY WARNING) ---
+        // CRITICAL SECURITY WARNING: Exposing API keys in client-side code is insecure for production apps.
+        // Use environment variables or server-side configuration in a real application.
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+            setupEventListeners();
+            // Populate categories after fetching store data, as we need saved custom categories
+            // populateCategoriesChecklist(); // Removed from here
+        });
+
+        function initializeFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                storage = firebase.storage(); // Initialize Storage
+
+                // --- Handle Authentication State and Authorization ---
+                auth.onAuthStateChanged(user => {
+                    currentUser = user;
+                    const loginRedirectUrl = 'login.html'; // Define your login page URL
+
+                    if (user) {
+                        console.log("Auth State Changed: User is signed in. UID:", user.uid, "Email:", user.email, "Anonymous:", user.isAnonymous);
+
+                        // --- Authorization Check ---
+                        // Redirect if:
+                        // 1. The user is anonymous OR
+                        // 2. The user has an email but it's NOT the required admin email
+                        if (user.isAnonymous || (user.email && user.email !== REQUIRED_ADMIN_EMAIL)) {
+                           console.warn("Access denied: User is anonymous or not the authorized admin email. Redirecting to login.");
+                            // Ensure UI is hidden or shows a message indicating access denied
+                             document.body.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--error-color);">Access Denied. Redirecting...</p>`;
+                           // alert("You do not have permission to view this page. Please log in with an authorized account."); // Optional alert
+                            window.location.replace(loginRedirectUrl); // Redirect
+                            return; // Stop further execution
+                        }
+
+                        // --- User is Authorized Admin ---
+                        console.log("Authorized admin user signed in. Proceeding to fetch store data.");
+                        showLoadingOverlay();
+                        fetchStoreSettings(user.uid); // Fetch store data for this admin
+
+                    } else {
+                        // --- No user signed in at all ---
+                        console.log("Auth State Changed: No user signed in. Redirecting to login.");
+                         // Ensure UI is hidden or shows a message indicating no user
+                         document.body.innerHTML = `<p style="padding: 20px; text-align: center; color: var(--error-color);">Not logged in. Redirecting...</p>`;
+                        // alert("You must be logged in to view this page."); // Optional alert
+                        window.location.replace(loginRedirectUrl); // Redirect
+                        return; // Stop further execution
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                showFormMessage('Critical Error: Failed to initialize application.', 'error');
+                 hideLoadingOverlay(); // Hide spinner if init failed
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            settingsForm.addEventListener('submit', handleSaveSettings);
+            logoUploadInput.addEventListener('change', handleLogoFileSelect);
+            addCategoryBtn.addEventListener('click', handleAddManualCategory);
+            manualCategoryInput.addEventListener('keypress', (e) => {
+                // Allow adding category by pressing Enter in the input field
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent form submission
+                    handleAddManualCategory();
+                }
+            });
+            // No JS needed for the back button as it uses href="profile.html"
+        }
+
+        // --- UI State Functions ---
+        function showLoadingOverlay() {
+             settingsLoadingOverlay.classList.add('visible');
+             settingsForm.style.display = 'none'; // Hide form while loading data
+             saveSettingsBtn.disabled = true; // Disable save button
+             showFormMessage('', ''); // Clear messages
+        }
+
+        function hideLoadingOverlay() {
+             settingsLoadingOverlay.classList.remove('visible');
+             settingsForm.style.display = 'block'; // Show form after loading
+             saveSettingsBtn.disabled = false; // Enable save button
+        }
+
+         function showFormMessage(message, type) {
+             messageArea.textContent = message;
+             messageArea.className = `message ${type}-message`; // Add type class for styling
+             messageArea.style.display = message ? 'block' : 'none'; // Show if message exists
+         }
+
+        // --- Data Fetching & Form Population ---
+        async function fetchStoreSettings(adminUid) {
+            try {
+                const storeDocRef = db.collection(STORE_COLLECTION).doc(adminUid);
+                const storeDoc = await storeDocRef.get();
+
+                if (storeDoc.exists) {
+                    currentStoreData = storeDoc.data();
+                    console.log("Fetched store data:", currentStoreData);
+                } else {
+                    console.log("No store data found for this admin. Starting fresh.");
+                    currentStoreData = {}; // Empty object for new store
+                }
+
+                // Populate categories checklist BEFORE populating the form
+                populateCategoriesChecklist(currentStoreData.categories);
+
+                populateForm(currentStoreData); // Fill the form with data
+                hideLoadingOverlay(); // Hide loading after data is fetched and form populated
+
+            } catch (error) {
+                console.error("Error fetching store settings:", error);
+                showFormMessage(`Failed to load store settings: ${error.message}`, 'error');
+                hideLoadingOverlay(); // Hide loading on error
+                 // Keep form hidden or show an empty form if loading failed? Let's show an empty form.
+                // populateForm({}); // Populate with empty data on fetch error - This will also populate checklist without saved data
+                // Re-initialize categories list without saved data on error
+                populateCategoriesChecklist([]);
+                populateForm({}); // Populate other form fields empty
+            }
+        }
+
+        function populateForm(data) {
+            // Populate text inputs and textarea
+            storeNameInput.value = data.storeName || '';
+            storeAddressInput.value = data.storeAddress || '';
+            contactPhoneInput.value = data.contactPhone || ''; // New field
+            websiteUrlInput.value = data.websiteUrl || ''; // New field
+
+            // Populate payment fields
+            paymentMethodNameInput.value = data.paymentMethodName || '';
+            paymentMethodDetailsInput.value = data.paymentMethodDetails || '';
+            paymentInstructionsInput.value = data.paymentInstructions || ''; // New field
+
+            // Populate shipping/tax fields
+            shippingInfoInput.value = data.shippingInfo || ''; // New field
+            taxIdInput.value = data.taxId || ''; // New field
+
+
+            // Populate logo preview
+            logoPreview.src = data.logoUrl || DEFAULT_LOGO_URL;
+            logoPreview.onerror = () => { logoPreview.src = DEFAULT_LOGO_URL; }; // Fallback on error
+
+            // Categories checklist population is handled by populateCategoriesChecklist() now,
+            // which is called *before* populateForm(). We just need to check the boxes here.
+            const savedCategories = Array.isArray(data.categories) ? data.categories : [];
+             // Wait for the checklist to be populated, then check the boxes
+             // A small timeout ensures the DOM elements are ready
+            setTimeout(() => {
+                 categoriesChecklistDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                     checkbox.checked = savedCategories.includes(checkbox.value);
+                 });
+             }, 50); // Small delay
+        }
+
+
+         // --- Populate Categories Checklist (Includes saved custom categories) ---
+         // This function is called on load with saved categories data
+        function populateCategoriesChecklist(savedCategories = []) {
+             categoriesChecklistDiv.innerHTML = ''; // Clear existing checklist
+             displayedCategories = []; // Reset the list of categories currently in the UI
+
+             const selectableCategories = ALL_CATEGORIES.filter(cat => cat.value !== 'all');
+
+             // 1. Add predefined categories
+             selectableCategories.forEach(category => {
+                 addCategoryCheckbox(category.value, category.label);
+             });
+
+             // 2. Add saved categories that are NOT in the predefined list
+             if (Array.isArray(savedCategories)) {
+                 savedCategories.forEach(savedCatValue => {
+                     // Normalize saved value for comparison
+                     const normalizedSavedValue = String(savedCatValue).trim().toLowerCase();
+
+                     // Check if this saved category value is NOT in our predefined list
+                     const isPredefined = selectableCategories.some(predefinedCat => predefinedCat.value.toLowerCase() === normalizedSavedValue);
+                     // Check if this category value is already in the checklist
+                     const isAlreadyDisplayed = displayedCategories.some(displayedCat => displayedCat.value.toLowerCase() === normalizedSavedValue);
+
+                     if (!isPredefined && !isAlreadyDisplayed && normalizedSavedValue) {
+                         // If it's a custom saved category and not already added to the list, add it.
+                          // Use the original saved value as the label for custom ones if no label is known
+                         addCategoryCheckbox(savedCatValue, savedCatValue);
+                     }
+                 });
+             }
+        }
+
+         // Helper function to add a single category checkbox to the UI
+         function addCategoryCheckbox(value, label) {
+             // Normalize value to ensure uniqueness check works correctly
+             const normalizedValue = String(value).trim().toLowerCase();
+
+             // Prevent adding duplicates (case-insensitive check)
+             if (displayedCategories.some(cat => cat.value.toLowerCase() === normalizedValue)) {
+                 console.warn(`Category "${label}" (${value}) already in checklist.`);
+                 return; // Don't add if already present
+             }
+
+             const categoryItemDiv = document.createElement('div');
+             categoryItemDiv.className = 'category-item';
+
+             const checkboxId = `cat-${normalizedValue.replace(/[^a-z0-9]+/g, '-')}`; // Generate a safe ID
+             const checkbox = document.createElement('input');
+             checkbox.type = 'checkbox';
+             checkbox.id = checkboxId;
+             checkbox.value = value; // Use the original value (might be needed later)
+
+             const labelElement = document.createElement('label');
+             labelElement.htmlFor = checkboxId;
+             labelElement.textContent = label;
+
+             categoryItemDiv.appendChild(checkbox);
+             categoryItemDiv.appendChild(labelElement);
+             categoriesChecklistDiv.appendChild(categoryItemDiv);
+
+             // Add to our tracking array
+             displayedCategories.push({ value: value, label: label });
+             console.log("Added category to checklist:", label, "(", value, ")");
+         }
+
+         // --- Handle Manual Category Input ---
+         function handleAddManualCategory() {
+             const manualValue = manualCategoryInput.value.trim();
+
+             if (!manualValue) {
+                 showFormMessage("Please enter a category name to add.", 'error');
+                 return;
+             }
+
+             // Normalize the input value for consistent checking
+             const normalizedManualValue = manualValue.toLowerCase().replace(/[^a-z0-9]+/g, '-'); // Create a potential value slug
+
+             // Check if this category (by normalized value) is already in the displayed list
+             if (displayedCategories.some(cat => String(cat.value).toLowerCase() === normalizedManualValue || String(cat.label).toLowerCase() === manualValue.toLowerCase())) {
+                 showFormMessage(`Category "${manualValue}" already exists in the list.`, 'warning');
+                 manualCategoryInput.value = ''; // Clear input field
+                 return;
+             }
+
+             // Add the new category as a checkbox
+             // Use the normalized value as the checkbox value and the original input as the label
+             addCategoryCheckbox(normalizedManualValue, manualValue);
+
+             // Automatically check the newly added box
+             const newCheckbox = document.getElementById(`cat-${normalizedManualValue}`);
+             if (newCheckbox) {
+                 newCheckbox.checked = true;
+             }
+
+             // Clear the input field
+             manualCategoryInput.value = '';
+
+             showFormMessage(`Category "${manualValue}" added to the list. Remember to Save Changes.`, 'success');
+         }
+
+
+        // --- File Upload Handling ---
+        function handleLogoFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                console.log("File selected:", file.name, file.type, file.size);
+                // Basic validation (e.g., file type, size)
+                if (!file.type.startsWith('image/')) {
+                    showFormMessage('Please select an image file.', 'error');
+                    // Clear file input value if invalid type
+                    event.target.value = '';
+                    return;
+                }
+                 // 5MB limit
+                if (file.size > 5 * 1024 * 1024) {
+                    showFormMessage('File size exceeds 5MB limit.', 'error');
+                    // Clear file input value if too large
+                    event.target.value = '';
+                    return;
+                 }
+
+                // Show a local preview of the selected image
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    logoPreview.src = e.target.result;
+                    logoPreview.onerror = () => { logoPreview.src = DEFAULT_LOGO_URL; }; // Fallback for preview
+                };
+                reader.readAsDataURL(file);
+
+                // Clear any previous message
+                showFormMessage('', '');
+
+            } else {
+                 // Handle case where user cancels file selection
+                 console.log("File selection cancelled.");
+                 // The logoPreview will revert to the currentStoreData logo (or default) on next fetch/populate
+                 // We don't need to reset it here if we rely on re-populating form.
+                 // If you wanted instant reset, you'd add: logoPreview.src = currentStoreData.logoUrl || DEFAULT_LOGO_URL;
+            }
+        }
+
+        async function uploadLogo(file, adminUid) {
+             if (!file) return null; // Return null if no file is provided
+
+             const storageRef = storage.ref();
+             // Create a unique path for the logo using the admin's UID and a timestamp/random string for uniqueness
+             const timestamp = Date.now();
+             const randomString = Math.random().toString(36).substring(7);
+             const fileExtension = file.name.split('.').pop();
+             const logoFileName = `logo_${timestamp}_${randomString}.${fileExtension}`; // Unique file name
+             const logoRef = storageRef.child(`store_logos/${adminUid}/${logoFileName}`);
+
+             try {
+                 showFormMessage(`Uploading logo: ${file.name}...`, 'info'); // Indicate upload start
+                 const uploadTask = logoRef.put(file);
+
+                 // Listen for state changes, errors, and completion of the upload.
+                 return new Promise((resolve, reject) => {
+                     uploadTask.on('state_changed',
+                         (snapshot) => {
+                             // Observe state change events such as progress, pause, and resume
+                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                             console.log('Upload is ' + progress.toFixed(0) + '% done');
+                             showFormMessage(`Uploading logo: ${progress.toFixed(0)}%...`, 'info');
+                             // Update progress bar maybe?
+                         },
+                         (error) => {
+                             // Handle unsuccessful uploads
+                             console.error("Logo upload failed:", error);
+                             showFormMessage(`Logo upload failed: ${error.message}`, 'error');
+                             reject(error);
+                         },
+                         () => {
+                             // Handle successful uploads on complete
+                             console.log('Logo upload complete.');
+                             uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                                 console.log('File available at', downloadURL);
+                                 resolve(downloadURL); // Resolve the promise with the download URL
+                             });
+                         }
+                     );
+                 });
+
+             } catch (error) {
+                 console.error("Error starting logo upload:", error);
+                 // This catch is for errors before the upload starts (e.g., network issue)
+                 showFormMessage(`Error starting logo upload: ${error.message}`, 'error');
+                 return Promise.reject(error); // Reject the promise
+             }
+        }
+
+
+        // --- Form Submission (Save Settings) ---
+        async function handleSaveSettings(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                 console.error("Attempted to save settings without authenticated user.");
+                 showFormMessage("Authentication required to save settings.", 'error');
+                 return;
+             }
+
+            showFormMessage('', ''); // Clear previous messages
+            saveSettingsBtn.disabled = true;
+            saveSettingsBtn.textContent = 'Saving...';
+             showLoadingOverlay(); // Show loading overlay
+
+            const adminUid = currentUser.uid;
+            const storeName = storeNameInput.value.trim();
+            const storeAddress = storeAddressInput.value.trim();
+            const contactPhone = contactPhoneInput.value.trim(); // New field
+            const websiteUrl = websiteUrlInput.value.trim(); // New field
+            const paymentMethodName = paymentMethodNameInput.value.trim();
+            const paymentMethodDetails = paymentMethodDetailsInput.value.trim();
+             const paymentInstructions = paymentInstructionsInput.value.trim(); // New field
+             const shippingInfo = shippingInfoInput.value.trim(); // New field
+             const taxId = taxIdInput.value.trim(); // New field
+
+
+            // Get selected categories (both predefined and manually added)
+            const selectedCategories = [];
+            categoriesChecklistDiv.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                selectedCategories.push(checkbox.value);
+            });
+
+            // Validate required fields (Store Name)
+            if (!storeName) {
+                showFormMessage('Store Name is required.', 'error');
+                saveSettingsBtn.disabled = false; saveSettingsBtn.textContent = 'Save Changes';
+                 hideLoadingOverlay();
+                return;
+            }
+
+            let logoUrl = currentStoreData.logoUrl || null; // Start with existing URL or null
+
+            try {
+                 // --- 1. Handle Logo Upload ---
+                 const logoFile = logoUploadInput.files[0];
+                 if (logoFile) {
+                     // Upload the new file and get its URL
+                     // If uploadLogo rejects (due to error), the catch block will handle it.
+                     logoUrl = await uploadLogo(logoFile, adminUid);
+                      // Clear the file input *after* a successful or failed upload attempt
+                      logoUploadInput.value = ''; // Reset file input element
+                 } else {
+                     console.log("No new logo file selected. Using existing URL or none.");
+                 }
+                 // If uploadLogo completes successfully (or was skipped), clear upload specific messages.
+                  if (!logoFile || logoUrl !== null) { // Check if upload was skipped OR successful (URL obtained)
+                       showFormMessage('', ''); // Clear 'Uploading...' message
+                  } else {
+                       // If logoFile existed but uploadLogo rejected AND did not return a URL, the error message is already shown,
+                       // we should stop the save process here.
+                       // The uploadLogo function *should* reject if it fails, but double check
+                       throw new Error("Logo upload failed or was cancelled, preventing settings save."); // Propagate the error
+                  }
+
+
+                 // --- 2. Prepare Data for Firestore ---
+                 const storeDataToSave = {
+                     storeName: storeName,
+                     storeAddress: storeAddress,
+                     contactPhone: contactPhone, // New field
+                     websiteUrl: websiteUrl, // New field
+                     categories: selectedCategories, // Array of selected category values
+                     paymentMethodName: paymentMethodName,
+                     paymentMethodDetails: paymentMethodDetails,
+                     paymentInstructions: paymentInstructions, // New field
+                     shippingInfo: shippingInfo, // New field
+                     taxId: taxId, // New field
+                     logoUrl: logoUrl, // Save the obtained logo URL (new or existing/null)
+                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                     // ownerUid and createdAt are typically set when the store is first created
+                     // We are using set({ merge: true }) so existing fields are kept.
+                 };
+
+                 // --- 3. Save Data to Firestore ---
+                 const storeDocRef = db.collection(STORE_COLLECTION).doc(adminUid);
+                 await storeDocRef.set(storeDataToSave, { merge: true });
+
+                 console.log("Store settings saved successfully!", storeDataToSave);
+                 // Update local cache, ensuring merge logic is correct
+                 currentStoreData = { ...currentStoreData, ...storeDataToSave };
+
+                 showFormMessage('Settings saved successfully!', 'success');
+
+             } catch (error) {
+                 console.error("Error saving store settings:", error);
+                  // Use the error message from the thrown error (either upload or save)
+                 let errorMessage = `Failed to save settings: ${error.message}`;
+                 if (error.message.includes('Logo upload failed')) {
+                     errorMessage = "Logo upload failed. Please try again."; // Simpler message if upload failed
+                 }
+                 showFormMessage(errorMessage, 'error');
+             } finally {
+                 saveSettingsBtn.disabled = false;
+                 saveSettingsBtn.textContent = 'Save Changes';
+                 hideLoadingOverlay(); // Hide loading overlay
+             }
+        }
+
+
+    </script>
+</body>
+</html>

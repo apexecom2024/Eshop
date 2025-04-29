@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Create Online Store - Kabarro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Theme Color Variables --- */
+        :root {
+            --primary-color: #1a2f3d; /* Deep Blue */
+            --primary-color-darker: #12212b; /* Darker Blue */
+            --secondary-color: #f7c04a; /* Accent Yellow/Gold */
+            --text-color: #333;
+            --text-light: #6c757d; /* Gray */
+            --border-color: #dee2e6;
+            --bg-light: #f8f9fa; /* Light Gray Background */
+            --error-color: #dc3545; /* Red */
+            --success-color: #28a745; /* Green */
+            --info-color: #17a2b8; /* Teal/Info Blue */
+            --header-height: 65px;
+        }
+
+        /* --- Global Styles & Resets --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; touch-action: manipulation; }
+        body { background-color: var(--bg-light); color: var(--text-color); padding-top: calc(var(--header-height) + 20px); padding-bottom: 20px; line-height: 1.6; }
+
+        /* --- Header Styles --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 100; height: var(--header-height); }
+        .header-left { display: flex; align-items: center; }
+        .back-btn { background: none; border: none; margin-right: 15px; color: var(--primary-color); cursor: pointer; padding: 0; text-decoration: none; display: flex; align-items: center; justify-content: center; width: 40px; /* Slightly smaller */ height: 40px; font-size: 20px; border-radius: 50%; transition: background-color 0.2s; }
+        .back-btn:hover { background-color: rgba(26, 47, 61, 0.05); }
+        .header-title { font-size: 18px; font-weight: 600; color: #212b36; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .header-icon { position: relative; font-size: 22px; color: #333; cursor: pointer; text-decoration: none; display: flex; align-items: center; }
+        .header-icon .fa-shopping-cart { color: var(--primary-color); }
+        .cart-badge { position: absolute; top: -8px; right: -8px; background-color: var(--error-color); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: bold; line-height: 1; pointer-events: none; }
+        .cart-badge.hidden { display: none; }
+
+        /* --- Form Container --- */
+        .form-container { max-width: 600px; margin: 0 auto; padding: 0 15px; }
+        .create-shop-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); padding: 30px 25px; margin-bottom: 25px; }
+        .form-title { font-size: 22px; font-weight: 600; color: var(--primary-color-darker); margin-bottom: 10px; text-align: center; }
+        .form-subtitle { font-size: 15px; color: var(--text-light); text-align: center; margin-bottom: 30px; }
+
+        /* --- Form Styles --- */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--text-light); }
+        .form-input, .form-textarea { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; background-color: #fff; }
+        .form-textarea { resize: vertical; min-height: 90px; }
+        .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(26, 47, 61, 0.1); }
+        .error-text { color: var(--error-color); font-size: 12px; margin-top: 6px; display: none; }
+        .success-text { color: var(--success-color); font-size: 13px; margin-top: 6px; display: none; font-weight: 500; }
+
+        /* --- Face Capture Section --- */
+        .face-capture-section {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            background-color: var(--bg-light);
+            position: relative; /* For overlay */
+        }
+        .face-capture-section p.section-description { font-size: 15px; color: var(--text-color); margin-bottom: 15px; font-weight: 500; }
+        .face-capture-btn {
+            padding: 10px 18px; /* Slightly larger */
+            font-size: 14px;
+            background-color: var(--info-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        .face-capture-btn:hover:not(:disabled) { background-color: #138496; }
+        .face-capture-btn:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
+        .face-capture-btn .spinner-dark { width: 16px; height: 16px; } /* Adjust spinner size */
+
+        #videoContainer {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            margin: 15px auto;
+            display: none;
+            border-radius: 6px; /* Add border radius to container */
+            overflow: hidden; /* Clip video/canvas */
+            border: 1px solid var(--border-color);
+        }
+        #videoFeed {
+            display: block; /* Remove extra space below video */
+            width: 100%;
+            transform: scaleX(-1); /* Mirror mode */
+        }
+        #overlayCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #captureCanvas { display: none; } /* Hidden canvas for processing */
+        #faceCaptureStatus { display: none; margin-top: 10px; } /* Combined status/error */
+        #captureResult { margin-top: 15px; text-align: center; }
+        #captureResult img { max-width: 120px; border-radius: 6px; border: 2px solid var(--border-color); margin-top: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* --- Terms Checkbox --- */
+        .terms-group { display: flex; align-items: flex-start; gap: 10px; margin-top: 25px; font-size: 14px; color: var(--text-light); }
+        .terms-group input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; }
+        .terms-group a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+        .terms-group a:hover { text-decoration: underline; }
+
+        /* --- Submit Button --- */
+        .submit-btn {
+            width: 100%;
+            padding: 14px; /* Larger padding */
+            border-radius: 8px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+            margin-top: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .submit-btn:hover:not(:disabled) { background-color: var(--primary-color-darker); }
+        .submit-btn:disabled { background-color: #aab5bd; cursor: not-allowed; opacity: 0.8; } /* Use a less harsh disabled color */
+
+        /* --- Loading Spinner --- */
+        .spinner { border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; display: none; }
+        .spinner-dark { border: 3px solid rgba(0, 0, 0, 0.1); border-top: 3px solid var(--primary-color); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Success Modal Styles --- */
+        .modal { display: none; position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 450px; padding: 35px 30px; animation: modalFadeIn 0.3s ease-out; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-icon { font-size: 45px; color: var(--success-color); margin-bottom: 18px; }
+        .modal-title { font-size: 22px; font-weight: 600; margin-bottom: 12px; color: var(--primary-color-darker); }
+        .modal-message { font-size: 16px; color: var(--text-light); line-height: 1.7; margin-bottom: 30px; }
+        .modal-close-btn { padding: 12px 30px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; font-size: 15px; }
+        .modal-close-btn:hover { background-color: var(--primary-color-darker); }
+
+    </style>
+</head>
+<body>
+     <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <a href="profile.html" class="back-btn" title="Back to Profile"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title">Create Online Store</div>
+        </div>
+        <div class="header-right">
+            <a href="cart.html" class="header-icon" title="View Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <div class="cart-badge hidden" id="cartBadge"><span id="cartItemCount">0</span></div>
+            </a>
+        </div>
+    </div>
+
+     <!-- Form Content -->
+     <div class="form-container">
+        <div class="create-shop-card">
+             <h2 class="form-title">Apply for Your Online Store</h2>
+             <p class="form-subtitle">Fill out the details below and capture an identity photo.</p>
+
+             <p id="formError" class="error-text" style="text-align: center; margin-bottom: 15px;"></p> <!-- General Form Error -->
+
+             <form id="createShopForm">
+                 <!-- Shop Name, Description, Phone Number (same as before) -->
+                 <div class="form-group">
+                     <label for="shopName" class="form-label">Desired Shop Name</label>
+                     <input type="text" id="shopName" class="form-input" placeholder="e.g., Juan's Groceries" required>
+                 </div>
+                 <div class="form-group">
+                    <label for="shopDescription" class="form-label">Shop Description (Optional)</label>
+                    <textarea id="shopDescription" class="form-textarea" placeholder="Tell us a bit about your store..."></textarea>
+                 </div>
+                 <div class="form-group">
+                    <label for="phoneNumber" class="form-label">Contact Phone Number</label>
+                    <input type="tel" id="phoneNumber" class="form-input" placeholder="09xxxxxxxxx" required pattern="^(09|\+639)\d{9}$" title="Enter a valid PH phone number (e.g., 09171234567 or +639171234567)">
+                     <small class="error-text" id="phoneError">Invalid phone number format.</small>
+                 </div>
+
+                <!-- Face Capture Section -->
+                <div class="face-capture-section">
+                    <p class="section-description">Identity Photo Capture</p>
+                    <p class="text-light" style="font-size: 13px; margin-bottom: 15px;">Please capture a clear photo of your face for identification purposes.</p>
+
+
+                    <div id="captureInitialView">
+                        <button type="button" id="startCaptureBtn" class="face-capture-btn">
+                             <i class="fas fa-camera"></i> Start Camera
+                        </button>
+                         <div id="modelLoadingStatus" class="text-light" style="font-size: 12px; margin-top: 8px; display: none;">
+                            <span class="spinner spinner-dark" style="width:12px; height:12px; display:inline-block; vertical-align: middle;"></span> Loading camera support...
+                        </div>
+                    </div>
+
+                    <div id="videoContainer">
+                        <video id="videoFeed" autoplay muted playsinline></video>
+                        <canvas id="overlayCanvas"></canvas> <!-- Optional: for drawing face boxes -->
+                    </div>
+                    <canvas id="captureCanvas"></canvas> <!-- Hidden canvas -->
+
+                    <div id="captureControls" style="display: none;">
+                         <button type="button" id="captureFaceBtn" class="face-capture-btn">
+                             <i class="fas fa-camera-retro"></i> Capture Photo
+                             <span class="spinner spinner-dark" id="captureSpinner" style="display: none;"></span>
+                         </button>
+                         <button type="button" id="cancelCaptureBtn" class="face-capture-btn" style="background-color: var(--text-light); margin-left: 10px;">
+                              Cancel
+                         </button>
+                    </div>
+
+                    <p id="faceCaptureStatus" class="error-text"></p> <!-- For errors/status -->
+                    <div id="captureResult">
+                         <!-- Success message and image preview will appear here -->
+                    </div>
+                </div>
+
+
+                <!-- Terms & Conditions -->
+                <div class="terms-group">
+                    <input type="checkbox" id="termsCheckbox" required>
+                    <label for="termsCheckbox">
+                        I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a> for creating and operating an online store.
+                    </label>
+                </div>
+                 <small class="error-text" id="termsError">You must agree to the terms.</small>
+
+                 <!-- Submit Button -->
+                <button type="submit" class="submit-btn" id="submitApplicationBtn" disabled>
+                    Submit Application
+                    <span class="spinner" id="submitSpinner"></span>
+                </button>
+             </form>
+        </div>
+     </div>
+
+      <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+            <h3 class="modal-title">Application Submitted!</h3>
+            <p class="modal-message">
+                Congratulations! Your application to create an online store will be reviewed. We will get back to you once your store is approved.
+            </p>
+            <button type="button" class="modal-close-btn" id="closeModalBtn">OK</button>
+        </div>
+    </div>
+
+     <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script> <!-- Storage SDK -->
+
+     <!-- face-api.js -->
+     <!-- Make sure this path is correct, e.g., '/js/face-api.min.js' -->
+    <script src="js/face-api.min.js"></script>
+
+     <script>
+        // Firebase configuration (REPLACE WITH YOURS)
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // Global Variables
+        let auth, db, storage;
+        let currentUser = null;
+        let cartItemCount = 0;
+        let faceCaptured = false; // Flag indicating capture step is done
+        let faceImageUrl = null; // To store the uploaded image URL
+        let modelsLoaded = false;
+        let videoStream = null; // To hold the webcam stream
+
+        // face-api models path (adjust if your 'weights' folder is elsewhere)
+        const MODEL_URL = '/models';
+
+        // DOM Element References
+        const createShopForm = document.getElementById('createShopForm');
+        const shopNameInput = document.getElementById('shopName');
+        const shopDescriptionInput = document.getElementById('shopDescription');
+        const phoneNumberInput = document.getElementById('phoneNumber');
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const submitApplicationBtn = document.getElementById('submitApplicationBtn');
+        const submitSpinner = document.getElementById('submitSpinner');
+        const formError = document.getElementById('formError');
+        const phoneError = document.getElementById('phoneError');
+        const termsError = document.getElementById('termsError');
+        const successModal = document.getElementById('successModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cartBadge = document.getElementById('cartBadge');
+        const cartItemCountSpan = document.getElementById('cartItemCount');
+
+        // Face Capture Elements
+        const startCaptureBtn = document.getElementById('startCaptureBtn');
+        const modelLoadingStatus = document.getElementById('modelLoadingStatus');
+        const captureInitialView = document.getElementById('captureInitialView');
+        const videoContainer = document.getElementById('videoContainer');
+        const videoFeed = document.getElementById('videoFeed');
+        const captureCanvas = document.getElementById('captureCanvas'); // Hidden
+        const overlayCanvas = document.getElementById('overlayCanvas'); // For drawing (optional)
+        const captureControls = document.getElementById('captureControls');
+        const captureFaceBtn = document.getElementById('captureFaceBtn');
+        const captureSpinner = document.getElementById('captureSpinner');
+        const cancelCaptureBtn = document.getElementById('cancelCaptureBtn');
+        const faceCaptureStatus = document.getElementById('faceCaptureStatus'); // Status/error display
+        const captureResult = document.getElementById('captureResult'); // Success display area
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAppAndLoadModels(); // Renamed for clarity
+            setupEventListeners();
+        });
+
+        async function initializeAppAndLoadModels() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                storage = firebase.storage();
+
+                // Show loading indicator for models
+                startCaptureBtn.disabled = true;
+                modelLoadingStatus.style.display = 'block';
+                modelLoadingStatus.innerHTML = `<span class="spinner spinner-dark" style="width:12px; height:12px; display:inline-block; vertical-align: middle;"></span> Loading camera support...`;
+
+                console.log('Loading face-api models (TinyFaceDetector)...');
+                // Load only the necessary model for optional drawing/guidance
+                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                // If you add landmark detection later, load it here:
+                // await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+
+                console.log('Face-api models loaded.');
+                modelsLoaded = true; // Flag that models are ready (for optional features)
+                startCaptureBtn.disabled = false; // Enable start button
+                modelLoadingStatus.style.display = 'none';
+
+                // Auth State Listener
+                auth.onAuthStateChanged(user => {
+                    currentUser = user;
+                    if (user) {
+                        console.log("User signed in:", user.uid);
+                        fetchInitialCartCount(user.uid);
+                        prefillUserData(user.uid);
+                        checkIfAlreadyCaptured(user.uid); // Check if photo exists
+                    } else {
+                        console.log("No user signed in. Redirecting to login.");
+                        window.location.href = 'login.html'; // Or your login page
+                    }
+                });
+
+            } catch (error) {
+                console.error("Initialization or model loading error:", error);
+                displayCaptureError("Initialization failed. Please refresh. " + error.message);
+                startCaptureBtn.disabled = true; // Keep disabled on error
+                modelLoadingStatus.textContent = 'Error loading support.';
+                modelLoadingStatus.style.color = 'var(--error-color)';
+                submitApplicationBtn.disabled = true;
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            startCaptureBtn?.addEventListener('click', handleStartCapture);
+            captureFaceBtn?.addEventListener('click', handleCaptureFace);
+            cancelCaptureBtn?.addEventListener('click', cancelCapture);
+            createShopForm?.addEventListener('submit', handleSubmitApplication);
+            closeModalBtn?.addEventListener('click', hideSuccessModal);
+            phoneNumberInput?.addEventListener('input', validatePhoneNumber);
+            termsCheckbox?.addEventListener('change', () => {
+                clearErrorText(termsError);
+                updateSubmitButtonStatus(); // Re-check if submit can be enabled
+            });
+            videoFeed.addEventListener('loadedmetadata', () => {
+                // Adjust overlay canvas size when video starts playing
+                const displaySize = { width: videoFeed.clientWidth, height: videoFeed.clientHeight };
+                if(overlayCanvas && displaySize.width > 0 && displaySize.height > 0) {
+                    faceapi.matchDimensions(overlayCanvas, displaySize);
+                    console.log("Overlay canvas matched to video size.");
+                    // Optional: Start drawing face detection boxes continuously for guidance
+                    // if (modelsLoaded) { // Ensure models are loaded before starting detection loop
+                    //     startFaceDetectionDrawing();
+                    // }
+                } else {
+                    console.warn("Could not match overlay canvas dimensions initially.");
+                }
+            });
+             videoFeed.addEventListener('play', () => {
+                 // Sometimes loadedmetadata fires before dimensions are fully known
+                 const checkSize = () => {
+                     const displaySize = { width: videoFeed.clientWidth, height: videoFeed.clientHeight };
+                     if(overlayCanvas && displaySize.width > 0 && displaySize.height > 0) {
+                         faceapi.matchDimensions(overlayCanvas, displaySize);
+                         console.log("Overlay canvas matched on play.");
+                         // Optional: Start drawing face detection boxes continuously for guidance
+                         if (modelsLoaded) {
+                            startFaceDetectionDrawing(); // Start the optional drawing loop here
+                         }
+                     } else {
+                         console.warn("Overlay canvas dimensions still 0 on play, retrying...");
+                         requestAnimationFrame(checkSize); // Try again next frame
+                     }
+                 };
+                 requestAnimationFrame(checkSize); // Start check
+             });
+        }
+
+         // --- Check if user already has a captured photo ---
+         async function checkIfAlreadyCaptured(userId) {
+             try {
+                 const userDoc = await db.collection('users').doc(userId).get();
+                 // Check for the specific field where you store the URL in the user profile
+                 if (userDoc.exists && userDoc.data().faceCaptureImageUrl) {
+                     console.log("User already has a captured face image.");
+                     faceCaptured = true;
+                     faceImageUrl = userDoc.data().faceCaptureImageUrl;
+                     showCaptureSuccess(faceImageUrl, "Identity photo already on file.");
+                     // Disable the capture section start button if already done
+                     startCaptureBtn.disabled = true;
+                     startCaptureBtn.innerHTML = '<i class="fas fa-check-circle"></i> Photo Captured';
+                     captureInitialView.style.display = 'block'; // Ensure the initial view shows the status
+                     updateSubmitButtonStatus(); // Enable submit if already captured
+                 } else {
+                    updateSubmitButtonStatus(); // Ensure submit button state is correct initially
+                 }
+             } catch (error) {
+                 console.warn("Could not check previous capture status:", error);
+                 updateSubmitButtonStatus(); // Proceed assuming no capture
+             }
+         }
+
+        // --- Pre-fill User Data --- (Same as before)
+        async function prefillUserData(userId) {
+             try {
+                 const userDoc = await db.collection('users').doc(userId).get();
+                 if (userDoc.exists && userDoc.data().phoneNumber) {
+                     phoneNumberInput.value = userDoc.data().phoneNumber;
+                 }
+             } catch (error) {
+                 console.warn("Could not prefill phone number:", error);
+             }
+        }
+
+        // --- Face Capture Logic ---
+        async function handleStartCapture() {
+             if (!currentUser) {
+                 displayCaptureError("User not signed in.");
+                 return;
+             }
+             clearCaptureStatus();
+             captureResult.style.display = 'none'; // Hide previous result
+             captureInitialView.style.display = 'none'; // Hide "Start" button view
+             videoContainer.style.display = 'block'; // Show video feed area
+             captureControls.style.display = 'flex'; // Show Capture/Cancel buttons (use flex for layout)
+
+             try {
+                 console.log("Requesting camera access...");
+                 videoStream = await navigator.mediaDevices.getUserMedia({
+                     video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, // Request specific size if needed
+                     audio: false
+                 });
+                 videoFeed.srcObject = videoStream;
+                 // The 'play' event listener will handle canvas matching and optional drawing start
+                 console.log("Camera access granted, waiting for video stream.");
+             } catch (err) {
+                 console.error("getUserMedia error:", err);
+                 displayCaptureError(`Could not access camera: ${err.name}. Please ensure permissions are granted.`);
+                 cancelCapture(); // Reset UI
+             }
+         }
+
+         async function handleCaptureFace() {
+            if (!videoStream || !currentUser) {
+                displayCaptureError("Webcam not active or user not signed in.");
+                return;
+            }
+
+            setLoading(captureFaceBtn, captureSpinner, true);
+            clearCaptureStatus();
+
+            // 1. Draw current video frame to hidden canvas
+            const videoWidth = videoFeed.videoWidth;
+            const videoHeight = videoFeed.videoHeight;
+
+            if (videoWidth === 0 || videoHeight === 0) {
+                console.error("Video dimensions are zero, cannot capture.");
+                displayCaptureError("Camera error: Could not get video frame dimensions.");
+                setLoading(captureFaceBtn, captureSpinner, false);
+                return;
+            }
+
+            captureCanvas.width = videoWidth;
+            captureCanvas.height = videoHeight;
+            const context = captureCanvas.getContext('2d');
+
+            // Flip the image horizontally back to normal before saving
+            context.translate(videoWidth, 0);
+            context.scale(-1, 1);
+            context.drawImage(videoFeed, 0, 0, videoWidth, videoHeight);
+            context.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+
+            console.log("Canvas captured. Proceeding to upload.");
+
+            // 2. Convert canvas to Blob
+            captureCanvas.toBlob(async (blob) => {
+                 if (!blob) {
+                     displayCaptureError("Failed to create image data.");
+                     setLoading(captureFaceBtn, captureSpinner, false);
+                     return;
+                 }
+
+                 console.log("Image blob created, uploading to Firebase Storage...");
+
+                 // 3. Upload Blob to Firebase Storage
+                 // Store under a path related to user ID for organization
+                 const filePath = `user_face_captures/${currentUser.uid}/${Date.now()}.jpg`;
+                 const storageRef = storage.ref(filePath);
+                 const metadata = { contentType: 'image/jpeg' };
+                 const uploadTask = storageRef.put(blob, metadata);
+
+                 // --- Optional: Show Upload Progress ---
+                 uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
+                     (snapshot) => {
+                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                         console.log('Upload is ' + progress + '% done');
+                         // You could update a progress bar here if needed
+                         faceCaptureStatus.textContent = `Uploading: ${Math.round(progress)}%`;
+                         faceCaptureStatus.className = 'text-light'; // Use a neutral color for progress
+                         faceCaptureStatus.style.display = 'block';
+                     },
+                     (error) => { // Handle unsuccessful uploads
+                         console.error("Upload failed:", error);
+                         displayCaptureError(`Image upload failed: ${error.code}`);
+                         setLoading(captureFaceBtn, captureSpinner, false);
+                     },
+                     async () => { // Handle successful uploads on complete
+                         // 4. Get Download URL
+                         try {
+                             const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                             console.log("File available at", downloadURL);
+                             faceImageUrl = downloadURL; // Store the URL
+                             faceCaptured = true; // Mark capture as complete
+
+                             // Optional: Update Firestore user profile immediately
+                             try {
+                                await db.collection('users').doc(currentUser.uid).set({ faceCaptureImageUrl: downloadURL }, { merge: true });
+                                console.log("User profile updated with image URL.");
+                             } catch (dbError) {
+                                console.error("Error updating user profile:", dbError);
+                                // Non-critical error, proceed anyway
+                             }
+
+                             showCaptureSuccess(downloadURL);
+                             stopVideoStream();
+                             videoContainer.style.display = 'none';
+                             captureControls.style.display = 'none';
+                             updateSubmitButtonStatus(); // Enable form submission
+
+                         } catch (error) {
+                             console.error("Failed to get download URL:", error);
+                             displayCaptureError("Upload succeeded but failed to get image URL.");
+                         } finally {
+                            setLoading(captureFaceBtn, captureSpinner, false);
+                         }
+                     }
+                 );
+
+             }, 'image/jpeg', 0.85); // Use JPEG format with quality setting (e.g., 85%)
+         }
+
+         function showCaptureSuccess(imageUrl, message = "Photo Captured Successfully!") {
+            clearCaptureStatus(); // Clear any previous messages
+            captureResult.innerHTML = `
+                <p class="success-text" style="display: block;"><i class="fas fa-check-circle"></i> ${message}</p>
+                <img src="${imageUrl}" alt="Captured Face">
+            `;
+            captureResult.style.display = 'block';
+            // Optionally, show the initial view again but with a success indicator
+             startCaptureBtn.disabled = true;
+             startCaptureBtn.innerHTML = '<i class="fas fa-check-circle"></i> Photo Captured';
+             captureInitialView.style.display = 'block';
+         }
+
+         function cancelCapture() {
+            stopVideoStream();
+            clearCaptureStatus();
+            videoContainer.style.display = 'none';
+            captureControls.style.display = 'none';
+            captureInitialView.style.display = 'block'; // Show "Start Camera" button again
+            setLoading(captureFaceBtn, captureSpinner, false); // Ensure spinner is off
+            captureResult.style.display = 'none'; // Hide previous success/image if cancelled
+            // If already successfully captured before cancelling an *attempt*, keep the success state shown
+            if (faceCaptured && faceImageUrl) {
+                showCaptureSuccess(faceImageUrl, "Identity photo already on file.");
+            } else {
+                 startCaptureBtn.disabled = false; // Re-enable start if no prior success
+                 startCaptureBtn.innerHTML = '<i class="fas fa-camera"></i> Start Camera';
+            }
+            updateSubmitButtonStatus(); // Re-evaluate submit button state
+         }
+
+         function stopVideoStream() {
+             if (videoStream) {
+                 videoStream.getTracks().forEach(track => track.stop());
+                 videoStream = null;
+                 videoFeed.srcObject = null;
+                 console.log("Video stream stopped.");
+             }
+              // Clear any drawings on overlay
+             if (overlayCanvas) {
+                 const overlayCtx = overlayCanvas.getContext('2d');
+                 overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+             }
+             // Stop the animation frame loop if it's running
+             // (Need a global flag or check to manage this properly if using the drawing loop)
+             // cancelAnimationFrame(animationFrameId); // Assuming you store the ID
+         }
+
+         function displayCaptureError(message) {
+             faceCaptureStatus.textContent = message;
+             faceCaptureStatus.className = 'error-text'; // Ensure style is error
+             faceCaptureStatus.style.display = 'block';
+             captureResult.style.display = 'none'; // Hide success area on error
+         }
+         function clearCaptureStatus() {
+             faceCaptureStatus.textContent = '';
+             faceCaptureStatus.style.display = 'none';
+         }
+
+        // --- Form Validation ---
+        function validatePhoneNumber() { // (Same as before)
+             const phoneRegex = /^(09|\+639)\d{9}$/;
+             if (phoneNumberInput.value && !phoneRegex.test(phoneNumberInput.value)) {
+                 displayErrorText(phoneError, "Invalid PH phone format (e.g., 09171234567).");
+                 return false;
+             } else {
+                 clearErrorText(phoneError);
+                 return true;
+             }
+        }
+
+         function validateForm() { // Checks if ready for submission
+            let isValid = true;
+            clearFormErrors(); // Clear previous main form errors
+
+            // Use HTML5 'required' for basic presence checks
+            if (!shopNameInput.checkValidity()) {
+                // Optionally add custom message near field or rely on browser default
+                isValid = false;
+            }
+            if (!phoneNumberInput.checkValidity()) {
+                // Check pattern validity separately if needed beyond regex check
+                 if (!validatePhoneNumber()) isValid = false;
+            }
+            if (!faceCaptured || !faceImageUrl) { // Must have successfully captured photo
+                displayFormError("Please complete the identity photo capture step.");
+                 if (!faceCaptured) displayCaptureError("Identity photo capture is required."); // Show error near capture section too
+                isValid = false;
+            }
+            if (!termsCheckbox.checked) {
+                displayErrorText(termsError, "You must agree to the terms and conditions.");
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        // --- Update Submit Button Status ---
+        function updateSubmitButtonStatus() {
+            // Enable submit only if face is captured and terms are checked
+            // Basic check, full validation runs on submit attempt
+            const canSubmit = faceCaptured && termsCheckbox.checked;
+            submitApplicationBtn.disabled = !canSubmit;
+            console.log(`Submit button enabled: ${canSubmit} (faceCaptured: ${faceCaptured}, termsChecked: ${termsCheckbox.checked})`);
+        }
+
+        // --- Form Submission ---
+        async function handleSubmitApplication(e) {
+            e.preventDefault();
+            console.log("Submit clicked. Validating form...");
+            if (!currentUser) {
+                displayFormError("You must be signed in to submit.");
+                return;
+            }
+            if (!validateForm()) { // Run full validation
+                console.log("Form validation failed.");
+                // Errors should be displayed by validateForm()
+                return;
+            }
+
+            console.log("Form validation passed. Submitting...");
+            setLoading(submitApplicationBtn, submitSpinner, true);
+            clearFormErrors(); // Clear general form error before trying
+
+            const applicationData = {
+                userId: currentUser.uid,
+                applicantName: currentUser.displayName || 'N/A',
+                applicantEmail: currentUser.email,
+                shopName: shopNameInput.value.trim(),
+                shopDescription: shopDescriptionInput.value.trim() || null,
+                phoneNumber: phoneNumberInput.value.trim(),
+                faceCaptureCompleted: faceCaptured, // Use the renamed flag
+                faceCaptureImageUrl: faceImageUrl, // The essential URL
+                termsAccepted: termsCheckbox.checked,
+                applicationTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'Pending' // Initial status for review
+            };
+
+            try {
+                // Save application to Firestore 'storeApplications' collection
+                const docRef = await db.collection("storeApplications").add(applicationData);
+                console.log("Store application submitted successfully with ID:", docRef.id);
+
+                // Optional: Update user doc flag to prevent multiple applications if needed
+                // await db.collection('users').doc(currentUser.uid).update({ hasPendingStoreApplication: true });
+
+                showSuccessModal(); // Show confirmation popup
+                createShopForm.reset(); // Clear the form fields
+                // Reset capture state UI completely for a theoretical next application
+                faceCaptured = false;
+                faceImageUrl = null;
+                cancelCapture(); // Reset the capture UI fully (stops video, hides image etc)
+                updateSubmitButtonStatus(); // Disable submit button again
+
+            } catch (error) {
+                console.error("Error submitting store application:", error);
+                displayFormError(`Submission failed: ${error.message}. Please try again.`);
+            } finally {
+                 setLoading(submitApplicationBtn, submitSpinner, false);
+            }
+        }
+
+        // --- Success Modal --- (Same as before)
+        function showSuccessModal() { successModal.style.display = 'flex'; }
+        function hideSuccessModal() { successModal.style.display = 'none'; /* Optionally redirect: window.location.href = 'profile.html';*/ }
+
+        // --- UI Helpers --- (Mostly same as before)
+        function setLoading(button, spinner, isLoading) {
+             if (button && spinner) {
+                // Button disabled state is handled by updateSubmitButtonStatus or during loading
+                // This function primarily manages the spinner visibility
+                spinner.style.display = isLoading ? 'inline-block' : 'none';
+                // Adjust button text if needed while loading (e.g., button.textContent = isLoading ? 'Processing...' : 'Submit')
+                 button.style.cursor = isLoading ? 'wait' : 'pointer'; // General cursor change
+             }
+        }
+        function displayFormError(message) { displayErrorText(formError, message); }
+        function displayErrorText(element, message) { if(element) { element.textContent = message; element.style.display = 'block'; } }
+        function clearErrorText(element) { if(element) { element.textContent = ''; element.style.display = 'none'; } }
+        function clearFormErrors() {
+             clearErrorText(formError);
+             clearErrorText(phoneError);
+             clearErrorText(termsError);
+             // Don't clear the capture status here usually, only form-wide errors
+        }
+
+         // --- Cart Icon Update Logic --- (Same as before)
+        async function fetchInitialCartCount(userId) { /* ... */ }
+        function updateCartIcon() { /* ... */ }
+
+
+         // --- Optional: Face Detection Drawing Loop ---
+         let animationFrameId = null; // To control the loop
+         async function startFaceDetectionDrawing() {
+             if (!videoStream || !modelsLoaded || !overlayCanvas) { // Ensure everything is ready
+                 console.log("Stopping drawing loop (stream off, models not loaded, or canvas missing).");
+                 if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                 animationFrameId = null;
+                 return;
+             }
+
+             const displaySize = { width: videoFeed.clientWidth, height: videoFeed.clientHeight };
+             // Ensure canvas is still matched (might resize)
+              if (overlayCanvas.width !== displaySize.width || overlayCanvas.height !== displaySize.height) {
+                 faceapi.matchDimensions(overlayCanvas, displaySize);
+              }
+
+             if (displaySize.width > 0 && displaySize.height > 0) {
+                const context = overlayCanvas.getContext('2d');
+                // Use TinyFaceDetector for performance
+                const detections = await faceapi.detectAllFaces(videoFeed, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 })); // Smaller input size might be faster
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+                // Clear previous drawings
+                context.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+                // Draw semi-transparent boxes
+                faceapi.draw.drawDetections(overlayCanvas, resizedDetections);
+                 // Optional: Draw landmarks if loaded and needed
+                 // faceapi.draw.drawFaceLandmarks(overlayCanvas, resizedDetections);
+             } else {
+                 console.log("Skipping detection draw - video size not ready.");
+             }
+
+             // Loop the drawing
+             animationFrameId = requestAnimationFrame(startFaceDetectionDrawing);
+         }
+
+     </script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Checkout - Magma</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Theme Color Variable --- */
+        :root {
+            --primary-color: #1a2f3d;
+            --primary-color-darker: #12212b;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #6c757d;
+            --text-color: #333;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+            touch-action: pan-y;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 80px 15px 20px; /* Increased top padding */
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); position: fixed;
+            top: 0; left: 0; right: 0; width: 100%; z-index: 100; height: 65px;
+        }
+        .header-left { display: flex; align-items: center; }
+        .back-btn {
+            background: none; border: none; margin-right: 15px; color: var(--primary-color);
+            cursor: pointer; padding: 0; text-decoration: none; display: flex;
+            align-items: center; justify-content: center; width: 50px; height: 50px;
+        }
+        .back-btn:hover { opacity: 0.8; }
+        .header-title { font-size: 18px; font-weight: 600; color: #212b36; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .header-icon { font-size: 22px; color: var(--text-color); }
+
+        /* --- Section Styling --- */
+        .checkout-section {
+            background-color: #fff; border-radius: 8px; padding: 20px;
+            margin-bottom: 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.08);
+        }
+        .checkout-section h2 {
+            font-size: 18px; font-weight: 600; margin-bottom: 15px;
+            padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+            color: var(--primary-color);
+        }
+
+        /* --- Order Summary --- */
+        #orderSummary {}
+        #summaryItemsList { list-style: none; margin-bottom: 15px; max-height: 200px; overflow-y: auto; padding-right: 5px; }
+        .summary-item { display: flex; align-items: center; font-size: 14px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--medium-gray); }
+        .summary-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        .summary-item-img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-right: 10px; background-color: var(--medium-gray); }
+        .summary-item-details { flex-grow: 1; }
+        .summary-item-title { display: block; margin-bottom: 3px; font-weight: 500; }
+        .summary-item-qty-price { color: var(--dark-gray); }
+        .summary-item-total { font-weight: 600; margin-left: 10px; white-space: nowrap; }
+        .summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; }
+        .summary-row.total { font-weight: bold; font-size: 18px; padding-top: 10px; border-top: 1px solid var(--border-color); margin-top: 10px; }
+        .summary-label { color: var(--dark-gray); }
+        .summary-value { font-weight: 600; }
+        .summary-value.total-value { color: var(--primary-color); }
+        #summaryShipping .summary-value { color: var(--success-color); }
+
+        /* --- Shipping Address Form --- */
+        #addressForm { display: grid; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 14px; font-weight: 500; margin-bottom: 5px; color: var(--dark-gray); }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border-color);
+            border-radius: 5px; font-size: 15px; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(26, 47, 61, 0.1); }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        .form-group input:invalid:not(:placeholder-shown) { border-color: var(--danger-color); }
+        .address-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+         @media (max-width: 480px) { .address-grid { grid-template-columns: 1fr; } }
+
+        /* --- Payment Method --- */
+        .payment-options { display: grid; gap: 10px; }
+        .payment-option { border: 1px solid var(--border-color); border-radius: 6px; transition: border-color 0.2s, box-shadow 0.2s; }
+        .payment-option input[type="radio"] { display: none; }
+        .payment-option label { display: flex; align-items: center; padding: 12px 15px; cursor: pointer; font-size: 15px; font-weight: 500; }
+        .payment-option svg { width: 32px; height: 24px; margin-right: 12px; flex-shrink: 0; }
+        .payment-option input[type="radio"]:checked + label { background-color: rgba(26, 47, 61, 0.05); }
+        .payment-option input[type="radio"]:checked ~ .payment-details { display: block; }
+        .payment-option:has(input[type="radio"]:checked) { border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); }
+        .payment-details {
+            display: none; padding: 10px 15px 15px; margin: 0 1px 1px 1px;
+            border-top: 1px solid var(--medium-gray); background-color: var(--light-gray);
+            border-radius: 0 0 5px 5px; font-size: 13px; color: var(--dark-gray); line-height: 1.5;
+        }
+        .payment-details p { margin-bottom: 5px; }
+        .payment-details strong { color: var(--text-color); font-weight: 600; }
+        .payment-details .account-info { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border-color); }
+
+        /* --- Complete Checkout Button --- */
+        #checkoutBtn { /* Changed ID */
+            display: block; width: 100%; background-color: var(--success-color);
+            color: white; text-align: center; padding: 12px 15px; border: none;
+            border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;
+            margin-top: 25px;
+            /* Animation properties */
+            transition: background-color 0.3s, transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #checkoutBtn:hover:not(:disabled) { /* Changed ID */
+            background-color: #218838; /* Darker green */
+            transform: translateY(-2px); /* Lift effect */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Enhanced shadow */
+        }
+         #checkoutBtn:active:not(:disabled) { /* Changed ID */
+            transform: translateY(0px); /* Press down effect */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #checkoutBtn:disabled { /* Changed ID */
+             background-color: #ccc; cursor: not-allowed;
+             transform: none; box-shadow: none; /* Disable effects when disabled */
+        }
+
+        /* --- Error Message Styling --- */
+        #errorMessage {
+            color: var(--danger-color); background-color: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3); padding: 10px 15px;
+            border-radius: 5px; margin-bottom: 15px; font-size: 14px;
+            text-align: center; display: none;
+        }
+
+        /* --- Loading/Processing Overlay --- */
+        #processingOverlay {
+            position: fixed; inset: 0; background-color: rgba(255, 255, 255, 0.8);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; flex-direction: column; gap: 15px;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%;
+            border-top: 4px solid var(--primary-color); width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <a href="cart.html" class="back-btn"> <i class="fas fa-arrow-left" style="font-size: 20px;"></i> </a>
+            <div class="header-title">Checkout</div>
+        </div>
+        <div class="header-right">
+            <div class="header-icon"><i class="fas fa-lock"></i></div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- Error Message Area -->
+        <div id="errorMessage"></div>
+
+        <!-- Order Summary -->
+        <div id="orderSummary" class="checkout-section">
+            <h2>Order Summary</h2>
+            <ul id="summaryItemsList"> <!-- Items populated by JS --> </ul>
+            <div class="summary-row">
+                <span class="summary-label">Subtotal</span>
+                <span class="summary-value" id="summarySubtotal">₱0.00</span>
+            </div>
+            <div class="summary-row" id="summaryShipping">
+                <span class="summary-label">Shipping Fee</span>
+                <span class="summary-value">Free</span>
+            </div>
+            <div class="summary-row total">
+                <span class="summary-label">Total</span>
+                <span class="summary-value total-value" id="summaryTotal">₱0.00</span>
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div id="shippingAddress" class="checkout-section">
+            <h2>Shipping Address</h2>
+            <form id="addressForm" novalidate>
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="fullName" placeholder="Juan Dela Cruz" autocomplete="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="0917xxxxxxx" autocomplete="tel" pattern="^(09|\+639)\d{9}$" required>
+                </div>
+                 <div class="form-group">
+                    <label for="streetAddress">Street Address, Building, House No.</label>
+                    <input type="text" id="streetAddress" name="streetAddress" placeholder="123 Sample St., Green Valley Village" autocomplete="street-address" required>
+                </div>
+                <div class="address-grid">
+                    <div class="form-group">
+                        <label for="barangay">Barangay</label>
+                        <input type="text" id="barangay" name="barangay" placeholder="Brgy. Example" autocomplete="address-level3" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City / Municipality</label>
+                        <input type="text" id="city" name="city" placeholder="Quezon City" autocomplete="address-level2" required>
+                    </div>
+                </div>
+                 <div class="address-grid">
+                    <div class="form-group">
+                        <label for="province">Province</label>
+                        <input type="text" id="province" name="province" placeholder="Metro Manila" autocomplete="address-level1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="zipCode">ZIP Code</label>
+                        <input type="text" id="zipCode" name="zipCode" placeholder="1101" autocomplete="postal-code" pattern="\d{4}" required>
+                    </div>
+                 </div>
+                <div class="form-group">
+                    <label for="landmark">Nearest Landmark (Optional)</label>
+                    <textarea id="landmark" name="landmark" placeholder="e.g., Across the blue gate, Near the waiting shed"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Payment Method -->
+        <div id="paymentMethod" class="checkout-section">
+            <h2>Payment Method</h2>
+            <div class="payment-options">
+                <!-- COD -->
+                <div class="payment-option">
+                    <input type="radio" id="cod" name="payment-method" value="COD" required>
+                    <label for="cod">
+                        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9h4v2h-4v3l-4-4 4-4v3z"/></svg>
+                        Cash on Delivery (COD)
+                    </label>
+                </div>
+                <!-- GCash -->
+                <div class="payment-option">
+                    <input type="radio" id="gcash" name="payment-method" value="GCash" required>
+                    <label for="gcash">
+                        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="32" cy="32" r="30" fill="#0075FF"/> <path d="M24.8 18H39.2C42.5 18 45 20.5 45 23.8V40.2C45 43.5 42.5 46 39.2 46H24.8C21.5 46 19 43.5 19 40.2V23.8C19 20.5 21.5 18 24.8 18Z" fill="white"/> <path d="M32 25C28.13 25 25 28.13 25 32C25 35.87 28.13 39 32 39C35.87 39 39 35.87 39 32C39 28.13 35.87 25 32 25ZM32 36C29.79 36 28 34.21 28 32C28 29.79 29.79 28 32 28C34.21 28 36 29.79 36 32C36 34.21 34.21 36 32 36Z" fill="#0075FF"/> </svg>
+                        GCash
+                    </label>
+                    <div class="payment-details">
+                        <p>Pay to the following GCash account:</p>
+                        <div class="account-info"> <p><strong>Name:</strong> Maria Santos</p> <p><strong>Number:</strong> 0917 123 4567</p> </div>
+                        <p style="margin-top:10px;"><i>Upload proof if required after checkout.</i></p>
+                    </div>
+                </div>
+                <!-- Maya -->
+                <div class="payment-option">
+                    <input type="radio" id="maya" name="payment-method" value="Maya" required>
+                    <label for="maya">
+                         <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="32" cy="32" r="30" fill="#1BC98E"/> <path fill-rule="evenodd" clip-rule="evenodd" d="M32 16C23.16 16 16 23.16 16 32C16 40.84 23.16 48 32 48C40.84 48 48 40.84 48 32C48 23.16 40.84 16 32 16ZM30 38H26V26H30V38ZM38 38H34V26H38V38Z" fill="white"/> </svg>
+                        Maya Wallet
+                    </label>
+                     <div class="payment-details">
+                        <p>Pay to the following Maya account:</p>
+                         <div class="account-info"> <p><strong>Name:</strong> Pedro Reyes</p> <p><strong>Number:</strong> 0928 987 6543</p> </div>
+                         <p style="margin-top:10px;"><i>Upload proof if required after checkout.</i></p>
+                    </div>
+                </div>
+                 <!-- Bank -->
+                 <div class="payment-option">
+                    <input type="radio" id="bank" name="payment-method" value="Bank Transfer" required>
+                    <label for="bank">
+                        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M4 10h3v7H4z M10.5 10h3v7h-3z M2 19h20 M17 10h3v7h-3z M12 5.5l-5.5 4h11z M12 3L2 9v2h20V9L12 3z"/></svg>
+                        Pay to Bank Account
+                    </label>
+                    <div class="payment-details">
+                        <p>Deposit/transfer to one of the following accounts:</p>
+                         <div class="account-info"> <p><strong>BDO:</strong> Magma Ent. / 001234567890</p> </div>
+                         <div class="account-info"> <p><strong>BPI:</strong> Magma Ent. / 9876543210</p> </div>
+                         <p style="margin-top:10px;"><i>Use Order ID as reference. Upload proof if requested.</i></p>
+                    </div>
+                </div>
+            </div> <!-- /.payment-options -->
+        </div>
+
+        <!-- Complete Checkout Button -->
+        <button id="checkoutBtn" type="button">Complete Checkout</button> <!-- Changed ID and Text -->
+
+        <!-- Processing Overlay -->
+        <div id="processingOverlay">
+             <div class="loading-spinner"></div>
+             <p>Processing your order...</p>
+        </div>
+
+    </div> <!-- /.container -->
+
+     <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        // --- Firebase Config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+        // Initialize Firebase
+        let app, auth, db; // Declare globally within script
+        if (!firebase.apps.length) {
+            app = firebase.initializeApp(firebaseConfig);
+            console.log("Firebase initialized on Payment Page.");
+        } else {
+            app = firebase.app(); // if already initialized, use that instance
+            console.log("Using existing Firebase app instance.");
+        }
+        auth = firebase.auth(); // Get Auth instance
+        db = firebase.firestore(); // Get Firestore instance
+
+
+        // --- Helper Functions ---
+        function formatPrice(price) {
+             if (price === null || price === undefined) return '₱0.00';
+             const number = parseFloat(price);
+             if (isNaN(number)) return '₱0.00';
+             return `₱${number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        function displayError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message; errorDiv.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        function clearError() { document.getElementById('errorMessage').style.display = 'none'; }
+        function showProcessing(show = true) {
+             document.getElementById('processingOverlay').style.display = show ? 'flex' : 'none';
+             document.getElementById('checkoutBtn').disabled = show; // Target new button ID
+        }
+
+        // --- Main Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const summaryItemsList = document.getElementById('summaryItemsList');
+            const summarySubtotalElem = document.getElementById('summarySubtotal');
+            const summaryTotalElem = document.getElementById('summaryTotal');
+            const checkoutButton = document.getElementById('checkoutBtn'); // Changed ID
+            const addressForm = document.getElementById('addressForm');
+            const paymentOptions = document.querySelectorAll('input[name="payment-method"]');
+
+            let currentCartItems = [];
+            let currentTotal = 0;
+            let subTotal = 0;
+
+            // 1. Retrieve data from sessionStorage
+            const storedItems = sessionStorage.getItem('checkoutCartItems');
+            const storedTotalString = sessionStorage.getItem('checkoutCartTotal');
+
+            if (!storedItems || !storedTotalString) {
+                console.error("Checkout data not found.");
+                displayError("Could not load order summary. Please return to cart.");
+                checkoutButton.disabled = true; return;
+            }
+            try {
+                currentCartItems = JSON.parse(storedItems);
+                currentTotal = parseFloat(storedTotalString);
+                if (isNaN(currentTotal)) throw new Error("Invalid total.");
+                if (!Array.isArray(currentCartItems) || currentCartItems.length === 0) throw new Error("Invalid cart items.");
+            } catch (error) {
+                console.error("Error parsing checkout data:", error);
+                displayError("Error loading order details. Please try again.");
+                checkoutButton.disabled = true; return;
+            }
+
+            // 2. Populate Order Summary
+            summaryItemsList.innerHTML = ''; subTotal = 0;
+            currentCartItems.forEach(item => {
+                 const li = document.createElement('li'); li.className = 'summary-item';
+                 const itemPrice = parseFloat(item.productPrice ?? 0);
+                 const itemQuantity = parseInt(item.quantity || 1);
+                 const itemSubTotal = itemPrice * itemQuantity;
+                 subTotal += itemSubTotal;
+                 li.innerHTML = `
+                    <img src="${item.productImage || 'assets/images/placeholder.svg'}" alt="${item.productTitle || 'Item'}" class="summary-item-img" onerror="this.onerror=null; this.src='assets/images/placeholder.svg';">
+                    <div class="summary-item-details"> <span class="summary-item-title">${item.productTitle || 'Product Unavailable'}</span> <span class="summary-item-qty-price">${itemQuantity} x ${formatPrice(itemPrice)}</span> </div>
+                    <span class="summary-item-total">${formatPrice(itemSubTotal)}</span>`;
+                 summaryItemsList.appendChild(li);
+            });
+            summarySubtotalElem.textContent = formatPrice(subTotal);
+            summaryTotalElem.textContent = formatPrice(currentTotal); // Total includes Free Shipping
+
+
+            // 3. Add listener for Complete Checkout button
+            checkoutButton.addEventListener('click', async () => {
+                clearError(); showProcessing(true);
+
+                // 3a. Validate Address Form
+                if (!addressForm.checkValidity()) {
+                    const firstInvalid = addressForm.querySelector(':invalid'); if(firstInvalid) firstInvalid.focus();
+                    displayError("Please fill in all required shipping address fields correctly.");
+                    showProcessing(false); return;
+                }
+
+                // 3b. Validate Payment Method Selection
+                const selectedPaymentMethodInput = document.querySelector('input[name="payment-method"]:checked');
+                if (!selectedPaymentMethodInput) {
+                    displayError("Please select a payment method.");
+                    document.getElementById('paymentMethod').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    showProcessing(false); return;
+                }
+                const selectedPaymentMethod = selectedPaymentMethodInput.value;
+
+                // 3c. Gather Data
+                const formData = new FormData(addressForm);
+                const shippingAddress = { // Used for Order AND User Profile Update
+                    fullName: formData.get('fullName')?.trim() ?? '',
+                    phoneNumber: formData.get('phoneNumber')?.trim() ?? '',
+                    streetAddress: formData.get('streetAddress')?.trim() ?? '',
+                    barangay: formData.get('barangay')?.trim() ?? '',
+                    city: formData.get('city')?.trim() ?? '',
+                    province: formData.get('province')?.trim() ?? '',
+                    zipCode: formData.get('zipCode')?.trim() ?? '',
+                    landmark: formData.get('landmark')?.trim() || null
+                };
+
+                // 3d. Prepare Order Data
+                const currentUser = auth.currentUser; // Use initialized auth
+                const userId = currentUser ? currentUser.uid : 'GUEST_' + Date.now();
+                const userEmail = currentUser ? currentUser.email : null;
+
+                 const orderItems = currentCartItems.map(item => ({
+                     productId: item.productId || null, productTitle: item.productTitle || 'Unknown Product',
+                     productPrice: parseFloat(item.productPrice ?? 0), quantity: parseInt(item.quantity || 1),
+                     productImage: item.productImage || null
+                 }));
+
+                const orderData = {
+                    userId: userId, userEmail: userEmail,
+                    orderTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'Pending', shippingAddress: shippingAddress,
+                    paymentMethod: selectedPaymentMethod, items: orderItems,
+                    subtotal: parseFloat(subTotal.toFixed(2)), shippingFee: 0,
+                    totalAmount: parseFloat(currentTotal.toFixed(2)),
+                };
+                console.log("Order Data Prepared:", JSON.stringify(orderData, null, 2));
+
+                // 4. Save Order, Update User, Clear Cart, Redirect
+                try {
+                    const ordersCollectionRef = db.collection("orders"); // Use initialized db
+
+                    // --- 1. Save the order ---
+                    const docRef = await ordersCollectionRef.add(orderData);
+                    const newOrderId = docRef.id;
+                    console.log("Order saved successfully! Firestore Document ID:", newOrderId);
+
+                    // --- 2. Update User Account (if logged in) ---
+                    if (currentUser) {
+                        console.log(`Attempting to update user account: ${currentUser.uid}`);
+                        try {
+                            const userDocRef = db.collection('users').doc(currentUser.uid);
+                            const userUpdateData = {
+                                defaultShippingAddress: shippingAddress, // Update/add address object
+                                displayName: shippingAddress.fullName, // Update top-level field
+                                phoneNumber: shippingAddress.phoneNumber, // Update top-level field
+                                lastAddressUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+                            await userDocRef.set(userUpdateData, { merge: true }); // Create or Merge
+                            console.log(`User account ${currentUser.uid} updated.`);
+                        } catch (userUpdateError) {
+                            console.error(`ERROR updating user ${currentUser.uid} account:`, userUpdateError);
+                            // Log error but don't stop the checkout flow
+                        }
+                    } else { console.log("Guest checkout, skipping user account update."); }
+
+                    // --- 3. Clear Firestore cart (if logged in) ---
+                    if (currentUser) {
+                        const cartItemsRef = db.collection('cartItems').where('userId', '==', currentUser.uid);
+                        const cartSnapshot = await cartItemsRef.get();
+                        if (!cartSnapshot.empty) {
+                             const batch = db.batch();
+                             cartSnapshot.docs.forEach(doc => batch.delete(doc.ref));
+                             await batch.commit(); console.log("Firestore cart cleared.");
+                        } else { console.log("No Firestore cart items found to clear."); }
+                    } else { console.log("Guest checkout, no Firestore cart to clear."); }
+
+                    // --- 4. Clear sessionStorage ---
+                    sessionStorage.removeItem('checkoutCartItems');
+                    sessionStorage.removeItem('checkoutCartTotal');
+                    console.log("Session storage cleared.");
+
+                    // --- 5. Redirect to Success Page ---
+                    window.location.href = `success.html?orderId=${newOrderId}&total=${orderData.totalAmount}`;
+
+                } catch (error) { // Catch errors from saving order or clearing cart
+                    console.error("Error during checkout process:", error);
+                    let userMessage = `Failed to complete checkout: ${error.message}. Please try again.`;
+                    if (error.code === 'permission-denied') userMessage = "Checkout failed due to permissions. Please contact support.";
+                    displayError(userMessage);
+                } finally {
+                    showProcessing(false); // Hide loading indicator
+                }
+            }); // End checkoutButton listener
+
+            // Initial Payment Details Visibility (handles browser back/forward state)
+             document.querySelectorAll('.payment-details').forEach(detail => detail.style.display = 'none');
+             const initiallyChecked = document.querySelector('input[name="payment-method"]:checked');
+             if (initiallyChecked) {
+                 const details = initiallyChecked.closest('.payment-option').querySelector('.payment-details');
+                 if (details) details.style.display = 'block';
+             }
+
+        }); // End DOMContentLoaded listener
+    </script>
+
+</body>
+</html>

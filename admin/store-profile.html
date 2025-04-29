@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Login - Magnetar Store</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- START: Embedded CSS --- */
+
+        /* --- Base Variables (Consistent Light Theme) --- */
+        :root {
+            --font-family-base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --primary-color: #4A90E2; --primary-color-darker: #357ABD;
+            --text-primary: #333333; --text-secondary: #777777; --text-on-primary: #ffffff;
+            --background-main: #F8F9FA; --background-card: #ffffff;
+            --border-color: #EAECEF;
+            --shadow-card: 0px 4px 12px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.08);
+            --radius-card: 12px; --space-unit: 4px;
+            --input-background: #ffffff; --input-border: #D1D5DB; --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary); --placeholder-text: #9CA3AF;
+            --error-color: #EF4444; /* Tailwind red-500 */
+            --success-color: #22C55E; /* Tailwind green-500 */
+        }
+
+        /* --- Dark Theme Overrides --- */
+        [data-theme="dark"] {
+            --primary-color: #5A9BEA; --primary-color-darker: #4A80D2;
+            --text-primary: #E5E7EB; --text-secondary: #9CA3AF;
+            --background-main: #111827; --background-card: #1F2937;
+            --border-color: #374151;
+            --shadow-card: 0px 4px 12px rgba(0, 0, 0, 0.3), 0px 2px 4px rgba(0, 0, 0, 0.2);
+            --input-background: #374151; --input-border: #4B5563; --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary); --placeholder-text: #6B7280;
+            --error-color: #F87171; /* Tailwind red-400 */
+            --success-color: #86EFAC; /* Tailwind green-300 */
+        }
+
+        /* --- General Reset & Base Styles --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; height: 100%; }
+        body {
+            font-family: var(--font-family-base); background-color: var(--background-main); color: var(--text-primary);
+            font-size: 14px; line-height: 1.5;
+            overflow-x: hidden; transition: background-color 0.2s ease, color 0.2s ease;
+            min-height: 100vh; /* Ensure body takes at least full viewport height */
+
+            /* --- Flexbox Centering --- */
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            padding: calc(var(--space-unit) * 8); /* Add some padding around the content */
+        }
+        a { text-decoration: none; color: var(--primary-color); transition: color 0.2s ease; }
+        a:hover { color: var(--primary-color-darker); }
+        img { max-width: 100%; height: auto; display: block; }
+
+        /* --- Card Container --- */
+        .auth-card {
+            background-color: var(--background-card);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-card);
+            padding: calc(var(--space-unit) * 8); /* 32px padding */
+            width: 100%; /* Take full width on small screens */
+            max-width: 400px; /* Max width on larger screens */
+            display: flex; /* Use flexbox for internal layout */
+            flex-direction: column; /* Stack children vertically */
+            gap: calc(var(--space-unit) * 6); /* Space between sections (header, form, links) */
+            transition: background-color 0.2s ease;
+        }
+
+        .auth-header {
+            text-align: center;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: calc(var(--space-unit) * 2);
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* --- Form Styles --- */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--space-unit) * 4); /* Space between form groups */
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--space-unit) * 2); /* Space between label and input */
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: calc(var(--space-unit) * 3); /* 12px padding */
+            border: 1px solid var(--input-border);
+            border-radius: calc(var(--radius-card) * 0.5); /* Slightly less rounded inputs */
+            background-color: var(--input-background);
+            color: var(--input-text);
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .form-group input::placeholder {
+            color: var(--placeholder-text);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: calc(var(--space-unit) * 3); /* 12px padding */
+            background-color: var(--primary-color);
+            color: var(--text-on-primary);
+            border: none;
+            border-radius: calc(var(--radius-card) * 0.5);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .auth-button:hover {
+            background-color: var(--primary-color-darker);
+        }
+
+        .auth-button:disabled {
+            background-color: var(--primary-color);
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* --- Message Styles --- */
+        .auth-message {
+            font-size: 13px;
+            text-align: center;
+            padding: calc(var(--space-unit) * 3);
+            border-radius: calc(var(--radius-card) * 0.5);
+            margin-top: calc(var(--space-unit) * -3); /* Pull up slightly into form gap */
+        }
+
+        .auth-message.error {
+            background-color: rgba(var(--error-color-rgb, 239, 68, 68), 0.1);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+         [data-theme="dark"] .auth-message.error {
+             background-color: rgba(var(--error-color-rgb, 248, 113, 113), 0.1);
+         }
+
+
+        .auth-message.success {
+            background-color: rgba(var(--success-color-rgb, 34, 197, 94), 0.1);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+         [data-theme="dark"] .auth-message.success {
+             background-color: rgba(var(--success-color-rgb, 134, 239, 172), 0.1);
+         }
+
+        .auth-message-hidden {
+            display: none;
+        }
+
+        /* --- Links / Footer --- */
+        .auth-links {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: calc(var(--space-unit) * 3);
+        }
+
+        .auth-links a {
+            font-weight: 500;
+        }
+
+        /* --- Hidden Forms --- */
+        .auth-form-container:not(.active) {
+            display: none;
+        }
+
+        /* --- Utility for Centering within Flex/Grid Item (if needed) --- */
+        .flex-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Optional: Add grid lines for visualization (remove in production) */
+        /* body {
+            background-image: linear-gradient(to right, rgba(0,0,0,.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.05) 1px, transparent 1px);
+            background-size: 10px 10px;
+        } */
+
+
+        /* Add RGB values for messages background opacity */
+        :root {
+            --error-color-rgb: 239, 68, 68;
+            --success-color-rgb: 34, 197, 94;
+        }
+        [data-theme="dark"] {
+             --error-color-rgb: 248, 113, 113;
+             --success-color-rgb: 134, 239, 172;
+        }
+
+
+        /* --- END: Embedded CSS --- */
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title" id="authTitle"></h1>
+             <p class="auth-subtitle" id="authSubtitle"></p>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="auth-form-container active">
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <p id="loginMessage" class="auth-message auth-message-hidden"></p>
+                <button type="submit" class="auth-button">Login</button>
+            </form>
+            <div class="auth-links">
+                <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+                <span>
+                    Don't have an account? <a href="#" id="showSignupLink">Sign Up</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signupFormContainer" class="auth-form-container">
+            <form id="signupForm" class="auth-form">
+                 <p class="auth-subtitle">Only <code>admin@magnetarstore.com</code> is currently allowed to sign up.</p>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter admin email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password (min 6 chars)" required minlength="6">
+                </div>
+                 <p id="signupMessage" class="auth-message auth-message-hidden"></p>
+                <button type="submit" class="auth-button">Sign Up</button>
+            </form>
+            <div class="auth-links">
+                <span>
+                    Already have an account? <a href="#" id="showLoginLinkFromSignup">Login</a>
+                </span>
+            </div>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="resetPasswordFormContainer" class="auth-form-container">
+            <form id="resetPasswordForm" class="auth-form">
+                 <p class="auth-subtitle">Enter your email address and we'll send you a link to reset your password.</p>
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" placeholder="Enter your email" required>
+                </div>
+                <p id="resetMessage" class="auth-message auth-message-hidden"></p>
+                <button type="submit" class="auth-button">Send Reset Link</button>
+            </form>
+            <div class="auth-links">
+                <span>
+                    Remember your password? <a href="#" id="showLoginLinkFromReset">Login</a>
+                </span>
+            </div>
+        </div>
+
+    </div> <!-- End auth-card -->
+
+
+    <!-- SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <!-- No Firestore needed for auth flow -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script> -->
+
+
+    <script>
+        // --- START: Embedded JS ---
+        let firebaseApp;
+        const firebaseConfig = {
+            apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I", // Use your Firebase API Key
+            authDomain: "aiconnect-ion-lejsx1.firebaseapp.com", // Use your Auth Domain
+            projectId: "aiconnect-ion-lejsx1", // Use your Project ID
+            storageBucket: "aiconnect-ion-lejsx1.appspot.com", // Optional
+            messagingSenderId: "673159361095", // Optional
+            appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762" // Optional
+        };
+
+        // --- DOM Elements ---
+        const pageTitleElement = document.getElementById('pageTitle');
+        const authTitleElement = document.getElementById('authTitle');
+        const authSubtitleElement = document.getElementById('authSubtitle');
+
+        const loginFormContainer = document.getElementById('loginFormContainer');
+        const signupFormContainer = document.getElementById('signupFormContainer');
+        const resetPasswordFormContainer = document.getElementById('resetPasswordFormContainer');
+
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
+
+        const loginEmailInput = document.getElementById('loginEmail');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const signupEmailInput = document.getElementById('signupEmail');
+        const signupPasswordInput = document.getElementById('signupPassword');
+        const resetEmailInput = document.getElementById('resetEmail');
+
+        const loginMessage = document.getElementById('loginMessage');
+        const signupMessage = document.getElementById('signupMessage');
+        const resetMessage = document.getElementById('resetMessage');
+
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        const showSignupLink = document.getElementById('showSignupLink');
+        const showLoginLinkFromSignup = document.getElementById('showLoginLinkFromSignup');
+        const showLoginLinkFromReset = document.getElementById('showLoginLinkFromReset');
+
+        // --- State Management ---
+        let currentForm = 'login'; // 'login', 'signup', 'reset'
+
+        // --- Constants ---
+        const ALLOWED_SIGNUP_EMAIL = 'admin@magnetarstore.com'; // The specific email allowed for signup
+
+        // --- Helper Functions ---
+        function showMessage(messageElement, message, type = 'error') {
+            messageElement.textContent = message;
+            messageElement.className = `auth-message ${type}`; // Remove hidden class, add type class
+        }
+
+        function clearMessages() {
+            loginMessage.textContent = '';
+            loginMessage.className = 'auth-message auth-message-hidden';
+            signupMessage.textContent = '';
+            signupMessage.className = 'auth-message auth-message-hidden';
+            resetMessage.textContent = '';
+            resetMessage.className = 'auth-message auth-message-hidden';
+        }
+
+        function setButtonLoading(button, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                // Optionally change text or add spinner, e.g., button.textContent = 'Loading...';
+            } else {
+                button.disabled = false;
+                 // Restore original text if it was changed
+                 if (button.id === 'loginFormSubmit') button.textContent = 'Login'; // Example
+                 if (button.id === 'signupFormSubmit') button.textContent = 'Sign Up'; // Example
+                 if (button.id === 'resetFormSubmit') button.textContent = 'Send Reset Link'; // Example
+            }
+        }
+
+
+        function showForm(formId) {
+            clearMessages(); // Clear messages when switching forms
+
+            loginFormContainer.classList.remove('active');
+            signupFormContainer.classList.remove('active');
+            resetPasswordFormContainer.classList.remove('active');
+
+            let title = '';
+            let subtitle = '';
+
+            switch (formId) {
+                case 'login':
+                    loginFormContainer.classList.add('active');
+                    title = 'Login to Dashboard';
+                    subtitle = 'Enter your credentials to access the dashboard.';
+                    pageTitleElement.textContent = 'Login - Magnetar Store';
+                    break;
+                case 'signup':
+                    signupFormContainer.classList.add('active');
+                    title = 'Create Account';
+                    subtitle = 'Sign up to manage your store.';
+                     pageTitleElement.textContent = 'Sign Up - Magnetar Store';
+                    break;
+                case 'reset':
+                    resetPasswordFormContainer.classList.add('active');
+                    title = 'Reset Password';
+                    subtitle = 'Recover your password.';
+                     pageTitleElement.textContent = 'Reset Password - Magnetar Store';
+                    break;
+            }
+            authTitleElement.textContent = title;
+            authSubtitleElement.textContent = subtitle;
+            currentForm = formId;
+        }
+
+        // --- Firebase Authentication Handlers ---
+
+        // Check authentication state on page load
+        function checkAuthState() {
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in. Redirect to dashboard.
+                    console.log('User is signed in:', user);
+                    // Replace 'dashboard.html' with your actual dashboard page URL
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // No user is signed in. Show the login form.
+                    console.log('No user signed in.');
+                    showForm('login'); // Default to login if not authenticated
+                }
+            });
+        }
+
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            clearMessages();
+
+            const email = loginEmailInput.value.trim();
+            const password = loginPasswordInput.value.trim();
+            const loginButton = loginForm.querySelector('button[type="submit"]');
+
+            if (!email || !password) {
+                showMessage(loginMessage, 'Please enter both email and password.');
+                return;
+            }
+
+            setButtonLoading(loginButton, true);
+
+            try {
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                console.log('Logged in successfully:', userCredential.user);
+                // onAuthStateChanged listener will handle redirection
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = 'Login failed. Please check your credentials.';
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address format.';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = 'Your account has been disabled.';
+                        break;
+                    case 'auth/user-not-found':
+                         errorMessage = 'No user found with this email.';
+                         break;
+                    case 'auth/wrong-password':
+                         errorMessage = 'Incorrect password.';
+                         break;
+                    default:
+                         errorMessage = `Login failed: ${error.message}`; // Fallback for unknown errors
+                }
+                showMessage(loginMessage, errorMessage);
+            } finally {
+                setButtonLoading(loginButton, false);
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            clearMessages();
+
+            const email = signupEmailInput.value.trim();
+            const password = signupPasswordInput.value.trim();
+             const signupButton = signupForm.querySelector('button[type="submit"]');
+
+            if (!email || !password) {
+                showMessage(signupMessage, 'Please enter both email and password.');
+                return;
+            }
+
+             if (email !== ALLOWED_SIGNUP_EMAIL) {
+                 showMessage(signupMessage, `Sign up is currently restricted to ${ALLOWED_SIGNUP_EMAIL}.`);
+                 return;
+             }
+
+             if (password.length < 6) {
+                 showMessage(signupMessage, 'Password must be at least 6 characters long.');
+                 return;
+             }
+
+            setButtonLoading(signupButton, true);
+
+            try {
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                console.log('Signed up successfully:', userCredential.user);
+                 showMessage(signupMessage, 'Account created successfully! You can now login.', 'success');
+                 // Optionally, clear form or redirect to login
+                 signupForm.reset();
+                 // showForm('login'); // Auto switch to login after success
+            } catch (error) {
+                console.error('Signup error:', error);
+                 let errorMessage = 'Sign up failed.';
+                 switch (error.code) {
+                     case 'auth/email-already-in-use':
+                         errorMessage = 'The email address is already in use by another account.';
+                         break;
+                     case 'auth/invalid-email':
+                         errorMessage = 'Invalid email address format.';
+                         break;
+                     case 'auth/operation-not-allowed':
+                         errorMessage = 'Email/password sign up is not enabled. Please contact support.';
+                         break;
+                     case 'auth/weak-password':
+                         errorMessage = 'The password is too weak. Please choose a stronger password.';
+                         break;
+                     default:
+                         errorMessage = `Sign up failed: ${error.message}`; // Fallback
+                 }
+                showMessage(signupMessage, errorMessage);
+            } finally {
+                setButtonLoading(signupButton, false);
+            }
+        }
+
+        async function handleResetPassword(event) {
+            event.preventDefault();
+            clearMessages();
+
+            const email = resetEmailInput.value.trim();
+             const resetPasswordButton = resetPasswordForm.querySelector('button[type="submit"]');
+
+
+            if (!email) {
+                showMessage(resetMessage, 'Please enter your email address.');
+                return;
+            }
+
+            setButtonLoading(resetPasswordButton, true);
+
+            try {
+                await firebase.auth().sendPasswordResetEmail(email);
+                console.log('Password reset email sent.');
+                showMessage(resetMessage, 'If an account exists for that email, a password reset link has been sent.', 'success');
+                resetPasswordForm.reset(); // Clear the input field
+            } catch (error) {
+                console.error('Reset password error:', error);
+                 let errorMessage = 'Error sending password reset email.';
+                 switch (error.code) {
+                      case 'auth/invalid-email':
+                         errorMessage = 'Invalid email address format.';
+                         break;
+                     case 'auth/user-not-found':
+                         // Firebase intentionally returns user-not-found error for security reasons
+                         // We'll show the same generic success message as if it worked.
+                         console.warn('Password reset requested for non-existent user, showing success message for security.');
+                         showMessage(resetMessage, 'If an account exists for that email, a password reset link has been sent.', 'success');
+                         resetPasswordForm.reset(); // Clear the input field even on user-not-found error
+                         setButtonLoading(resetPasswordButton, false); // Ensure button is re-enabled
+                         return; // Exit function early if user-not-found
+                     default:
+                          errorMessage = `Error sending reset link: ${error.message}`;
+                 }
+                showMessage(resetMessage, errorMessage);
+            } finally {
+                setButtonLoading(resetPasswordButton, false);
+            }
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Firebase
+            try {
+                if (!firebase.apps.length) {
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase Initialized.");
+                } else {
+                    firebaseApp = firebase.app();
+                    console.log("Firebase App already exists.");
+                }
+
+                 // Check auth state immediately after Firebase is ready
+                 checkAuthState();
+
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                 // Display a message if Firebase fails to initialize
+                 const authCard = document.querySelector('.auth-card');
+                 if (authCard) {
+                     authCard.innerHTML = `
+                        <div class="auth-header" style="text-align: center; color: var(--error-color);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 30px; margin-bottom: 10px;"></i>
+                             <h1 class="auth-title">Initialization Error</h1>
+                             <p class="auth-subtitle" style="color: var(--text-secondary);">Could not connect to authentication services.</p>
+                        </div>
+                        <div class="auth-message error" style="display: block; margin-top: 0; text-align: left;">
+                            <p>Details: ${e.message}</p>
+                            <p>Please check your Firebase configuration and network connection.</p>
+                        </div>
+                     `;
+                     // Hide all original form containers if they exist
+                      [loginFormContainer, signupFormContainer, resetPasswordFormContainer].forEach(container => {
+                          if(container) container.style.display = 'none';
+                      });
+                 }
+            }
+
+            // --- Event Listeners for Form Switching ---
+            showSignupLink?.addEventListener('click', (e) => { e.preventDefault(); showForm('signup'); });
+            showLoginLinkFromSignup?.addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
+            forgotPasswordLink?.addEventListener('click', (e) => { e.preventDefault(); showForm('reset'); });
+            showLoginLinkFromReset?.addEventListener('click', (e) => { e.preventDefault(); showForm('login'); });
+
+            // --- Event Listeners for Form Submission ---
+            loginForm?.addEventListener('submit', handleLogin);
+            signupForm?.addEventListener('submit', handleSignup);
+            resetPasswordForm?.addEventListener('submit', handleResetPassword);
+
+        }); // End DOMContentLoaded
+        // --- END: Embedded JS ---
+    </script>
+
+</body>
+</html>

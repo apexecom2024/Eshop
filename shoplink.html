@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- SEO Meta Tags - Will be updated by JS -->
+    <!-- Add initial default meta tags -->
+    <title>Loading Store...</title>
+    <meta name="description" content="Loading store information.">
+    <meta name="keywords" content="">
+
+    <!-- Favicon - Static or Dynamic -->
+    <!-- If you have a dynamic favicon based on store logo, you'd update this href -->
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+
+    <!-- Open Graph / Social Sharing Meta Tags -->
+    <meta property="og:title" content="Loading Store...">
+    <meta property="og:description" content="Loading store information.">
+    <meta property="og:image" content=""> <!-- Dynamic -->
+    <meta property="og:url" content=""> <!-- Dynamic -->
+    <meta property="og:type" content="website">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- Theme Color Variable --- */
+        :root {
+            --primary-color: #1a2f3d;
+            --primary-color-darker: #12212b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+            touch-action: pan-y;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            padding-top: 70px; /* Space for fixed header */
+            padding-bottom: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
+            height: 65px;
+            transition: padding 0.3s ease-in-out; /* Smooth padding transition */
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-link { /* Updated to be a link to home */
+            background: none;
+            border: none;
+            margin-right: 15px;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+        }
+
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 40%;
+            object-fit: cover;
+            display: block;
+        }
+
+         .logo-link:hover {
+            opacity: 0.8;
+         }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212b36;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-icon {
+             position: relative;
+             font-size: 22px;
+             color: #333;
+             cursor: pointer;
+             text-decoration: none;
+             display: flex; /* Needed for vertical alignment */
+             align-items: center; /* Needed for vertical alignment */
+        }
+        .header-icon .fa-shopping-cart {
+            color: var(--primary-color);
+        }
+
+        /* Style for profile user icon */
+        .header-icon.profile i {
+             color: #333;
+             transition: color 0.2s ease-in-out;
+        }
+        .header-icon.profile:hover i {
+            color: var(--primary-color);
+        }
+
+        /* Cart badge ONLY */
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff5252;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        /* Hide cart badge if count is 0 */
+        .cart-badge.hidden {
+            display: none;
+        }
+
+        /* Search Bar */
+        .search-container {
+            padding: 15px;
+            background-color: #fff;
+            margin-bottom: 10px;
+            transition: padding 0.3s ease-in-out;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #f1f3f4;
+            border-radius: 25px;
+            padding: 8px 15px;
+            transition: max-width 0.3s ease-in-out; /* Smooth transition */
+        }
+
+        .search-bar i {
+            color: #5f6368;
+            margin-right: 10px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+        }
+        .search-bar input:focus {
+             box-shadow: 0 0 0 1px var(--primary-color);
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 15px;
+            background-color: #fff;
+            margin-bottom: 15px;
+            scrollbar-width: none; /* Firefox */
+            transition: padding 0.3s ease-in-out, margin-bottom 0.3s ease-in-out;
+        }
+
+        .categories::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .category {
+            flex: 0 0 auto;
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: #f1f3f4;
+            border-radius: 20px;
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, margin-bottom 0.3s ease-in-out;
+            border: 1px solid transparent;
+        }
+
+        .category.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Products Grid */
+        .products-container {
+            padding: 10px;
+            transition: padding 0.3s ease-in-out;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 0 5px;
+            align-items: stretch;
+            transition: grid-template-columns 0.3s ease-in-out, gap 0.3s ease-in-out; /* Smooth grid transitions */
+        }
+
+        /* Product Card Link Wrapper */
+        .product-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            border-radius: 10px; /* Match card radius for hover effect */
+        }
+
+        .product-card-link:hover {
+            transform: translateY(-3px);
+             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        .product-card-link:active {
+             transform: scale(0.98);
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        /* Uniform Card Size */
+        .product-card {
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            position: relative;
+            background-color: #eee;
+            flex-shrink: 0;
+            transition: height 0.3s ease-in-out; /* Smooth height transition */
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .product-card-link:hover .product-image img {
+             transform: scale(1.05);
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff5252;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .product-details {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 42px; /* Approx 2 lines */
+            line-height: 1.5;
+            transition: font-size 0.3s ease-in-out, height 0.3s ease-in-out; /* Smooth font/height transition */
+        }
+
+        .product-vendor {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .current-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            transition: font-size 0.3s ease-in-out; /* Smooth font transition */
+        }
+
+        .original-price {
+            font-size: 12px;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+            height: 22px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .product-tag {
+            background-color: #f1f3f4;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .add-to-cart {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 0;
+            width: 100%;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s, font-size 0.3s ease-in-out, padding 0.3s ease-in-out;
+            margin-top: auto; /* Pushes button to bottom */
+            z-index: 5; /* Ensure button is clickable above link wrapper */
+            position: relative; /* Needed for z-index */
+        }
+
+        .add-to-cart:active, .add-to-cart:hover {
+            background-color: var(--primary-color-darker);
+        }
+        .add-to-cart:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+
+        /* Loading State */
+        .loading { display: flex; justify-content: center; align-items: center; height: 200px; width: 100%; }
+        .loading-spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top: 4px solid var(--primary-color); width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Error State */
+        .error-message { text-align: center; padding: 20px; color: #ff5252; font-weight: bold; }
+
+        /* Empty State */
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; min-height: 200px; }
+        .empty-state i { font-size: 50px; color: #ccc; margin-bottom: 15px; }
+        .empty-state h3 { font-size: 18px; color: #333; margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; color: #666; margin-bottom: 20px; }
+
+
+        /* --- START: Desktop Styles --- */
+
+        @media (min-width: 768px) {
+            /* --- Tablet Optimizations --- */
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr); /* 3 columns for tablets */
+                gap: 20px; /* Slightly larger gap */
+            }
+            .product-image {
+                height: 180px; /* Slightly taller images */
+            }
+            .container {
+                 padding-left: 20px; /* Add some horizontal padding */
+                 padding-right: 20px;
+            }
+             /* Keep categories scrollable on tablet for now */
+        }
+
+        @media (min-width: 1024px) {
+            /* --- Desktop Optimizations --- */
+            .container {
+                max-width: 1200px; /* Limit overall content width */
+                margin: 0 auto; /* Center the container */
+                padding-top: 85px; /* More space below fixed header */
+                padding-left: 30px; /* More horizontal padding */
+                padding-right: 30px;
+            }
+
+            .header {
+                /* Apply max-width to header content to align with container */
+                /* Or adjust padding to match container */
+                 padding-left: max(30px, calc((100% - 1200px) / 2)); /* Align left padding */
+                 padding-right: max(30px, calc((100% - 1200px) / 2)); /* Align right padding */
+            }
+
+            .search-container {
+                padding: 20px 0; /* Adjust vertical padding */
+            }
+            .search-bar {
+                max-width: 700px; /* Limit search bar width slightly */
+                margin: 0 auto; /* Center search bar */
+            }
+
+            .categories {
+                overflow-x: visible; /* Allow wrapping */
+                flex-wrap: wrap;
+                justify-content: center; /* Center the categories */
+                padding-top: 15px; /* Adjust padding */
+                padding-bottom: 15px;
+                padding-left: 0; /* Remove padding if container handles it */
+                padding-right: 0;
+                margin-bottom: 30px; /* More space below categories */
+            }
+            .category {
+                margin-bottom: 10px; /* Add margin for wrapped items */
+                 /* Optional: Slightly larger category text */
+                 /* font-size: 14px; */
+            }
+
+            .products-container {
+                padding: 0; /* Remove padding if .container handles it */
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns */
+                gap: 25px; /* Wider gap */
+            }
+
+            .product-image {
+                height: 200px; /* Even taller images */
+            }
+            .product-card-link:hover {
+                /* Enhance hover effect slightly */
+                 box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Optional: Slightly larger fonts for readability */
+            .product-title {
+                font-size: 15px;
+                 height: 45px; /* Adjust height if needed */
+            }
+            .current-price {
+                font-size: 17px;
+            }
+            .add-to-cart {
+                font-size: 14px;
+                padding: 10px 0;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            /* --- Large Desktop Optimizations --- */
+            .products-grid {
+                grid-template-columns: repeat(5, 1fr); /* 5 columns on very wide screens */
+            }
+            .product-image {
+                height: 220px; /* Maybe even larger images */
+            }
+        }
+
+        @media (min-width: 1440px) {
+             /* --- Extra Large Desktop --- */
+             .container {
+                  max-width: 1360px; /* Slightly wider max-width */
+             }
+              .header {
+                 padding-left: max(30px, calc((100% - 1360px) / 2));
+                 padding-right: max(30px, calc((100% - 1360px) / 2));
+             }
+             /* Keep 5 columns or adjust if needed */
+        }
+        /* --- END: Desktop Styles --- */
+
+    </style>
+    <script>
+        // Firebase configuration (DO NOT REMOVE - Using your specific config)
+        const firebaseConfig = {
+          apiKey: "AIzaSyDwldURmtljNpORmpGRacwXriPmQZjF6j8",
+          authDomain: "daisy-n7g20a.firebaseapp.com",
+          databaseURL: "https://daisy-n7g20a-default-rtdb.firebaseio.com", // Included as provided, though not used for Firestore
+          projectId: "daisy-n7g20a",
+          storageBucket: "daisy-n7g20a.appspot.com",
+          messagingSenderId: "225362605902",
+          appId: "1:225362605902:web:d6672119cd68e7ffc3d01f"
+        };
+
+        // Prevent zoom scripts (Keep as is)
+        document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('touchstart', function(event) {
+                if (event.touches.length > 1) { event.preventDefault(); }
+            }, { passive: false });
+            document.addEventListener('touchmove', function(event) {
+                if (event.touches.length > 1) { event.preventDefault(); }
+            }, { passive: false });
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            // Initialize Firebase and Start Logic AFTER DOM is ready
+            initializeFirebaseAndApp();
+        });
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script> <!-- Auth SDK is essential -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> <!-- Firestore SDK is essential -->
+
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <!-- Changed href to index.html assuming this is the main page -->
+            <a href="index.html" class="logo-link" title="Home">
+                 <!-- **** Logo path **** -->
+                <img src="assets/images/logo/logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'; console.error('Logo image not found at assets/images/logo/logo.png')">
+            </a>
+            <div class="header-title">Kabarro</div>
+        </div>
+        <div class="header-right">
+            <!-- Profile Icon Link -->
+            <a href="profile.html" class="header-icon profile" title="Profile">
+                <i class="fas fa-user-circle"></i> <!-- Changed icon from fa-bell -->
+            </a>
+            <!-- Cart Icon Link -->
+             <a href="cart.html" class="header-icon" id="cart-icon-link" title="View Cart">
+                 <i class="fas fa-shopping-cart"></i>
+                 <!-- Dynamic Cart Badge -->
+                 <div class="cart-badge hidden" id="cart-badge">
+                     <span id="cart-item-count">0</span>
+                 </div>
+             </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search products..." id="searchInput">
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="categories">
+            <!-- Categories remain the same -->
+            <div class="category active" data-category="all">All</div>
+            <div class="category" data-category="Groceries">Groceries</div>
+            <div class="category" data-category="Meat">Meat</div>
+            <div class="category" data-category="Drinks">Drinks</div>
+            <div class="category" data-category="Snacks">Snacks</div>
+            <div class="category" data-category="Household">Household</div>
+            <div class="category" data-category="Personal Care">Personal Care</div>
+            <div class="category" data-category="Frozen">Frozen Foods</div>
+            <div class="category" data-category="Digital Products">Digital Products</div>
+            <div class="category" data-category="Electronics">Electronics</div>
+            <div class="category" data-category="Clothing">Clothing</div>
+            <div class="category" data-category="Bakery">Bakery</div>
+        </div>
+
+        <!-- Products Grid Container -->
+        <div class="products-container">
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="error-message" id="errorMessage" style="display: none;">
+                <!-- Error message text will be set dynamically -->
+            </div>
+            <div class="products-grid" id="productsGrid" style="display: none;"></div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <i class="fas fa-shopping-basket"></i>
+                <h3>No Products Found</h3>
+                <p>There are currently no products matching your search or filter.</p>
+            </div>
+        </div>
+
+    </div> <!-- End .container -->
+
+    <!-- Floating Action Button - REMOVED -->
+
+    <script>
+        // --- Constants ---
+        // Define the UID of the admin user whose store data should be fetched
+        // This is a simple approach assuming a single store managed by this admin.
+        // Replace with the actual UID of your 'admin@kabarroh-ph.com' user
+        // You can find this UID in the Firebase Authentication console.
+        // IMPORTANT: You MUST replace this with the actual UID after creating the admin user via admin-signup.html
+        const ADMIN_USER_UID = "REPLACE_WITH_YOUR_ADMIN_UID"; // <<< IMPORTANT: Replace this placeholder
+        const STORE_COLLECTION = 'stores'; // Firestore collection for store data
+        const PRODUCT_COLLECTION = 'kabarroph_products'; // Firestore collection for products
+        const CART_COLLECTION = 'cartItems'; // Firestore collection for cart items
+        const DEFAULT_STORE_TITLE = "General Store"; // Default title if data not loaded
+        const DEFAULT_LOGO_PATH = "assets/images/logo/logo.png"; // Default logo path (should be client accessible)
+        const DEFAULT_META_DESCRIPTION = "Shop online for groceries, meat, drinks, snacks, and more.";
+        const DEFAULT_META_KEYWORDS = "online store, shop, products, ecommerce";
+
+
+        // --- Firebase Initialization and App Logic ---
+        let auth, db, productsCollectionRef, cartItemsCollectionRef;
+        let allProducts = []; // Stores fetched products {id, ...data}
+        let currentCategory = 'all';
+        let listenersInitialized = false;
+        let cartItemCount = 0; // Track cart count locally
+        let storeData = null; // Global variable to hold fetched store data
+
+
+        // Elements
+        const storeTitleElement = document.querySelector('.header-title'); // Element to update store title in header
+        const pageTitleElement = document.querySelector('head title'); // Element to update page title
+        const storeLogoElement = document.querySelector('.header-logo'); // Element to update store logo in header
+        const categoriesContainer = document.querySelector('.categories'); // Container for categories
+        const productsGrid = document.getElementById('productsGrid');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const emptyState = document.getElementById('emptyState');
+        const searchInput = document.getElementById('searchInput');
+        // const categories = document.querySelectorAll('.category'); // Now dynamically populated
+
+        // Predefined Categories (Keep consistent with settings.html)
+        const ALL_PREDEFINED_CATEGORIES = [
+            // Filter out 'All' if it's not a selectable category in settings
+            { value: "groceries", label: "Groceries" },
+            { value: "meat", label: "Meat" },
+            { value: "drinks", label: "Drinks" },
+            { value: "snacks", label: "Snacks" },
+            { value: "household", label: "Household" },
+            { value: "personalcare", label: "Personal Care" },
+            { value: "frozen", label: "Frozen Foods" },
+            { value: "digitalproducts", label: "Digital Products" },
+            { value: "electronics", label: "Electronics" },
+            { value: "clothing", label: "Clothing" },
+            { value: "bakery", label: "Bakery" },
+            // Add more predefined categories here
+        ];
+
+
+
+        function initializeFirebaseAndApp() {
+            // --- Initialize Firebase ---
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase initialized successfully.");
+                } else {
+                     firebase.app();
+                     console.log("Firebase already initialized.");
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+                productsCollectionRef = db.collection(PRODUCT_COLLECTION); // Products collection
+                cartItemsCollectionRef = db.collection(CART_COLLECTION); // Cart items collection
+
+            } catch (error) {
+                console.error("CRITICAL: Firebase initialization failed:", error);
+                 // Show a generic error message and hide elements if Firebase fails
+                updateStorefrontUI({ error: true, message: "Firebase initialization failed." }, null);
+                return;
+            }
+
+            // --- Start fetching data ---
+            // Check if ADMIN_USER_UID is the default placeholder
+            if (ADMIN_USER_UID === "REPLACE_WITH_YOUR_ADMIN_UID") {
+                 console.error("ADMIN_USER_UID placeholder not replaced. Store data cannot be fetched.");
+                 updateStorefrontUI({ error: true, message: "Store configuration incomplete. Please update ADMIN_USER_UID." }, null);
+                 // Still attempt to load products, maybe? Or show a more severe error?
+                 // Let's show a specific error and stop.
+                 return;
+            }
+
+
+            // Fetch store data and products data concurrently
+            Promise.all([
+                fetchStoreData(ADMIN_USER_UID), // Fetch store data using the admin UID
+                fetchProducts() // Fetch product data
+            ]).then(([fetchedStoreData, fetchedProducts]) => {
+                // Check for errors returned by fetch functions
+                if (fetchedStoreData && fetchedStoreData.error) {
+                     throw new Error(fetchedStoreData.message); // Propagate store data error
+                }
+                if (fetchedProducts && fetchedProducts.error) {
+                     throw new Error(fetchedProducts.message); // Propagate products error
+                }
+
+                storeData = fetchedStoreData; // Store fetched data globally (will be null if not found)
+                allProducts = fetchedProducts; // Store fetched products globally (will be empty array if none active)
+
+                console.log("Store data and products fetch completed.");
+
+                // Update UI and render products after both fetches complete
+                updateStorefrontUI(storeData, allProducts);
+                setupEventListeners(); // Setup event listeners AFTER initial render
+
+            }).catch(error => {
+                 console.error("Error fetching initial data:", error);
+                 // If any promise in Promise.all failed, this catch block runs.
+                 // Show an overall error state.
+                 updateStorefrontUI({ error: true, message: `Failed to load store data: ${error.message}` }, null); // Pass null products as they might be incomplete/failed
+            });
+
+
+            // --- Handle Authentication State (for Cart) ---
+            // This listener ensures the cart icon badge is updated for the current user session
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    console.log("Auth State Changed: User is signed in (for cart). Anonymous:", user.isAnonymous, "UID:", user.uid);
+                    // Fetch initial cart count for the logged-in user
+                    fetchInitialCartCount(user.uid); // Fetch count associated with this user
+                } else {
+                    // No user signed in, attempt anonymous sign-in
+                    console.log("Auth State Changed: No user signed in. Attempting anonymous sign-in for cart...");
+                     // Note: This anonymous sign-in is primarily for the cart functionality.
+                     // The main page content fetch uses the hardcoded ADMIN_USER_UID for store data.
+                    signInAnonymously();
+                    // Reset cart count if no user or anonymous sign-in fails
+                    cartItemCount = 0;
+                    updateCartIcon(cartItemCount); // Update UI (hide badge)
+                }
+            });
+        }
+
+        function signInAnonymously() {
+             // Removed showLoading() from here, as loading is managed by the main data fetch
+             // Only attempt if not already signing in or signed in
+             if (auth.currentUser) return;
+
+            auth.signInAnonymously()
+                .then(() => {
+                    console.log("Anonymous sign-in successful.");
+                    // onAuthStateChanged will fire again and trigger cart count fetch
+                })
+                .catch((error) => {
+                    console.warn("Anonymous sign-in failed (cart functionality may be limited):", error.message);
+                    // Optionally show a message related to cart functionality if sign-in fails
+                });
+        }
+
+
+        // --- Fetch Store Data ---
+        async function fetchStoreData(adminUid) {
+             // Use db directly as it's initialized at the start
+             if (!adminUid || !db) {
+                 console.error("Cannot fetch store data: Missing Admin UID or Firestore DB.");
+                 // Return an object signaling error for the caller to handle
+                 return { error: true, message: "Store data missing or DB not ready." };
+             }
+             console.log(`Fetching store data for admin UID: ${adminUid} from '${STORE_COLLECTION}' collection.`);
+             try {
+                 // Fetch the store document associated with the admin UID
+                 const storeDocRef = db.collection(STORE_COLLECTION).doc(adminUid);
+                 const storeDoc = await storeDocRef.get();
+
+                 if (storeDoc.exists) {
+                     const data = storeDoc.data();
+                     console.log("Store data found.");
+                     return data; // Return the store data object
+                 } else {
+                     console.warn("No store data found in Firestore for admin UID:", adminUid);
+                     // Return an object signaling no data found
+                     return { exists: false, message: "Store data not configured." };
+                 }
+             } catch (error) {
+                 console.error("Error fetching store data from Firestore:", error);
+                 if (error.code === 'permission-denied') {
+                      console.error("Firestore permission denied for stores collection.");
+                 }
+                 // Return an object signaling error
+                 return { error: true, message: `Failed to fetch store data: ${error.message}` };
+             }
+        }
+
+
+        // --- Update Storefront UI (Logo, Title, Categories, Meta, Schema) ---
+        function updateStorefrontUI(storeData, products) {
+             // Get meta tag references - make sure they exist in the HTML head
+             const pageTitle = document.querySelector('head title');
+             const metaDescription = document.querySelector('meta[name="description"]');
+             let metaKeywords = document.querySelector('meta[name="keywords"]');
+              // Create keywords meta tag if it doesn't exist
+             if (!metaKeywords) {
+                 metaKeywords = document.createElement('meta');
+                 metaKeywords.name = 'keywords';
+                 document.head.appendChild(metaKeywords);
+             }
+
+             const ogTitle = document.querySelector('meta[property="og:title"]');
+             const ogDescription = document.querySelector('meta[property="og:description"]');
+             const ogImage = document.querySelector('meta[property="og:image"]');
+             let ogUrl = document.querySelector('meta[property="og:url"]');
+              // Create og:url meta tag if it doesn't exist
+             if (!ogUrl) {
+                 ogUrl = document.createElement('meta');
+                 ogUrl.property = 'og:url';
+                 document.head.appendChild(ogUrl);
+             }
+
+
+             // --- Handle Overall Loading/Error States ---
+             // This function is called after ALL initial fetches.
+             // If products === null, it means the product fetch failed.
+             // If storeData is null or has .error, it means store data fetch failed.
+             if (products === null || storeData?.error === true) {
+                 console.error("Rendering UI in error state.");
+                 // Set generic error details
+                 if (pageTitle) pageTitle.textContent = "Error Loading Store";
+                 if(metaDescription) metaDescription.setAttribute('content', "Could not load store information. Please try again later.");
+                 if(ogTitle) ogTitle.setAttribute('content', "Error Loading Store");
+                 if(ogDescription) ogDescription.setAttribute('content', "Could not load store information.");
+                 if(ogUrl) ogUrl.setAttribute('content', window.location.href); // Set current URL even on error
+                 if(ogImage) ogImage.setAttribute('content', ''); // Clear image or set default error image
+                 if(metaKeywords) metaKeywords.setAttribute('content', ''); // Clear keywords
+
+                 storeTitleElement.textContent = "Error";
+                 storeLogoElement.src = DEFAULT_LOGO_PATH; // Fallback logo path
+                 storeLogoElement.alt = "Error Loading Logo";
+                 storeLogoElement.onerror = null; // Remove default error handler to prevent console spam
+
+                 // Clear or hide categories/search/products and show overall error message
+                 categoriesContainer.innerHTML = ''; // Clear categories
+                 categoriesContainer.style.display = 'none'; // Hide categories container
+
+                 searchInput.style.display = 'none'; // Hide search input
+                 productsGrid.style.display = 'none'; // Hide grid
+                 loadingIndicator.style.display = 'none'; // Hide loading
+                 emptyState.style.display = 'none'; // Hide empty
+
+                 // Display the specific error message if available, otherwise a generic one
+                 errorMessage.textContent = storeData?.message || products?.message || "An unexpected error occurred while loading store data.";
+                 errorMessage.style.display = 'block'; // Show the error message area
+                 return; // Stop here
+             }
+
+             // --- Handle No Store Data Found (But product data might exist) ---
+             // This case means the store document for the admin UID didn't exist.
+             // We fall back to default/placeholder store info but still show products.
+             if (storeData && storeData.exists === false) {
+                 console.warn("Rendering UI with default data as store data not found.");
+                  // Fallback to defaults if store data document didn't exist
+                 if (pageTitle) pageTitle.textContent = DEFAULT_STORE_TITLE;
+                 if(metaDescription) metaDescription.setAttribute('content', DEFAULT_META_DESCRIPTION);
+                 if(metaKeywords) metaKeywords.setAttribute('content', DEFAULT_META_KEYWORDS);
+                 if(ogTitle) ogTitle.setAttribute('content', DEFAULT_STORE_TITLE);
+                 if(ogDescription) ogDescription.setAttribute('content', DEFAULT_META_DESCRIPTION);
+                 if(ogUrl) ogUrl.setAttribute('content', window.location.href); // Set current URL
+                 // Use default logo for OG image if it's a valid public path
+                 if(ogImage) ogImage.setAttribute('content', DEFAULT_LOGO_PATH);
+
+
+                 storeTitleElement.textContent = DEFAULT_STORE_TITLE;
+                 storeLogoElement.src = DEFAULT_LOGO_PATH; // Use default logo path
+                 storeLogoElement.alt = DEFAULT_STORE_TITLE + " Logo";
+                 storeLogoElement.onerror = null; // Remove error handler if using default path
+
+                 // Render default categories (using predefined category values)
+                 renderCategories(ALL_PREDEFINED_CATEGORIES.map(c => c.value));
+
+                 // Generate and Inject Schema.org with default/limited info
+                 const schemaJson = generateSchemaJson(null); // Pass null/empty data to generate minimal/default schema
+                 if (schemaJson) injectSchemaJson(schemaJson);
+
+
+                 // Proceed to render products (if available) even if store data is missing
+                 // Loading/empty/error for products will be handled by renderProducts
+                 renderProducts(products);
+
+                 return; // Stop here, products render will finalize state visibility
+             }
+
+             // --- Successfully Loaded Store Data ---
+             console.log("Rendering UI with fetched store data.");
+             const storeName = storeData?.storeName || DEFAULT_STORE_TITLE; // Use fetched or default
+             const storeLogoUrl = storeData?.logoUrl || DEFAULT_LOGO_PATH; // Use fetched or default path
+             // Use saved categories values, fallback to predefined values if saved is empty/invalid
+             const storeCategories = Array.isArray(storeData?.categories) && storeData.categories.length > 0
+                                     ? storeData.categories
+                                     : ALL_PREDEFINED_CATEGORIES.map(c => c.value); // Fallback to predefined values
+
+             const storeAddress = storeData?.storeAddress;
+             const storeContactPhone = storeData?.contactPhone;
+             const storeWebsiteUrl = storeData?.websiteUrl || window.location.href; // Default to current page if no website URL
+             // Add other fields you might want to use for SEO/Schema from settings.html
+             // const storePaymentMethod = storeData?.paymentMethodName;
+             // const storeShippingInfo = storeData?.shippingInfo;
+             // const storeTaxId = storeData?.taxId;
+
+
+             // Update <title>
+             if (pageTitle) pageTitle.textContent = storeName;
+
+             // Update Meta Description
+             let descriptionContent = storeName;
+             if (storeCategories && storeCategories.length > 0) {
+                 // Get labels for categories, exclude 'all'
+                 const categoryLabels = storeCategories.map(catValue => getCategoryLabel(catValue)).filter(label => String(label).toLowerCase() !== 'all');
+
+                 if(categoryLabels.length > 0) {
+                      // Join the first few category labels for the description
+                     descriptionContent += ` | Shop for ${categoryLabels.slice(0, 5).join(', ')}${categoryLabels.length > 5 ? ', etc.' : ''}.`;
+                 } else {
+                      descriptionContent += ` | Your online store.`; // Fallback phrase
+                 }
+             } else {
+                 descriptionContent += ` | Your online store.`; // Fallback if no categories saved/found
+             }
+             if (storeAddress) {
+                 descriptionContent += ` Located at ${storeAddress}.`;
+             } else {
+                 descriptionContent += ` An online store.`; // Clarify it's online if no address
+             }
+             // Add other details to description? Phone, website summary? Keep concise.
+             // descriptionContent += ` Contact: ${storeContactPhone}.`; // Example
+
+             // Truncate for best practice
+             if(metaDescription) metaDescription.setAttribute('content', descriptionContent.substring(0, 160));
+
+
+             // Update Meta Keywords
+             if(metaKeywords) {
+                  const allCategoriesValues = Array.isArray(storeData?.categories) ? storeData.categories : [];
+                  // Get labels for categories, just use values for custom ones if label not found
+                  const categoryKeywords = allCategoriesValues.map(catValue => getCategoryLabel(catValue)).filter(k => String(k).toLowerCase() !== 'all'); // Exclude 'All' label
+
+                  // Combine store name parts, category labels/values, and other keywords
+                  const storeNameParts = storeName.toLowerCase().split(' ').filter(part => part.length > 1); // Split name into words
+                  const keywords = [...storeNameParts, 'online store', 'shop', 'ecommerce'].concat(categoryKeywords);
+
+                  // Remove duplicates and join
+                  metaKeywords.setAttribute('content', [...new Set(keywords)].join(', '));
+             }
+
+
+             // Update Open Graph Meta Tags
+             if(ogTitle) ogTitle.setAttribute('content', storeName);
+             if(ogDescription) ogDescription.setAttribute('content', descriptionContent.substring(0, 200)); // OG description can be longer
+             if(ogUrl) ogUrl.setAttribute('content', storeWebsiteUrl); // Use the store's website URL or current page
+             if(ogImage) {
+                 // Use the fetched logo URL. Handle potential relative paths for OG image
+                 const fullLogoUrl = (storeLogoUrl && typeof storeLogoUrl === 'string' && storeLogoUrl.startsWith('/'))
+                                     ? `${window.location.origin}${storeLogoUrl}`
+                                     : storeLogoUrl;
+                 ogImage.setAttribute('content', fullLogoUrl || ''); // Use empty string if no logo URL
+             }
+
+
+             // Update Header Title (visible)
+             storeTitleElement.textContent = storeName;
+
+             // Update Header Logo (visible)
+             storeLogoElement.src = storeLogoUrl;
+             storeLogoElement.alt = storeName + " Logo";
+             // Re-add error handler for the *specific* store logo URL
+             storeLogoElement.onerror = () => {
+                 storeLogoElement.src = DEFAULT_LOGO_PATH;
+                 storeLogoElement.alt = storeName + " Logo (Default)";
+                 console.warn(`Store logo from URL failed to load (${storeLogoUrl}), showing default.`);
+             };
+
+
+             // Render Categories in the UI
+             renderCategories(storeCategories); // Render categories using the fetched/default list of values
+
+
+             // Generate and Inject Schema.org JSON-LD
+             const schemaJson = generateSchemaJson(storeData); // Generate schema using full fetched data
+             if (schemaJson) injectSchemaJson(schemaJson);
+
+
+             // Render Products
+             // This will hide loading/show grid/empty state as needed
+             renderProducts(products);
+
+        }
+
+
+        // --- Category Data & Rendering ---
+
+        // Helper to get category label from value using ALL_PREDEFINED_CATEGORIES
+        function getCategoryLabel(categoryValue) {
+             const predefined = ALL_PREDEFINED_CATEGORIES.find(cat => cat.value.toLowerCase() === String(categoryValue).toLowerCase());
+             // Return predefined label or capitalize the value (replace hyphens) if not predefined
+             return predefined ? predefined.label : String(categoryValue).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+
+        // --- Render Categories List in the UI ---
+        function renderCategories(categoriesValues) {
+             categoriesContainer.innerHTML = ''; // Clear existing categories
+
+             // If store data was not found or had no categories, categoriesValues might be
+             // an empty array or null/undefined from the fallback.
+             // If it's not an array or empty, fall back to predefined categories for display.
+             const displayCategoriesValues = Array.isArray(categoriesValues) && categoriesValues.length > 0
+                                              ? categoriesValues
+                                              : ALL_PREDEFINED_CATEGORIES.map(c => c.value);
+
+
+             if (!Array.isArray(displayCategoriesValues) || displayCategoriesValues.length === 0) {
+                 console.warn("No category values to display.");
+                  // Optionally hide the category section or show a default 'All'
+                 categoriesContainer.style.display = 'none';
+                 return;
+             }
+
+             categoriesContainer.style.display = 'flex'; // Ensure container is visible
+
+             // Always add 'All' category explicitly first
+             addCategoryToUI('all', 'All', true); // Pass true for initial active state
+
+             // Add other categories from the values list
+             displayCategoriesValues.filter(cat => String(cat).toLowerCase() !== 'all').forEach(catValue => {
+                  const categoryLabel = getCategoryLabel(catValue); // Use the helper to get label
+
+                  addCategoryToUI(catValue, categoryLabel, false); // Not active initially
+             });
+
+             // Re-attach or ensure category click listeners are active (using delegation is best)
+             // This should only be called AFTER categories are rendered the first time
+             // in the initializeFirebaseAndApp -> then block.
+             // The setupEventListeners is called there, and it calls setupCategoryClickListeners once.
+             // Subsequent calls to renderCategories (e.g. from filtering) just update the DOM,
+             // the event delegation listener on the static container remains active.
+             // So, no need to call setupCategoryClickListeners here again.
+         }
+
+         // Helper to add a single category div to the UI
+         function addCategoryToUI(value, label, isActive) {
+             const categoryDiv = document.createElement('div');
+             categoryDiv.className = 'category';
+             if (isActive) {
+                 categoryDiv.classList.add('active');
+             }
+             categoryDiv.textContent = label;
+             categoryDiv.dataset.category = value; // Store the filter value (lowercase slug)
+             categoriesContainer.appendChild(categoryDiv);
+         }
+
+
+        // --- Fetch Initial Cart Count ---
+        async function fetchInitialCartCount(userId) {
+             // Ensure we have a user ID and Firestore reference
+             if (!userId || !db) { // Use db instead of cartItemsCollectionRef directly here
+                 console.warn("Cannot fetch cart count: Missing userId or Firestore DB.");
+                 return;
+             }
+             console.log(`Fetching initial cart count for user: ${userId}`);
+             try {
+                 // Query cartItems collection for documents matching the user's ID
+                 // Assuming cartItems collection is db.collection("cartItems")
+                 const snapshot = await db.collection(CART_COLLECTION).where("userId", "==", userId).get();
+                 cartItemCount = snapshot.size; // The number of documents is the item count
+                 console.log(`Initial cart count fetched: ${cartItemCount}`);
+                 updateCartIcon(cartItemCount); // Update the badge UI
+             } catch (error) {
+                 console.error("Error fetching initial cart count:", error);
+                 // Log the error, but don't disrupt the user experience for this.
+             }
+        }
+
+        // --- Setup Event Listeners ---
+        function setupEventListeners() {
+            // Prevent adding listeners multiple times
+            if (listenersInitialized) {
+                 console.log("Listeners already initialized.");
+                 return;
+            }
+
+            console.log("Setting up event listeners...");
+
+            // Search input listener with debounce
+            searchInput.addEventListener('input', debouncedApplyFilters);
+
+            // Category filter listeners (using event delegation on the container)
+            // This needs to be set up AFTER categories are rendered the first time
+            setupCategoryClickListeners();
+
+            // Product Grid click listener (using event delegation)
+            productsGrid.addEventListener('click', async (event) => {
+                 // Check if the clicked element is the "Add to Cart" button
+                 if (event.target.classList.contains('add-to-cart')) {
+                     event.preventDefault(); // Prevent any default button behavior
+                     event.stopPropagation(); // IMPORTANT: Stop the click from bubbling up to the product card link
+
+                     const button = event.target;
+                     const productId = button.dataset.productId; // Get product ID from button's data attribute
+
+                     if (!productId) {
+                         console.error("Add to Cart button clicked, but product ID is missing.");
+                         return; // Exit if ID is missing
+                     }
+
+                     // Visual feedback and disable button
+                     button.textContent = 'Adding...';
+                     button.disabled = true;
+
+                     // Call the async function to handle Firestore interaction
+                     await handleAddToCart(productId, button);
+
+                     // Button state reset is now handled within handleAddToCart upon success/failure
+                 }
+                 // Clicks on other parts of the product card (within the <a> tag)
+                 // will trigger the navigation to product-details.html naturally.
+             });
+
+            listenersInitialized = true; // Mark listeners as initialized
+             console.log("Event listeners setup complete.");
+        }
+
+         // --- Setup Category Click Listeners using Event Delegation ---
+         function setupCategoryClickListeners() {
+             // Remove any existing listener to prevent duplicates if called multiple times
+             // A simpler approach for a single page app is to just call this once
+             // after the *first* category render, which happens in updateStorefrontUI.
+             // Subsequent calls to renderCategories (e.g. from filtering) just update the DOM,
+             // the event delegation listener on the static container remains active.
+             // So, no need to call setupCategoryClickListeners here again if it's called once
+             // in initializeFirebaseAndApp -> then block.
+
+             // Check if the listener is already attached via a flag or other mechanism
+             // For this simple example, we'll assume it's called once.
+
+             categoriesContainer.addEventListener('click', (event) => {
+                 const targetCategory = event.target.closest('.category'); // Use closest to ensure we clicked the category div
+                 if (targetCategory) {
+                     // Ignore click if already active
+                     if (targetCategory.classList.contains('active')) return;
+                     // Update active category style
+                     categoriesContainer.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+                     targetCategory.classList.add('active');
+                     // Update current category state and apply filters
+                     currentCategory = targetCategory.dataset.category;
+                     console.log("Category changed to:", currentCategory);
+                     applyFilters(); // Re-filter products immediately
+                 }
+             });
+         }
+
+
+        // --- Handle Add To Cart ---
+        async function handleAddToCart(productId, buttonElement) {
+            // 1. Check Authentication
+            // This check relies on auth.currentUser from the onAuthStateChanged listener.
+            if (!auth.currentUser) {
+                 console.error("User not authenticated for cart. Attempting anonymous sign-in again...");
+                 showError("Adding to cart requires sign-in. Please wait...");
+                 // Attempt sign-in and then maybe retry add to cart (more complex)
+                 // For now, just show error.
+                 buttonElement.textContent = 'Add to Cart'; // Reset button state
+                 buttonElement.disabled = false;
+                 signInAnonymously(); // Retry anonymous sign-in
+                 return;
+            }
+
+            // 2. Find Product Data
+            // Use the globally stored allProducts array
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) {
+                console.error(`Product data not found in allProducts for ID: ${productId}`);
+                showError("Could not find product details. Please refresh and try again.");
+                // Reset button
+                buttonElement.textContent = 'Add to Cart';
+                buttonElement.disabled = false;
+                return;
+            }
+
+            console.log(`Attempting to add product to cart: ${product.Title || product.name}`);
+
+            // 3. Prepare Cart Item Data Object
+            const cartItem = {
+                userId: auth.currentUser.uid, // Link item to the current user's UID
+                productId: product.id,
+                productTitle: product.Title || product.name || 'Unnamed Product',
+                productPrice: parseFloat(product['Variant Price'] ?? product.price ?? 0),
+                productImage: product['Image Src'] ?? (Array.isArray(product.imageUrls) && product.imageUrls[0]) ?? '', // Use product image if available
+                quantity: 1, // Default quantity when adding
+                addedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // 4. Add to Firestore (Assuming 'cartItems' collection exists and rules allow writes)
+            try {
+                // cartItemsCollectionRef is now initialized at the start
+                const querySnapshot = await cartItemsCollectionRef
+                    .where('userId', '==', auth.currentUser.uid)
+                    .where('productId', '==', productId)
+                    .limit(1)
+                    .get();
+
+                if (!querySnapshot.empty) {
+                    // Item exists, update quantity
+                    const existingDoc = querySnapshot.docs[0];
+                    const currentQuantity = existingDoc.data().quantity || 0;
+                    await existingDoc.ref.update({ quantity: currentQuantity + 1 });
+                    console.log("Product quantity updated in cart:", existingDoc.id);
+                     // The cartItemCount update below is ONLY for *new* items, so no local increment needed here.
+                     // If using real-time cart count listener, UI would update automatically.
+                } else {
+                    // Item doesn't exist, add new document
+                    const docRef = await cartItemsCollectionRef.add(cartItem);
+                    console.log("Product added to cart Firestore document with ID: ", docRef.id);
+                     cartItemCount++; // Increment local counter ONLY for new items
+                     updateCartIcon(cartItemCount); // Update header badge UI
+                }
+
+
+                // --- Success Actions (Common for add/update) ---
+                buttonElement.textContent = 'Added!';
+                // Show "Added!" state briefly, then reset button
+                setTimeout(() => {
+                    buttonElement.textContent = 'Add to Cart';
+                    buttonElement.disabled = false;
+                }, 1500);
+
+            } catch (error) {
+                // --- Error Handling ---
+                console.error("Error adding/updating product in cart Firestore:", error);
+                // Check if it's a permission error and provide a specific message
+                if (error.code === 'permission-denied') {
+                    showError("Permission denied. Check Firestore security rules for 'cartItems'.");
+                } else {
+                    showError(`Failed to add item to cart: ${error.message}`);
+                }
+                // Reset button on error
+                buttonElement.textContent = 'Add to Cart';
+                buttonElement.disabled = false;
+            }
+        }
+
+        // --- Render Products ---
+        function renderProducts(products) {
+            productsGrid.innerHTML = ''; // Clear previous content
+
+             // Check for error structure returned by fetch
+             if (products && products.error) {
+                 showError(products.message); // Show the error message returned by fetch
+                 // Ensure loading/empty states are hidden
+                 loadingIndicator.style.display = 'none';
+                 emptyState.style.display = 'none';
+                 productsGrid.style.display = 'none';
+                 return;
+             }
+
+            if (!Array.isArray(products)) {
+                console.error("RenderProducts received invalid data (not an array):", products);
+                showError("Could not display products due to invalid data.");
+                // Ensure loading/empty states are hidden
+                 loadingIndicator.style.display = 'none';
+                 emptyState.style.display = 'none';
+                 productsGrid.style.display = 'none';
+                return;
+            }
+            if (products.length === 0) {
+                const searchTerm = searchInput.value.trim();
+                const currentActiveCategoryElement = categoriesContainer.querySelector('.category.active');
+                 const activeCategoryText = currentActiveCategoryElement ? currentActiveCategoryElement.textContent : 'All'; // Get current category text
+
+                if (currentCategory === 'all' && !searchTerm) {
+                    showEmptyState("No Products Available", "There are currently no active products in this store.");
+                } else if (searchTerm && currentCategory !== 'all') {
+                    showEmptyState("No Products Found", `No "${activeCategoryText}" products found matching "${searchTerm}".`);
+                }
+                 else if (searchTerm) {
+                    showEmptyState("No Products Found", `No products found matching "${searchTerm}".`);
+                 } else if (currentCategory !== 'all') {
+                     showEmptyState("No Products Found", `No products found in category "${activeCategoryText}".`);
+                 }
+                 else {
+                    // Fallback empty state
+                    showEmptyState("No Products Found", "No products match your current criteria.");
+                 }
+
+                productsGrid.style.display = 'none'; // Ensure grid is hidden
+                loadingIndicator.style.display = 'none'; // Ensure loading is hidden
+                errorMessage.style.display = 'none'; // Ensure error is hidden
+                emptyState.style.display = 'flex'; // Explicitly show empty state
+                return;
+            }
+
+            console.log(`Rendering ${products.length} products...`);
+            // Sort products (e.g., by title) before rendering
+            products.sort((a, b) => (a.Title || a.name || '').localeCompare(b.Title || b.name || ''));
+
+            const fragment = document.createDocumentFragment();
+            products.forEach(product => {
+                const currentPrice = product['Variant Price'] ?? product.price ?? null;
+                const comparePrice = product['Variant Compare At Price'] ?? product.compare_at_price ?? null;
+                // Use a generic product placeholder as a fallback if imageSrc is missing or fails
+                const productPlaceholder = 'assets/images/placeholder.svg'; // Assuming you have a generic placeholder
+                const displayImageSrc = product['Image Src'] ?? (Array.isArray(product.imageUrls) && product.imageUrls[0]) ?? productPlaceholder;
+
+
+                const title = product.Title ?? product.name ?? 'Unnamed Product';
+                // Use fetched store name as fallback vendor name if available
+                const vendor = product.Vendor ?? storeData?.storeName ?? 'General Store';
+                let tags = product.Tags ?? [];
+                if (typeof tags === 'string') {
+                     tags = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                } else if (!Array.isArray(tags)) {
+                    tags = [];
+                }
+
+                const discountPercentage = calculateDiscountPercentage(currentPrice, comparePrice);
+                const currentPriceFormatted = formatPrice(currentPrice);
+                const originalPriceFormatted = formatPrice(comparePrice);
+
+                // Using <a> tag for the whole card to be clickable for product details
+                const productLink = document.createElement('a');
+                productLink.className = 'product-card-link';
+                productLink.href = `product-details.html?id=${product.id}`; // Link to product details page
+
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image">
+                        <img src="${displayImageSrc}" alt="${title}" loading="lazy" onerror="this.onerror=null; this.src='${productPlaceholder}'; console.warn('Image failed to load for product ${product.id || "unknown"}')">
+                        ${discountPercentage ? `<div class="discount-badge">-${discountPercentage}%</div>` : ''}
+                    </div>
+                    <div class="product-details">
+                        <div class="product-title">${title}</div>
+                        <div class="product-vendor">${vendor}</div>
+                        <div class="product-price">
+                            <div class="current-price">${currentPriceFormatted}</div>
+                            ${originalPriceFormatted && discountPercentage ? `<div class="original-price">${originalPriceFormatted}</div>` : ''}
+                        </div>
+                        <div class="product-tags">
+                            ${tags.slice(0, 2).map(tag => `<div class="product-tag">${tag}</div>`).join('')}
+                        </div>
+                        <!-- Add to Cart Button -->
+                        <button class="add-to-cart" data-product-id="${product.id}" type="button">Add to Cart</button>
+                    </div>`;
+                productLink.appendChild(productCard);
+                fragment.appendChild(productLink);
+            });
+
+            productsGrid.appendChild(fragment);
+            hideLoading(); // Ensure loading is hidden
+            productsGrid.style.display = 'grid'; // Show the grid
+            emptyState.style.display = 'none'; // Hide empty state
+            errorMessage.style.display = 'none'; // Hide error message
+            console.log("Rendering complete.");
+        }
+
+        // --- Helper Functions ---
+        function formatPrice(price) {
+             const number = parseFloat(price);
+             if (isNaN(number)) return ''; // Return empty instead of '₱0.00' or similar if invalid
+             // Using 'en-PH' locale for Philippine Peso formatting
+             return `₱${number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        function calculateDiscountPercentage(currentPrice, originalPrice) {
+            const current = parseFloat(currentPrice);
+            const original = parseFloat(originalPrice);
+            if (isNaN(current) || isNaN(original) || original <= 0 || original <= current) return null;
+            const discount = Math.round(((original - current) / original) * 100);
+            return discount > 0 ? discount : null;
+        }
+
+        // --- Filtering Functions ---
+        function filterProductsByCategory(products, categoryValue) {
+             if (!Array.isArray(products)) return [];
+             if (categoryValue === 'all') return products;
+
+             const lowerCaseCategoryValue = String(categoryValue).toLowerCase();
+
+             return products.filter(product => {
+                 // Filter based on product properties like Type, Category, or Tags
+                 // Use optional chaining and handle potential non-string types safely
+                 const type = String(product.Type ?? '').toLowerCase();
+                 const productCategory = String(product['Product Category'] ?? '').toLowerCase(); // Use Product Category field
+                 let tagsMatch = false;
+                 const tags = product.Tags ?? []; // Tags can be string or array
+                 if (Array.isArray(tags)) {
+                     // Check if any tag includes the category value
+                     tagsMatch = tags.some(tag => String(tag).toLowerCase().includes(lowerCaseCategoryValue));
+                 } else if (typeof tags === 'string') {
+                     // Check if the tags string includes the category value (e.g., comma-separated string)
+                     tagsMatch = tags.toLowerCase().includes(lowerCaseCategoryValue);
+                 }
+
+                 // Match if category value is in Type, Product Category, or Tags
+                 return type.includes(lowerCaseCategoryValue) || productCategory.includes(lowerCaseCategoryValue) || tagsMatch;
+             });
+         }
+
+
+         function filterProductsBySearch(products, searchTerm) {
+             if (!Array.isArray(products)) return [];
+             if (!searchTerm) return products;
+             const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+             return products.filter(product => {
+                 // Filter based on product properties like Title, Vendor, Description, Tags
+                 const title = String(product.Title ?? product.name ?? '').toLowerCase();
+                 const vendor = String(product.Vendor ?? '').toLowerCase();
+                 const description = String(product['Body (HTML)'] ?? product.description ?? '').toLowerCase();
+                 const type = String(product.Type ?? product.category ?? '').toLowerCase(); // Include type in search
+                 const productCategory = String(product['Product Category'] ?? '').toLowerCase(); // Include Product Category
+                 let tagsMatch = false;
+                 const tags = product.Tags ?? []; // Tags can be string or array
+                 if (Array.isArray(tags)) {
+                      tagsMatch = tags.some(tag => String(tag).toLowerCase().includes(lowerCaseSearchTerm));
+                 } else if (typeof tags === 'string') {
+                      tagsMatch = tags.toLowerCase().includes(lowerCaseSearchTerm);
+                 }
+                 // Combine search criteria
+                 return title.includes(lowerCaseSearchTerm) ||
+                        vendor.includes(lowerCaseSearchTerm) ||
+                        description.includes(lowerCaseSearchTerm) ||
+                        type.includes(lowerCaseSearchTerm) ||
+                        productCategory.includes(lowerCaseSearchTerm) || // Include product category in search
+                        tagsMatch;
+             });
+         }
+
+
+        // --- UI State Functions ---
+        function showLoading() {
+             loadingIndicator.style.display = 'flex';
+             productsGrid.style.display = 'none';
+             errorMessage.style.display = 'none';
+             emptyState.style.display = 'none';
+        }
+        function hideLoading() {
+             loadingIndicator.style.display = 'none';
+        }
+        function showError(message = "An error occurred.") {
+             hideLoading();
+             errorMessage.textContent = message;
+             errorMessage.style.display = 'block';
+             productsGrid.style.display = 'none';
+             emptyState.style.display = 'none';
+             console.error("Error displayed to user:", message);
+         }
+        function showEmptyState(message = "No Products Found", subMessage = "There are currently no products matching your search or filter.") {
+             hideLoading();
+             emptyState.querySelector('h3').textContent = message;
+             emptyState.querySelector('p').textContent = subMessage;
+             emptyState.style.display = 'flex';
+             productsGrid.style.display = 'none';
+             errorMessage.style.display = 'none';
+         }
+
+
+        // --- Update Cart Icon Badge ---
+        function updateCartIcon(count) {
+             const displayCount = Math.max(0, count);
+             if (displayCount > 0) {
+                 cartItemCountSpan.textContent = displayCount > 99 ? '99+' : displayCount;
+                 cartBadge.classList.remove('hidden');
+             } else {
+                 cartItemCountSpan.textContent = '0';
+                 cartBadge.classList.add('hidden');
+             }
+             // Optional: Update localStorage if needed for other pages
+             // localStorage.setItem('cartItemCount', displayCount);
+        }
+
+
+        // --- Debounce & Filter Application ---
+        let searchTimeout;
+        function debouncedApplyFilters() { clearTimeout(searchTimeout); searchTimeout = setTimeout(applyFilters, 300); }
+        function applyFilters() {
+            const searchTerm = searchInput.value.trim();
+            console.log(`Applying filters - Category: '${currentCategory}', Search: '${searchTerm}'`);
+            showLoading(); // Show loading while filtering
+
+            // Use setTimeout to allow UI update before heavy filtering/rendering
+            setTimeout(() => {
+                // Use the globally stored `allProducts` for filtering
+                let filtered = filterProductsByCategory(allProducts, currentCategory);
+                filtered = filterProductsBySearch(filtered, searchTerm);
+
+                // Render the filtered results
+                renderProducts(filtered); // renderProducts will hide loading and show the appropriate state (grid/empty)
+            }, 10); // Small delay for UI responsiveness
+        }
+
+
+        // --- JSON-LD Schema Generation ---
+        function generateSchemaJson(storeData) {
+             // Ensure required fields for a minimal schema are available
+             if (!storeData || storeData.error || storeData.exists === false || !storeData.storeName) {
+                 console.warn("Cannot generate Schema.org data: Invalid or missing required store data. Generating minimal WebSite schema.");
+                 // Return minimal valid WebSite schema if store data is not sufficient for LocalBusiness
+                 return {
+                     "@context": "https://schema.org",
+                     "@type": "WebSite",
+                     "name": storeData?.storeName || DEFAULT_STORE_TITLE,
+                     "url": storeData?.websiteUrl || window.location.href, // Use current page URL or saved URL
+                      // Optional: potentialAction for search on the overall site
+                      "potentialAction": {
+                         "@type": "SearchAction",
+                         "target": {
+                             "@type": "EntryPoint",
+                             "urlTemplate": `${storeData?.websiteUrl || window.location.origin}/index.html?search={search_term_string}` // Adjust URL template
+                         },
+                         "query-input": "required name=search_term_string"
+                      }
+                 };
+             }
+
+             // --- Build LocalBusiness/Store Schema if storeData is sufficient ---
+             const storeName = storeData.storeName;
+             const storeLogoUrl = storeData.logoUrl || null;
+             const storeAddress = storeData.storeAddress;
+             const storeContactPhone = storeData.contactPhone;
+             const storeWebsiteUrl = storeData.websiteUrl || window.location.href; // Default to current page if no website URL
+             // Use saved categories values for schema, exclude 'all' and filter empty/null
+             const storeCategories = Array.isArray(storeData.categories)
+                                     ? storeData.categories.filter(cat => cat && String(cat).trim().toLowerCase() !== 'all')
+                                     : [];
+
+             const schema = {
+                 "@context": "https://schema.org",
+                 "@type": "LocalBusiness", // Or "Store", "OnlineStore" - LocalBusiness is often flexible
+                 "name": storeName,
+                 "url": storeWebsiteUrl,
+                 "description": `Shop online from ${storeName}. Find products like ${storeCategories.slice(0, 3).join(', ') || 'various items'}${storeCategories.length > 3 ? ', etc.' : ''}.`, // Dynamic description based on categories, truncated
+                 "potentialAction": { // Action for search on site
+                     "@type": "SearchAction",
+                     "target": {
+                         "@type": "EntryPoint",
+                         "urlTemplate": `${storeWebsiteUrl}/index.html?search={search_term_string}` // Update URL template if search results are on a different page or use query params
+                     },
+                     "query-input": "required name=search_term_string"
+                 }
+                 // Add review/rating properties if available
+                 // "aggregateRating": { ... },
+                 // "review": { ... }
+             };
+
+             // Add logo if available and is a valid URL
+             if (storeLogoUrl && typeof storeLogoUrl === 'string' && (storeLogoUrl.startsWith('http') || storeLogoUrl.startsWith('/'))) {
+                  schema.logo = storeLogoUrl;
+                  schema.image = [storeLogoUrl]; // Also good to include in image array
+             } else if (DEFAULT_LOGO_PATH && typeof DEFAULT_LOGO_PATH === 'string' && (DEFAULT_LOGO_PATH.startsWith('http') || DEFAULT_LOGO_PATH.startsWith('/'))) {
+                 // Fallback to default logo if it's a public URL path
+                 // Need to construct the full URL if DEFAULT_LOGO_PATH is relative
+                 const baseUrl = storeWebsiteUrl.endsWith('/') ? storeWebsiteUrl.slice(0, -1) : storeWebsiteUrl;
+                 const defaultLogoFullUrl = DEFAULT_LOGO_PATH.startsWith('/') ? `${baseUrl}${DEFAULT_LOGO_PATH}` : `${baseUrl}/${DEFAULT_LOGO_PATH}`;
+
+                 schema.logo = defaultLogoFullUrl;
+                 schema.image = [defaultLogoFullUrl];
+             }
+
+
+             // Add address if available
+             if (storeAddress && typeof storeAddress === 'string') {
+                 // Schema.org address structure is preferred, but a simple string can work.
+                 // If your address is structured (street, city, state, postalCode, country), use the full structure.
+                 schema.address = {
+                     "@type": "PostalAddress",
+                     "streetAddress": storeAddress // Use the full string in streetAddress
+                 };
+             }
+
+             // Add contact info if available
+             if (storeContactPhone && typeof storeContactPhone === 'string') {
+                 schema.contactPoint = {
+                     "@type": "ContactPoint",
+                     "telephone": storeContactPhone,
+                     "contactType": "customer support"
+                 };
+             }
+
+              // Add payment methods (use enumeration if possible)
+              if (storeData?.paymentMethodName && typeof storeData.paymentMethodName === 'string') {
+                   const paymentMethods = storeData.paymentMethodName.split(',').map(m => m.trim()).filter(m => m);
+                   if (paymentMethods.length > 0) {
+                        // Attempt basic mapping to schema.org PaymentMethod types
+                       schema.paymentAccepted = paymentMethods.map(method => {
+                            const lowerMethod = method.toLowerCase();
+                            if (lowerMethod.includes('paypal')) return 'https://schema.org/PayPal';
+                            if (lowerMethod.includes('stripe')) return 'https://schema.org/CreditCard'; // Or specific card types
+                            if (lowerMethod.includes('bank')) return 'https://schema.org/DirectDebit'; // Or BankTransfer
+                            if (lowerMethod.includes('cash') || lowerMethod.includes('cod')) return 'https://schema.org/Cash';
+                            return method; // Fallback to string name if no standard mapping found
+                       });
+                       // Filter out any potential empty strings from mapping
+                        schema.paymentAccepted = schema.paymentAccepted.filter(p => p);
+                        if (schema.paymentAccepted.length === 0) {
+                             delete schema.paymentAccepted; // Remove if empty after mapping
+                        }
+                   }
+               }
+
+             // Add currency accepted (if defined in settings, assuming it matches ISO 4217 code like "PHP", "USD")
+             // You might need to add a currency input field in settings.html
+             // if (storeData?.currency && typeof storeData.currency === 'string') {
+             //      schema.priceCurrency = storeData.currency; // e.g., "PHP"
+             // }
+
+
+             // Add category information (as an array of strings)
+             if (storeCategories.length > 0) {
+                 schema.category = storeCategories;
+             }
+
+
+              // Add products as offers (simplified) - Link a limited set or overall catalog
+              // This assumes 'allProducts' global variable contains fetched products.
+              // Only add if products were successfully fetched and there are some.
+              if (Array.isArray(allProducts) && allProducts.length > 0) {
+                  schema.hasOfferCatalog = {
+                      "@type": "OfferCatalog",
+                      "name": `${storeName} Products`,
+                      "numberOfItems": allProducts.length, // Total number of active products
+                      // itemListElement can list *some* products, not necessarily all
+                      // Listing products is detailed. You could list just a few or link to categories.
+                      // For a simple index page, linking to product categories might be sufficient.
+                      // "itemListElement": storeCategories.map(catValue => {
+                      //      const categoryLabel = getCategoryLabel(catValue); // Need a helper to get label from value
+                      //      return {
+                      //          "@type": "CategoryCode", // Or OfferCatalog
+                      //          "name": categoryLabel,
+                      //          // "url": `${storeWebsiteUrl}/index.html?category=${catValue}` // Link to filtered category view
+                      //      };
+                      // }).filter(item => item), // Filter out potential nulls
+                   };
+               }
+
+
+             // Return the constructed schema object
+             return schema;
+         }
+
+
+        // Helper to get category label from value using ALL_PREDEFINED_CATEGORIES
+        function getCategoryLabel(categoryValue) {
+             const predefined = ALL_PREDEFINED_CATEGORIES.find(cat => cat.value.toLowerCase() === String(categoryValue).toLowerCase());
+             // Return predefined label or capitalize the value (replace hyphens) if not predefined
+             return predefined ? predefined.label : String(categoryValue).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+
+         // --- Inject JSON-LD Script into the Head ---
+         function injectSchemaJson(schemaObject) {
+             if (!schemaObject) {
+                 console.warn("No Schema.org object provided to inject.");
+                 return;
+             }
+              // Remove existing schema script if any
+              const existingSchema = document.querySelector('script[type="application/ld+json"]');
+              if (existingSchema) {
+                  existingSchema.remove();
+              }
+
+             const script = document.createElement('script');
+             script.type = 'application/ld+json';
+             try {
+                script.textContent = JSON.stringify(schemaObject, null, 2); // Use 2 spaces for readability
+                document.head.appendChild(script);
+                console.log("Injected Schema.org JSON-LD.");
+             } catch (e) {
+                 console.error("Error converting Schema.org object to JSON:", e);
+             }
+         }
+
+
+    </script>
+</body>
+</html>
+--- END OF FILE index.html ---

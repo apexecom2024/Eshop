@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login / Sign Up - Kabarro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Theme Color Variables --- */
+        :root {
+            --primary-color: #1a2f3d;
+            --primary-color-darker: #12212b;
+            --text-color: #333;
+            --text-light: #6c757d;
+            --border-color: #dee2e6;
+            --bg-light: #f8f9fa;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+        }
+
+        /* --- Global Styles & Resets --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Helvetica, Arial, sans-serif;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- Authentication Container --- */
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #fff;
+            padding: 30px 25px; /* More padding */
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .auth-logo {
+            width: 60px; /* Adjust size as needed */
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .auth-form-container {
+            margin-top: 20px;
+        }
+
+        /* Hide inactive forms */
+        #signupFormContainer, #resetFormContainer {
+            display: none;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color-darker);
+            margin-bottom: 25px;
+        }
+
+        /* Form Group Styling */
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26, 47, 61, 0.1);
+        }
+
+        /* Button Styling */
+        .auth-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px; /* Add margin above button */
+        }
+
+        .auth-btn:hover:not(:disabled) {
+            background-color: var(--primary-color-darker);
+        }
+         .auth-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Links for switching forms / forgot password */
+        .form-footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .switch-link {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .switch-link:hover {
+            text-decoration: underline;
+        }
+
+        .forgot-password-link {
+            display: block; /* Make it take full width */
+            text-align: right;
+            font-size: 13px;
+            margin-top: -10px; /* Pull up slightly */
+            margin-bottom: 15px;
+        }
+
+        /* Error & Success Messages */
+        .error-message, .success-message {
+            color: var(--error-color);
+            background-color: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none; /* Hidden by default */
+        }
+        .success-message {
+             color: var(--success-color);
+             background-color: rgba(40, 167, 69, 0.1);
+             border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        /* Loading Spinner (Optional but recommended) */
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            display: inline-block; /* Keep it inline */
+            margin-left: 8px;
+            vertical-align: middle; /* Align with text */
+            display: none; /* Hide initially */
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Logo (Optional) -->
+        <img src="assets/images/logo/logo.png" alt="Kabarro Logo" class="auth-logo" onerror="this.style.display='none';">
+
+        <!-- Login Form Container -->
+        <div id="loginFormContainer" class="auth-form-container">
+            <h2 class="auth-title">Welcome Back!</h2>
+            <p id="loginError" class="error-message"></p> <!-- Error display area -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail" class="form-label">Email Address</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword" class="form-label">Password</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <div class="forgot-password-link">
+                     <a href="#" id="showResetLink" class="switch-link">Forgot Password?</a>
+                </div>
+                <button type="submit" class="auth-btn" id="loginBtn">
+                    Login <span class="spinner" id="loginSpinner"></span>
+                </button>
+            </form>
+            <div class="form-footer">
+                Don't have an account? <a href="#" id="showSignupLink" class="switch-link">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- Sign Up Form Container -->
+        <div id="signupFormContainer" class="auth-form-container">
+            <h2 class="auth-title">Create Account</h2>
+             <p id="signupError" class="error-message"></p> <!-- Error display area -->
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="signupName" class="form-label">Full Name</label>
+                    <input type="text" id="signupName" class="form-input" placeholder="Juan Dela Cruz" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail" class="form-label">Email Address</label>
+                    <input type="email" id="signupEmail" class="form-input" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword" class="form-label">Password</label>
+                    <input type="password" id="signupPassword" class="form-input" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+                </div>
+                 <div class="form-group">
+                    <label for="signupConfirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" class="form-input" placeholder="Re-enter password" required minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="auth-btn" id="signupBtn">
+                    Sign Up <span class="spinner" id="signupSpinner"></span>
+                </button>
+            </form>
+            <div class="form-footer">
+                Already have an account? <a href="#" id="showLoginLinkFromSignup" class="switch-link">Login</a>
+            </div>
+        </div>
+
+        <!-- Reset Password Form Container -->
+        <div id="resetFormContainer" class="auth-form-container">
+            <h2 class="auth-title">Reset Password</h2>
+             <p id="resetError" class="error-message"></p> <!-- Error display area -->
+             <p id="resetSuccess" class="success-message"></p> <!-- Success display area -->
+             <p style="font-size: 14px; color: var(--text-light); margin-bottom: 20px;">Enter your email address and we'll send you a link to reset your password.</p>
+            <form id="resetForm">
+                <div class="form-group">
+                    <label for="resetEmail" class="form-label">Email Address</label>
+                    <input type="email" id="resetEmail" class="form-input" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <button type="submit" class="auth-btn" id="resetBtn">
+                     Send Reset Link <span class="spinner" id="resetSpinner"></span>
+                </button>
+            </form>
+            <div class="form-footer">
+                Remembered your password? <a href="#" id="showLoginLinkFromReset" class="switch-link">Back to Login</a>
+            </div>
+        </div>
+
+    </div> <!-- /.auth-container -->
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> <!-- Include Firestore if saving user profile -->
+
+
+    <script>
+        // Firebase configuration (Consistent)
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // Global Variables
+        let auth, db;
+
+        // DOM Element References
+        const loginFormContainer = document.getElementById('loginFormContainer');
+        const signupFormContainer = document.getElementById('signupFormContainer');
+        const resetFormContainer = document.getElementById('resetFormContainer');
+
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const resetForm = document.getElementById('resetForm');
+
+        // Buttons and Spinners
+        const loginBtn = document.getElementById('loginBtn');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const signupBtn = document.getElementById('signupBtn');
+        const signupSpinner = document.getElementById('signupSpinner');
+        const resetBtn = document.getElementById('resetBtn');
+        const resetSpinner = document.getElementById('resetSpinner');
+
+        // Error/Success Messages
+        const loginError = document.getElementById('loginError');
+        const signupError = document.getElementById('signupError');
+        const resetError = document.getElementById('resetError');
+        const resetSuccess = document.getElementById('resetSuccess');
+
+        // Switch Links
+        const showSignupLink = document.getElementById('showSignupLink');
+        const showResetLink = document.getElementById('showResetLink');
+        const showLoginLinkFromSignup = document.getElementById('showLoginLinkFromSignup');
+        const showLoginLinkFromReset = document.getElementById('showLoginLinkFromReset');
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFirebase();
+            setupEventListeners();
+            showLoginForm(); // Show login form by default
+        });
+
+        function initializeFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                db = firebase.firestore(); // Initialize Firestore
+                console.log("Firebase initialized.");
+
+                 // Check if user is already logged in
+                 auth.onAuthStateChanged(user => {
+                     if (user) {
+                         console.log("User already logged in, redirecting...");
+                         window.location.href = 'index.html'; // Or profile.html
+                     } else {
+                         console.log("No user logged in.");
+                     }
+                 });
+
+            } catch (error) {
+                console.error("Firebase initialization error:", error);
+                displayError(loginError, "Failed to initialize. Please refresh."); // Show error on login form
+            }
+        }
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            // Form switching links
+            showSignupLink?.addEventListener('click', (e) => { e.preventDefault(); showSignupForm(); });
+            showResetLink?.addEventListener('click', (e) => { e.preventDefault(); showResetForm(); });
+            showLoginLinkFromSignup?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+            showLoginLinkFromReset?.addEventListener('click', (e) => { e.preventDefault(); showLoginForm(); });
+
+            // Form submissions
+            loginForm?.addEventListener('submit', handleLogin);
+            signupForm?.addEventListener('submit', handleSignup);
+            resetForm?.addEventListener('submit', handlePasswordReset);
+        }
+
+        // --- Form Visibility Control ---
+        function showLoginForm() {
+            loginFormContainer.style.display = 'block';
+            signupFormContainer.style.display = 'none';
+            resetFormContainer.style.display = 'none';
+            clearAllErrors();
+        }
+        function showSignupForm() {
+            loginFormContainer.style.display = 'none';
+            signupFormContainer.style.display = 'block';
+            resetFormContainer.style.display = 'none';
+             clearAllErrors();
+        }
+        function showResetForm() {
+            loginFormContainer.style.display = 'none';
+            signupFormContainer.style.display = 'none';
+            resetFormContainer.style.display = 'block';
+             clearAllErrors();
+             resetSuccess.style.display = 'none'; // Hide success message when showing form
+        }
+
+        // --- Error/Success Handling ---
+        function displayError(element, message) {
+            if (element) {
+                element.textContent = message;
+                element.style.display = 'block';
+            }
+        }
+         function displaySuccess(element, message) {
+            if (element) {
+                element.textContent = message;
+                element.style.display = 'block';
+            }
+        }
+        function clearError(element) {
+            if (element) {
+                element.textContent = '';
+                element.style.display = 'none';
+            }
+        }
+         function clearAllErrors() {
+            clearError(loginError);
+            clearError(signupError);
+            clearError(resetError);
+            clearError(resetSuccess); // Also clear success message on switch
+        }
+
+        // --- Authentication Handlers ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            clearError(loginError); // Clear previous errors
+            setLoading(loginBtn, loginSpinner, true); // Show loading
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log("User logged in:", userCredential.user.uid);
+                window.location.href = 'index.html'; // Redirect to home or dashboard
+            } catch (error) {
+                console.error("Login Error:", error);
+                displayError(loginError, getFriendlyErrorMessage(error));
+            } finally {
+                setLoading(loginBtn, loginSpinner, false); // Hide loading
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            clearError(signupError); // Clear previous errors
+
+            // Client-side validation
+            if (!name) {
+                displayError(signupError, "Please enter your full name.");
+                return;
+            }
+            if (password.length < 6) {
+                 displayError(signupError, "Password must be at least 6 characters long.");
+                return;
+            }
+             if (password !== confirmPassword) {
+                 displayError(signupError, "Passwords do not match.");
+                return;
+            }
+
+            setLoading(signupBtn, signupSpinner, true); // Show loading
+
+            try {
+                // 1. Create user in Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                console.log("User created:", user.uid);
+
+                 // 2. Update user profile in Firebase Auth (add display name)
+                await user.updateProfile({
+                    displayName: name
+                });
+                console.log("Auth profile updated with display name.");
+
+                // 3. (Optional but Recommended) Create user document in Firestore
+                const userDocRef = db.collection('users').doc(user.uid);
+                await userDocRef.set({
+                    displayName: name,
+                    email: user.email,
+                    uid: user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    // Add other default fields if needed (e.g., photoURL: null, phoneNumber: null)
+                });
+                console.log("User document created in Firestore.");
+
+                // 4. Redirect after successful signup and profile update
+                window.location.href = 'index.html'; // Redirect to home or dashboard
+
+            } catch (error) {
+                console.error("Signup Error:", error);
+                displayError(signupError, getFriendlyErrorMessage(error));
+            } finally {
+                setLoading(signupBtn, signupSpinner, false); // Hide loading
+            }
+        }
+
+        async function handlePasswordReset(e) {
+            e.preventDefault();
+            const email = document.getElementById('resetEmail').value;
+
+            clearError(resetError); // Clear previous errors
+            clearError(resetSuccess); // Clear success message
+            setLoading(resetBtn, resetSpinner, true); // Show loading
+
+            try {
+                await auth.sendPasswordResetEmail(email);
+                console.log("Password reset email sent to:", email);
+                displaySuccess(resetSuccess, "Password reset link sent! Please check your email (including spam folder).");
+                resetForm.reset(); // Clear the email field
+            } catch (error) {
+                console.error("Password Reset Error:", error);
+                 displayError(resetError, getFriendlyErrorMessage(error));
+            } finally {
+                setLoading(resetBtn, resetSpinner, false); // Hide loading
+            }
+        }
+
+        // --- Helper Functions ---
+        function setLoading(button, spinner, isLoading) {
+            if (button && spinner) {
+                button.disabled = isLoading;
+                spinner.style.display = isLoading ? 'inline-block' : 'none';
+            }
+        }
+
+        function getFriendlyErrorMessage(error) {
+            // Provide more user-friendly messages for common errors
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/user-disabled':
+                    return 'This account has been disabled.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email address.';
+                case 'auth/wrong-password':
+                    return 'Incorrect email or password.';
+                case 'auth/email-already-in-use':
+                    return 'This email address is already registered.';
+                case 'auth/weak-password':
+                    return 'Password is too weak. Please use at least 6 characters.';
+                case 'auth/too-many-requests':
+                     return 'Too many attempts. Please try again later.';
+                default:
+                    return `An error occurred: ${error.message}`; // Generic fallback
+            }
+        }
+
+    </script>
+
+</body>
+</html>

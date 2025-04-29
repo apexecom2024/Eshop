@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Products - Magnetar Dashboard</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- No Mapbox CSS needed -->
+
+    <style>
+        /* --- START: Embedded CSS --- */
+
+        /* --- Base Variables (Consistent Light Theme) --- */
+        :root {
+            --font-family-base: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            --primary-color: #4A90E2; --primary-color-darker: #357ABD;
+            --text-primary: #333333; --text-secondary: #777777; --text-on-primary: #ffffff;
+            --background-main: #F8F9FA; --background-card: #ffffff; --background-nav: #ffffff;
+            --border-color: #EAECEF; --border-nav: #EAECEF;
+            --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 1px 2px rgba(0, 0, 0, 0.06);
+            --radius-card: 12px; --space-unit: 4px; --header-height: 55px; --navbar-height: 60px;
+            --sidebar-width: 230px;
+            --content-padding-mobile: calc(var(--space-unit) * 4); --content-padding-tablet: calc(var(--space-unit) * 6); --content-padding-desktop: calc(var(--space-unit) * 8);
+            --desktop-max-width: 1140px;
+            --input-background: #ffffff; --input-border: #D1D5DB; --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary); --placeholder-text: #9CA3AF;
+            --danger-color: #ef4444; --danger-text: #b91c1c; --danger-bg: #fee2e2;
+            --primary-color-rgb: 74, 144, 226;
+        }
+
+        /* --- Dark Theme Overrides --- */
+        [data-theme="dark"] {
+            --primary-color: #5A9BEA; --primary-color-darker: #4A80D2;
+            --text-primary: #E5E7EB; --text-secondary: #9CA3AF;
+            --background-main: #111827; --background-card: #1F2937; --background-nav: #1F2937;
+            --border-color: #374151; --border-nav: #374151;
+            --shadow-card: 0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.2);
+            --input-background: #374151; --input-border: #4B5563; --input-border-focus: var(--primary-color);
+            --input-text: var(--text-primary); --placeholder-text: #6B7280;
+            --danger-color: #f87171; --danger-text: #fecaca; --danger-bg: #450a0a;
+            --primary-color-rgb: 90, 155, 234;
+        }
+
+        /* --- General Reset & Base Styles --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-family-base); background-color: var(--background-main); color: var(--text-primary);
+            font-size: 14px; line-height: 1.5; padding-top: var(--header-height);
+            padding-bottom: var(--navbar-height);
+            overflow-x: hidden; transition: background-color 0.2s ease, color 0.2s ease, padding-left 0.3s ease;
+        }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; height: auto; display: block; }
+
+        /* --- Header --- */
+        .page-header {
+            background-color: var(--background-nav); border-bottom: 1px solid var(--border-nav);
+            padding: 0 var(--content-padding-mobile); height: var(--header-height);
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; right: 0; width: 100%;
+            z-index: 100; gap: calc(var(--space-unit) * 3);
+            transition: background-color 0.2s ease, border-bottom-color 0.2s ease, left 0.3s ease, width 0.3s ease;
+        }
+        .header-action-icon {
+            color: var(--text-primary); font-size: 20px; cursor: pointer;
+            padding: calc(var(--space-unit) * 1.5); line-height: 1; margin: calc(var(--space-unit) * -1.5); flex-shrink: 0;
+            transition: color 0.2s ease;
+        }
+         .header-action-icon.back-icon { color: var(--text-primary);}
+        .header-action-icon:hover { color: var(--primary-color); }
+        .header-title {
+             font-size: 18px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+             flex-grow: 1; color: var(--text-primary);
+        }
+        .header-icons { display: flex; align-items: center; gap: calc(var(--space-unit) * 4); flex-shrink: 0; }
+
+        /* --- Filters Bar --- */
+        .filters-container {
+            padding: calc(var(--space-unit) * 2) var(--content-padding-mobile);
+            background-color: var(--background-nav);
+            border-bottom: 1px solid var(--border-nav);
+            position: sticky; top: var(--header-height); /* Stick below header */
+            z-index: 99;
+            white-space: nowrap;
+            overflow-x: auto;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .filters-container::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            display: inline-block; padding: calc(var(--space-unit) * 1.5) calc(var(--space-unit) * 3);
+            margin-right: calc(var(--space-unit) * 2); border: 1px solid var(--input-border);
+            border-radius: 20px; background-color: var(--input-background); color: var(--text-secondary);
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        /* Keep the desired active state styles */
+        .filter-btn.active {
+            background-color: var(--text-primary); color: var(--background-main); border-color: var(--text-primary);
+        }
+        [data-theme="dark"] .filter-btn.active {
+            background-color: var(--primary-color); color: var(--text-on-primary); border-color: var(--primary-color);
+        }
+        .filter-btn:hover:not(.active) { border-color: var(--text-secondary); }
+
+        /* --- Search & Sort Bar --- */
+        .search-sort-container {
+            padding: calc(var(--space-unit) * 3) var(--content-padding-mobile);
+            display: flex; gap: calc(var(--space-unit) * 2); align-items: center;
+             background-color: var(--background-main);
+        }
+        .search-input-wrapper { position: relative; flex-grow: 1; }
+        .search-input {
+            width: 100%; height: 40px; padding: 0 calc(var(--space-unit) * 3) 0 calc(var(--space-unit) * 9);
+            border: 1px solid var(--input-border); border-radius: var(--radius-card); background-color: var(--input-background);
+            color: var(--input-text); font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input::placeholder { color: var(--placeholder-text); }
+        .search-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); }
+        .search-icon {
+             position: absolute; left: calc(var(--space-unit) * 3); top: 50%; transform: translateY(-50%);
+             color: var(--text-secondary); font-size: 16px; pointer-events: none;
+        }
+        .sort-filter-btn {
+            flex-shrink: 0; width: 40px; height: 40px; border: 1px solid var(--input-border);
+            border-radius: var(--radius-card); background-color: var(--input-background);
+            color: var(--text-secondary); font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s;
+        }
+        .sort-filter-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+
+        /* --- Product List --- */
+        .product-list { list-style: none; padding: 0; margin: 0; }
+        .product-list-item {
+            display: flex; align-items: center; gap: calc(var(--space-unit) * 3);
+            padding: calc(var(--space-unit) * 3) var(--content-padding-mobile);
+            background-color: var(--background-card);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer; transition: background-color 0.1s ease;
+        }
+        .product-list-item:last-child { border-bottom: none; }
+        .product-list-item:hover { background-color: rgba(0,0,0,0.02); }
+        [data-theme="dark"] .product-list-item:hover { background-color: rgba(255,255,255,0.03); }
+
+        .product-thumbnail {
+            width: 50px; height: 50px; object-fit: cover;
+            border-radius: 6px; background-color: var(--border-color); flex-shrink: 0;
+        }
+        .product-details { flex-grow: 1; }
+        .product-name { font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-unit); display: block; font-size: 15px;}
+        .product-subtext { font-size: 13px; color: var(--text-secondary); }
+        .stock-unavailable { color: var(--danger-text); font-weight: 500; }
+
+        /* Loading / Message Styles (Adapted to be list items) */
+         /* Reusing .list-message-container from other pages */
+        .list-message-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: calc(var(--space-unit) * 5) var(--content-padding-mobile); text-align: center;
+            color: var(--text-secondary); font-style: normal; /* Use normal style for structured message */
+            gap: var(--space-unit); /* Space between icon/title/text */
+            border-bottom: none; /* Messages shouldn't have borders */
+             width: 100%; /* Ensure it takes full width for centering */
+        }
+         .list-message-container.loading { flex-direction: row; font-style: italic; gap: calc(var(--space-unit) * 2);}
+         .list-message-container h3 { font-size: 16px; font-weight: 600; margin: 0; color: inherit; }
+         .list-message-container p { font-size: 13px; margin: 0; color: inherit; }
+         .list-message-container.error { color: var(--danger-text); } /* Error specific color */
+
+
+        .stat-loader { border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid var(--primary-color); width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        [data-theme="dark"] .stat-loader { border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary-color); }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Sidebar Styles */
+        #sidebarNav {
+            display: none; flex-direction: column; position: fixed; top: 0; left: 0; /* Start from top */
+            width: var(--sidebar-width); height: 100vh; /* Full height */
+            background-color: var(--background-nav); border-right: 1px solid var(--border-nav);
+            padding: var(--content-padding-mobile) 0; z-index: 110; /* Above header */ overflow-y: auto;
+            transition: background-color 0.2s ease, border-right-color 0.2s ease;
+        }
+        .sidebar-nav-item {
+            display: flex; align-items: center; padding: calc(var(--space-unit) * 2.5) var(--content-padding-mobile);
+            color: var(--text-secondary); font-size: 14px; font-weight: 500; cursor: pointer;
+            border-left: 3px solid transparent; margin-bottom: var(--space-unit);
+            transition: color 0.2s ease, background-color 0.2s ease, border-left-color 0.2s ease;
+        }
+        .sidebar-nav-item i { font-size: 18px; width: 25px; margin-right: calc(var(--space-unit) * 3); text-align: center; }
+         .sidebar-nav-item span { flex-grow: 1; } /* Added flex-grow */
+        .sidebar-nav-item:hover { color: var(--text-primary); background-color: rgba(0, 0, 0, 0.03); }
+        [data-theme="dark"] .sidebar-nav-item:hover { background-color: rgba(255, 255, 255, 0.04); }
+        .sidebar-nav-item.active { color: var(--primary-color); border-left-color: var(--primary-color); background-color: rgba(var(--primary-color-rgb, 74, 144, 226), 0.08); }
+        [data-theme="dark"] .sidebar-nav-item.active { background-color: rgba(var(--primary-color-rgb, 90, 155, 234), 0.15); }
+
+        /* --- Bottom Navigation (Matching Home/Orders) --- */
+        .bottom-navbar {
+            display: flex; justify-content: space-around; align-items: center; /* Align items vertically */
+            background-color: var(--background-nav);
+            border-top: 1px solid var(--border-nav); padding: var(--space-unit) 0; height: var(--navbar-height);
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+            transition: background-color 0.2s ease, border-top-color 0.2s ease; box-shadow: 0 -1px 3px rgba(0,0,0,0.04);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            color: var(--text-secondary); font-size: 10px; /* Font size for label */ flex: 1; padding: calc(var(--space-unit)*0.5) 2px; /* Adjusted padding */
+            cursor: pointer; -webkit-tap-highlight-color: transparent; border-radius: 6px;
+            transition: color 0.2s, background-color 0.2s; line-height: 1.3;
+        }
+        .nav-item i { /* Using Font Awesome regular (far) or solid (fas) */
+             font-size: 22px; /* Slightly smaller icon */
+             margin-bottom: calc(var(--space-unit) * 0.5); /* Space between icon and label */
+             height: 26px; display: flex; align-items: center;
+             transition: color 0.2s;
+        }
+        /* --- THIS IS THE KEY CHANGE --- */
+        .nav-item span { display: block; font-weight: 500; white-space: nowrap;}
+        /* --- END KEY CHANGE --- */
+
+        .nav-item.active { color: var(--primary-color); }
+        .nav-item:active { /* More subtle active feedback */ background-color: rgba(var(--primary-color-rgb, 74, 144, 226), 0.1); }
+        [data-theme="dark"] .nav-item:active { background-color: rgba(var(--primary-color-rgb, 90, 155, 234), 0.15); }
+
+        /* Responsive */
+        @media (min-width: 992px) { /* Desktop */
+             body { padding-left: var(--sidebar-width); padding-bottom: 0; padding-top: 0; } /* Adjust padding for sidebar */
+            .page-header { top: 0; left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: 0 var(--content-padding-desktop); height: var(--header-height); align-items: center;}
+            .header-action-icon.back-icon { display: none; }
+            .header-title { text-align: left; flex-grow: 0; margin-right: auto; }
+            .filters-container { top: var(--header-height); left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: calc(var(--space-unit)*2) var(--content-padding-desktop); border-bottom: 1px solid var(--border-nav); background-color: var(--background-nav);}
+            .search-sort-container { padding: calc(var(--space-unit) * 3) var(--content-padding-desktop); }
+
+            /* Apply max width and horizontal centering to content sections */
+             .product-list-container {
+                max-width: var(--desktop-max-width);
+                margin-left: auto;
+                margin-right: auto;
+                background-color: var(--background-card); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden;
+             }
+             /* Adjust padding within the list container for desktop */
+             .product-list-item { padding: calc(var(--space-unit) * 3) var(--content-padding-desktop); background-color: transparent; }
+             .product-list-container > .list-message-container {
+                 padding-left: var(--content-padding-desktop);
+                 padding-right: var(--content-padding-desktop);
+             }
+
+
+            #sidebarNav { display: flex; }
+            .bottom-navbar { display: none; } /* Hide bottom nav on desktop */
+        }
+        /* Add tablet specific adjustments if needed, matching other pages */
+        @media (min-width: 768px) and (max-width: 991px) { /* Tablet */
+             body { padding-left: 0; padding-top: var(--header-height); padding-bottom: var(--navbar-height); } /* Reset padding */
+            .page-header { padding: 0 var(--content-padding-tablet); left: 0; width: 100%; height: var(--header-height); align-items: center; }
+             .header-action-icon.back-icon { display: block; } /* Show back button on tablet */
+             .header-title { text-align: center; margin: 0 auto; flex-grow: 1; }
+             .filters-container { top: var(--header-height); left: 0; width: 100%; padding: calc(var(--space-unit)*2) var(--content-padding-tablet); }
+             .search-sort-container { padding: calc(var(--space-unit) * 3) var(--content-padding-tablet); }
+             .product-list-container { margin: 0 var(--content-padding-tablet); background-color: var(--background-card); border-radius: var(--radius-card); box-shadow: var(--shadow-card); overflow: hidden;}
+             .product-list-item { padding: calc(var(--space-unit) * 3) var(--content-padding-tablet); background-color: transparent;}
+             /* Adjust message container padding/margin on tablet */
+             .product-list-container > .list-message-container {
+                 padding-left: var(--content-padding-tablet);
+                 padding-right: var(--content-padding-tablet);
+             }
+             #sidebarNav { display: none; } /* Hide sidebar */
+             .bottom-navbar { display: flex; } /* Show bottom nav */
+        }
+
+
+        /* --- END: Embedded CSS --- */
+    </style>
+</head>
+<body data-theme="light"> <!-- Default theme -->
+    <!-- Header -->
+    <header class="page-header">
+         <a href="javascript:history.back()" class="header-action-icon back-icon" title="Go Back">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="header-title" id="headerTitle">Products</div>
+        <div class="header-icons">
+             <a href="add-product.html" class="header-action-icon" title="Add Product">
+                <i class="fas fa-plus"></i>
+            </a>
+            <button class="header-action-icon" title="More Options" id="moreOptionsBtn">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav id="sidebarNav">
+        <a href="home.html" data-target="page-home" data-title="Dashboard" class="sidebar-nav-item" title="Home"><i class="fas fa-house-chimney"></i><span>Home</span></a>
+        <a href="orders.html" data-target="page-orders" data-title="Orders" class="sidebar-nav-item" title="Orders"><i class="fas fa-receipt"></i><span>Orders</span></a>
+        <a href="products.html" data-target="page-products" data-title="Products" class="sidebar-nav-item active" title="Products"><i class="fas fa-tag"></i><span>Products</span></a>
+        <a href="customers.html" data-target="page-customers" data-title="Customers" class="sidebar-nav-item" title="Customers"><i class="fas fa-users"></i><span>Customers</span></a>
+        <a href="profile.html" data-target="page-profile" data-title="Profile" class="sidebar-nav-item" title="Profile"><i class="far fa-user-circle"></i><span>Profile</span></a>
+    </nav>
+
+    <!-- Filters Bar -->
+    <div class="filters-container">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="draft">Draft</button>
+        <button class="filter-btn" data-filter="archived">Archived</button>
+    </div>
+
+     <!-- Search & Sort Bar -->
+    <div class="search-sort-container">
+        <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="search" id="searchInput" class="search-input" placeholder="Filter products">
+        </div>
+        <button class="sort-filter-btn" id="sortBtn" title="Sort Products">
+            <i class="fas fa-sort-amount-down"></i>
+        </button>
+         <button class="sort-filter-btn" id="filterBtn" title="More Filters">
+            <i class="fas fa-filter"></i>
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content-wrapper">
+        <div class="product-list-container">
+            <ul class="product-list" id="productList">
+                 <!-- Content will be added by JS -->
+                 <!-- Initial message -->
+                 <li class="list-message-container loading">
+                     <span class="stat-loader"></span> Loading products...
+                 </li>
+            </ul>
+         </div>
+    </div> <!-- End Main Content Wrapper -->
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-navbar">
+        <a href="home.html" data-target="page-home" data-title="Dashboard" class="nav-item" title="Home">
+             <i class="fas fa-house-chimney"></i>
+             <span>Home</span>
+        </a>
+        <a href="orders.html" data-target="page-orders" data-title="Orders" class="nav-item" title="Orders">
+             <i class="fas fa-receipt"></i>
+             <span>Orders</span>
+        </a>
+        <a href="products.html" data-target="page-products" data-title="Products" class="nav-item active" title="Products">
+             <i class="fas fa-tag"></i>
+             <span>Products</span>
+        </a>
+        <a href="customers.html" data-target="page-customers" data-title="Customers" class="nav-item" title="Customers">
+             <i class="fas fa-users"></i>
+             <span>Users</span>
+        </a>
+        <a href="profile.html" data-target="page-profile" data-title="Profile" class="nav-item" title="Profile">
+             <i class="far fa-user-circle"></i>
+             <span>Me</span>
+        </a>
+    </nav>
+
+    <!-- SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script> <!-- Added Auth SDK -->
+
+
+    <!-- Embedded JavaScript -->
+    <script>
+        // --- START: Embedded JS ---
+
+        // --- Global State & Variables ---
+        let firebaseApp;
+        let auth; // Added auth variable for authorization check
+        let firestore;
+        let productsData = []; // Store fetched products for filtering/searching
+        let currentFilter = 'all'; // Filter state for products
+
+        const COLLECTION_NAME = 'store_products';
+        const CURRENT_PAGE_ID = 'page-products';
+        const LOGIN_PAGE_URL = 'login.html'; // URL of your login page
+        // --- Define the required admin email - MUST MATCH LOGIN/CUSTOMERS/ORDERS PAGE ---
+        const REQUIRED_ADMIN_EMAIL = "admin@magnetarstore.com";
+
+
+        // --- Firebase Config ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // --- Utility Functions ---
+        function renderProductStock(product) {
+            const quantity = parseInt(product['Inventory quantity'] || product.quantity || 0);
+            const hasVariants = !!product['Option1 Name']; // Check if Option1 exists
+            if (quantity > 0) {
+                let text = `${quantity} available`;
+                // Only mention variants if there's actually a quantity > 0 AND options are defined
+                 if (hasVariants) { text += ` • variants`; } // Assuming Option1 implies variants
+                return `<span class="product-subtext">${text}</span>`;
+            } else {
+                 // Even if quantity is 0, if there are variants, you might still want to show the variant count
+                 // For now, keeping it simple: 0 available
+                return `<span class="product-subtext stock-unavailable">0 available</span>`;
+            }
+        }
+
+        // Helper to create consistent message elements (loading, empty, error) for insertion into list
+         function createMessageElement(text, showSpinner = false, isError = false, subMessage = "") {
+             const messageLi = document.createElement('li'); // Use li so it fits in the ul
+             messageLi.className = 'list-message-container'; // Reusing this class for styling
+             messageLi.style.display = 'flex'; // Ensure it's flex
+             messageLi.style.flexDirection = showSpinner ? 'row' : 'column'; // Layout
+             messageLi.style.alignItems = 'center'; // Centering
+             messageLi.style.justifyContent = 'center'; // Centering
+             messageLi.style.padding = '40px 20px'; // Add some padding
+             messageLi.style.textAlign = 'center'; // Center text
+             messageLi.style.borderBottom = 'none'; // Messages shouldn't have borders
+             messageLi.style.width = '100%'; // Ensure it takes full width for centering
+
+
+             if (showSpinner) {
+                  messageLi.classList.add('loading');
+                  messageLi.innerHTML = `<span class="stat-loader"></span> ${text}`;
+                  messageLi.style.color = 'var(--text-secondary)'; // Standard text color
+             } else if (isError) {
+                  messageLi.classList.add('error');
+                  messageLi.innerHTML = `
+                    <i class="fas fa-exclamation-circle" style="font-size: 50px; color: var(--danger-color); margin-bottom: 15px;"></i>
+                    <h3>Error</h3>
+                    <p>${text}</p>
+                  `;
+                   // Color is handled by .error class CSS rule now
+             } else { // Empty state message (assuming it's for "No Products Found")
+                  messageLi.innerHTML = `
+                        <i class="fas fa-tag" style="font-size: 50px; color: var(--text-secondary); opacity: 0.5; margin-bottom: 15px;"></i>
+                        <h3>${text}</h3>
+                         ${subMessage ? `<p>${subMessage}</p>` : ''} <!-- Optional sub-message -->
+                   `;
+                  messageLi.style.color = 'var(--text-secondary)'; // Standard text color
+             }
+             return messageLi;
+         }
+
+
+        // --- UI State Functions (Modified to render inside the list UL) ---
+        function showLoading() {
+             const productListElement = document.getElementById('productList');
+             if(productListElement) {
+                 productListElement.innerHTML = ''; // Clear list (and any previous messages)
+                 productListElement.appendChild(createMessageElement('Loading products...', true)); // Add loading message with spinner
+                 productListElement.style.display = 'block'; // Ensure list container is visible
+             }
+        }
+
+        function hideLoading() {
+             // Loading is hidden when showEmptyState, showError, or applyFiltersAndSearch are called,
+             // as they clear the list or overwrite its content.
+        }
+
+        function showError(message = "An error occurred.") {
+             hideLoading(); // Ensure spinner is gone
+             const productListElement = document.getElementById('productList');
+             if (productListElement) {
+                  productListElement.innerHTML = ''; // Clear list
+                  productListElement.appendChild(createMessageElement(message, false, true)); // Add error message
+                  productListElement.style.display = 'block'; // Ensure list container is visible
+             }
+        }
+         // showEmptyState is called by applyFiltersAndSearch when results are empty
+        function showEmptyState(message = "No Products Found", subMessage = "") {
+             hideLoading(); // Ensure spinner is gone
+             const productListElement = document.getElementById('productList');
+             if (productListElement) {
+                  productListElement.innerHTML = ''; // Clear list
+                  // Use the createMessageElement to add a styled empty state message
+                  productListElement.appendChild(createMessageElement(message, false, false, subMessage)); // Pass subMessage
+                  productListElement.style.display = 'block'; // Ensure list container is visible
+             }
+        }
+
+
+        // --- Product Rendering ---
+        function renderProductListItem(product) { // Takes a product object {id, ...data}
+            const productId = product.id; // Get Firestore Document ID
+
+            const name = product.Title || product.name || 'Unnamed Product';
+            const imageUrl = product['Image Src'] || (Array.isArray(product.imageUrls) && product.imageUrls[0]) || 'https://via.placeholder.com/50/eee/ccc?text=?';
+            const stockHtml = renderProductStock(product);
+            const status = (product.Status || 'active').toLowerCase(); // Default to 'active' if status is missing
+
+
+            const li = document.createElement('li');
+            li.className = 'product-list-item';
+            li.dataset.productId = productId; // Store the Firestore ID here
+            li.dataset.status = status;
+            li.dataset.name = name.toLowerCase();
+
+
+            li.innerHTML = `
+                <img src="${imageUrl}" alt="${name}" class="product-thumbnail" onerror="this.onerror=null; this.src='https://via.placeholder.com/50/eee/ccc?text=?'; console.warn('Image failed to load for product ${productId}')">
+                <div class="product-details">
+                    <span class="product-name">${name}</span>
+                    ${stockHtml}
+                </div>
+            `;
+
+            // Event listener to navigate with the CORRECT ID
+            li.addEventListener('click', () => {
+                console.log(`Navigating to details for product ID: ${productId}`);
+                 // In a real app, you might check auth status here too, but relying on
+                 // the initial onAuthStateChanged check on page load is often sufficient.
+                window.location.href = `product-details.html?id=${productId}`; // Pass Firestore ID
+            });
+
+            return li;
+        }
+
+        // --- Apply Filters & Search ---
+        function applyFiltersAndSearch() {
+            const productListElement = document.getElementById('productList');
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+             // Clear previous messages (loading, empty, error) *only if they are inside the list*
+             productListElement.querySelectorAll('.product-list > .list-message-container').forEach(el => el.remove());
+
+
+            // Filter the local 'productsData' array first
+            let filteredProducts = productsData;
+
+            // Apply Category Filter based on currentFilter state
+             if (currentFilter !== 'all') {
+                 filteredProducts = filteredProducts.filter(product => (product.Status || 'active').toLowerCase() === currentFilter);
+             }
+             // 'all' filter uses the base 'productsData' array
+
+
+            // Apply Search Filter to the already category-filtered list
+             if (searchTerm) {
+                 filteredProducts = filteredProducts.filter(product => {
+                     const productName = (product.Title || product.name || '').toLowerCase();
+                     const productId = product.id.toLowerCase();
+                     // Add other searchable fields from your product data as needed
+                     const sku = (product.SKU || '').toLowerCase();
+
+                     return productName.includes(searchTerm) ||
+                            productId.includes(searchTerm) ||
+                            sku.includes(searchTerm);
+                 });
+             }
+
+            // Clear the rendered list items before displaying filtered results
+            productListElement.innerHTML = ''; // This *will* clear messages too if they were the only children
+
+
+            // Render the filtered results or show empty state
+            if (filteredProducts.length === 0) {
+                 // Determine the appropriate empty message based on filter and search
+                 let messageTitle = "No Products Found";
+                 let messageSub = "No products matched your search or filter criteria.";
+
+                 if (searchTerm && currentFilter !== 'all') {
+                     messageTitle = `No Matching "${currentFilter}" Products`;
+                     messageSub = `No products of type "${currentFilter}" were found matching "${searchTerm}".`;
+                 } else if (searchTerm) {
+                     messageTitle = "No Matching Products";
+                     messageSub = `No products were found matching "${searchTerm}".`;
+                 } else if (currentFilter !== 'all') {
+                      messageTitle = `No "${currentFilter}" Products Found`;
+                      messageSub = `No products of type "${currentFilter}" were found.`;
+                 } else {
+                      // This case means currentFilter is 'all' and searchTerm is empty, but productsData is empty
+                      messageTitle = "No Products Available";
+                      messageSub = "No products have been added to the store yet.";
+                 }
+
+                showEmptyState(messageTitle, messageSub); // Use refined empty state
+            } else {
+                 filteredProducts.forEach(product => {
+                     // The render function expects the data (plus ID), not the full doc snapshot
+                     productListElement.appendChild(renderProductListItem(product));
+                 });
+            }
+
+            // Ensure list container is visible (in case it was hidden by a global error/message)
+            productListElement.style.display = 'block';
+        }
+
+         // Debounce for search input
+         let searchTimeout;
+         function debouncedApplyFiltersAndSearch() {
+             clearTimeout(searchTimeout);
+             // Only apply search filter after a slight delay
+             searchTimeout = setTimeout(applyFiltersAndSearch, 300);
+         }
+
+
+        // --- Data Fetching ---
+        async function fetchAndProcessProducts() {
+            const productListElement = document.getElementById('productList');
+
+            // Ensure elements exist and Firestore is ready
+            if (!firestore || !productListElement) {
+                 console.error("Required DOM elements or Firestore not ready during fetch.");
+                 showError("Page setup error. Cannot load products.");
+                 return;
+            }
+
+            // Initial state: show loading, clear previous content
+            showLoading(); // Use helper to add loading spinner to the list
+
+             try {
+                 // Fetch documents, ordered by title (assuming Title field exists)
+                 const querySnapshot = await firestore.collection(COLLECTION_NAME).orderBy('Title').get();
+                 console.log(`Attempting to fetch products from '${COLLECTION_NAME}'.`);
+
+                 productsData = []; // Clear previous data
+                 if (querySnapshot.empty) {
+                     console.log(`No products found in '${COLLECTION_NAME}'.`);
+                 } else {
+                     querySnapshot.forEach(doc => {
+                          // Store the document ID and the data
+                         productsData.push({ id: doc.id, ...doc.data() });
+                     });
+                      console.log(`Fetched ${productsData.length} products.`);
+                 }
+
+                 // Render the initial list (which is all fetched products, before search/filter)
+                 // This also sets up the initial view based on the 'all' filter and empty search
+                 applyFiltersAndSearch(); // Now calls renderProducts internally based on currentFilter='all' and empty search
+
+             } catch (error) {
+                 console.error("Error fetching products: ", error);
+                 // Pass the error message to showError helper
+                 showError(`Failed to load products: ${error.message}`);
+             }
+        }
+
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+             console.log("DOM Content Loaded for Products page.");
+
+             // Get the list element early to update its initial state
+             const productListElement = document.getElementById('productList');
+             // Display initial status message (already added in HTML, but JS clears/replaces)
+             // No need to add initial message here, it's in the static HTML
+
+
+            // Initialize Firebase
+            try {
+                if (!firebase.apps.length) {
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase Initialized.");
+                } else {
+                    firebaseApp = firebase.app();
+                    console.log("Firebase App already exists.");
+                }
+                auth = firebase.auth(); // Get Auth service
+                firestore = firebase.firestore();
+                console.log("Firestore service obtained.");
+
+                 // Enable offline persistence (optional)
+                 firestore.enablePersistence({ synchronizeTabs: true })
+                    .then(() => console.log("Firestore offline persistence enabled."))
+                    .catch((err) => {
+                         if (err.code == 'failed-precondition') { console.warn("Firestore Persistence failed: Multiple tabs open?"); }
+                         else if (err.code == 'unimplemented') { console.warn("Firestore Persistence failed: Browser not supported."); }
+                         else { console.warn("Firestore persistence error:", err); }
+                     });
+
+                 // --- Handle Authentication State and Authorization ---
+                 // This listener is crucial and will run when the page loads
+                 auth.onAuthStateChanged(user => {
+                     console.log("Auth State Changed:", user ? user.uid : "No user", user ? "Email: " + user.email : "", user ? "Anonymous: " + user.isAnonymous : "");
+
+                     // Clear any initial "Checking status..." message - Handled by showLoading() or showError() later
+                     // if (productListElement) productListElement.innerHTML = ''; // Don't clear yet, showLoading/Error will handle
+
+                     if (user) {
+                         // --- Authorization Check ---
+                         // Redirect if:
+                         // 1. The user is anonymous OR
+                         // 2. The user has an email but it's NOT the required admin email
+                         if (user.isAnonymous || (user.email && user.email !== REQUIRED_ADMIN_EMAIL)) {
+                            console.warn("Access denied: User is anonymous or not the authorized admin email. Redirecting to login.");
+                             // Use showError to display message before redirecting
+                             showError("Access denied. Please log in with an authorized account.");
+                             setTimeout(() => { window.location.href = LOGIN_PAGE_URL; }, 3000); // Redirect after a delay
+                             return; // Stop further execution
+                         }
+
+                         // --- User is Authorized Admin ---
+                         console.log("Authorized admin user signed in. Proceeding to fetch data.");
+                         // Now that we know the user is authorized, fetch the data
+                         fetchAndProcessProducts(); // Call the main data fetching function
+
+                     } else {
+                         // --- No user signed in at all ---
+                         console.log("Auth State Changed: No user signed in. Redirecting to login.");
+                         // Use showError to display message before redirecting
+                         showError("You must be logged in to view this page. Redirecting...");
+                         setTimeout(() => { window.location.href = LOGIN_PAGE_URL; }, 3000); // Redirect after a delay
+                         return; // Stop further execution
+                     }
+                 });
+
+
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                // Use showError to indicate critical initialization error
+                showError("Critical Error: Could not connect to authentication services.");
+            }
+
+             // Set active nav item
+             document.querySelectorAll('.nav-item, .sidebar-nav-item').forEach(link => {
+                 link.classList.toggle('active', link.dataset.target === CURRENT_PAGE_ID);
+             });
+
+
+            // Filter Button Listeners
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                     // Check if data has been loaded before applying filters
+                     // This check prevents errors if filters are clicked before fetch completes or fails
+                      if (productsData.length > 0 || document.getElementById('productList').querySelector('.list-message-container')) {
+                          filterButtons.forEach(btn => btn.classList.remove('active'));
+                          button.classList.add('active');
+                          currentFilter = button.dataset.filter;
+                          console.log("Filter changed to:", currentFilter);
+                          applyFiltersAndSearch();
+                      } else {
+                          console.warn("Filter clicked before data was loaded or failed to load.");
+                          // Optionally show a temporary message like "Data not available yet."
+                      }
+                });
+            });
+
+            // Search Input Listener (using debounced function)
+            const searchInput = document.getElementById('searchInput');
+             // Check if data has been loaded before enabling search logic (basic check)
+             if (searchInput) {
+                  searchInput.addEventListener('input', debouncedApplyFiltersAndSearch);
+                  // Optional: Disable search initially if you want strict control
+                  // searchInput.disabled = true; // Then enable it after fetchAndProcessProducts completes successfully
+             }
+
+
+            // Placeholder Listeners
+            document.getElementById('moreOptionsBtn')?.addEventListener('click', () => alert('More options not implemented.'));
+            document.getElementById('sortBtn')?.addEventListener('click', () => alert('Sorting not implemented.'));
+            document.getElementById('filterBtn')?.addEventListener('click', () => alert('Advanced filtering not implemented.'));
+
+        }); // End DOMContentLoaded
+
+        // --- END: Embedded JS ---
+    </script>
+
+</body>
+</html>

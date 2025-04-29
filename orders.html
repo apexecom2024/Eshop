@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>My Orders - Kabarro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Theme Color Variables --- */
+        :root {
+            --primary-color: #1a2f3d;
+            --primary-color-darker: #12212b;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #6c757d;
+            --text-color: #333;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --warning-color: #ffc107; /* Yellowish for Pending */
+            --info-color: #17a2b8;    /* Bluish for Processing/Shipped */
+            --danger-color: #dc3545;
+            /* --navbar-height: 65px; -- Removed */
+            --header-height: 65px;
+        }
+
+        /* --- Global Styles & Resets --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Helvetica, Arial, sans-serif;
+            touch-action: manipulation; /* Prevent double-tap zoom */
+        }
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+            touch-action: pan-y; /* Allow vertical scroll */
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        /* --- Header Styles (Consistent) --- */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); position: fixed;
+            top: 0; left: 0; right: 0; width: 100%; z-index: 100; height: var(--header-height);
+        }
+        .header-left { display: flex; align-items: center; }
+        .back-btn { /* Renamed to logo-link or similar if not always 'back' */
+            background: none; border: none; margin-right: 15px; color: var(--primary-color);
+            cursor: pointer; padding: 0; text-decoration: none; display: flex;
+            align-items: center; justify-content: center; width: 50px; height: 50px;
+        }
+        .header-logo { width: 40px; height: 40px; border-radius: 40%; object-fit: cover; display: block; }
+        .back-btn:hover { opacity: 0.8; }
+        .header-title { font-size: 18px; font-weight: 600; color: #212b36; }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .header-icon {
+            position: relative; font-size: 22px; color: #333; cursor: pointer;
+            text-decoration: none; display: flex; align-items: center;
+        }
+        .header-icon .fa-shopping-cart { color: var(--primary-color); }
+        /* Removed settings and preview icon styles */
+        .cart-badge {
+            position: absolute; top: -8px; right: -8px; background-color: #ff5252;
+            color: white; border-radius: 50%; width: 20px; height: 20px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 11px; font-weight: bold; line-height: 1; pointer-events: none;
+        }
+        .cart-badge.hidden { display: none; }
+
+        /* --- Main Content Area --- */
+        .container {
+            max-width: 100%;
+            /* Padding accounts for fixed header, removed navbar padding */
+            padding: calc(var(--header-height) + 20px) 15px 20px 15px;
+            min-height: calc(100vh - var(--header-height)); /* Removed navbar height */
+        }
+
+        /* --- Orders List Styling --- */
+        #ordersListContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Space between order cards */
+        }
+
+        .order-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+            border: 1px solid var(--border-color);
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        .order-card:hover {
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Align status badge properly */
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--medium-gray);
+            flex-wrap: wrap; /* Wrap if needed on small screens */
+            gap: 5px;
+        }
+        .order-id {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-color);
+            word-break: break-all; /* Prevent long IDs from overflowing */
+        }
+        .order-id strong { color: var(--dark-gray); font-weight: 500; }
+        .order-date {
+            font-size: 12px;
+            color: var(--dark-gray);
+            margin-top: 2px; /* Align better with ID */
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        .order-details {
+             margin-bottom: 15px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .detail-row:last-child { margin-bottom: 0; }
+        .detail-label { color: var(--dark-gray); }
+        .detail-value { font-weight: 500; color: var(--text-color); text-align: right; } /* Added text-align */
+
+        .order-status {
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        /* Status-specific colors */
+        .status-pending { background-color: rgba(255, 193, 7, 0.2); color: #b98900; } /* Warning */
+        .status-processing, .status-shipped { background-color: rgba(23, 162, 184, 0.2); color: #0f6674; } /* Info */
+        .status-completed, .status-delivered { background-color: rgba(40, 167, 69, 0.2); color: var(--success-color); } /* Success */
+        .status-cancelled, .status-failed { background-color: rgba(220, 53, 69, 0.15); color: var(--danger-color); } /* Danger */
+        .status-default { background-color: var(--medium-gray); color: var(--dark-gray); } /* Default/Unknown */
+
+
+        .order-items-preview { /* Optional: Show a few item images */
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping if many items */
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--medium-gray);
+        }
+        .preview-item-img {
+            width: 35px; height: 35px; object-fit: cover;
+            border-radius: 4px; background-color: var(--medium-gray);
+            border: 1px solid var(--border-color);
+        }
+        .preview-more-items {
+            font-size: 12px;
+            align-self: center;
+            color: var(--dark-gray);
+            padding-left: 5px;
+        }
+
+        .order-footer {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-top: 15px;
+             padding-top: 15px;
+             border-top: 1px solid var(--medium-gray);
+        }
+         .order-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+         .order-action-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .order-action-btn:hover { background-color: var(--primary-color-darker); }
+
+        /* --- Loading, Error, Empty States --- */
+        .loading { display: flex; justify-content: center; align-items: center; height: 200px; width: 100%; flex-direction: column; gap: 10px; text-align: center; color: var(--dark-gray); }
+        .loading-spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-radius: 50%; border-top: 4px solid var(--primary-color); width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-message { text-align: center; padding: 20px; color: var(--danger-color); font-weight: bold; background-color: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.2); border-radius: 8px; }
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; min-height: 200px; }
+        .empty-state i { font-size: 50px; color: #ccc; margin-bottom: 15px; }
+        .empty-state h3 { font-size: 18px; color: var(--text-color); margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; color: var(--dark-gray); margin-bottom: 20px; }
+        .empty-state .order-action-btn { /* Style button in empty state */
+             margin-top: 0;
+             padding: 8px 15px;
+        }
+
+        /* --- Bottom Navigation Bar Styles (REMOVED) --- */
+        /* CSS for .bottom-navbar and its children have been removed */
+
+    </style>
+    <script>
+        // Firebase configuration (Consistent)
+const firebaseConfig = {
+  apiKey: "AIzaSyDV5uecwO9YSqd9oc2c6-Bi2qSeQ60bp6I",
+  authDomain: "aiconnect-ion-lejsx1.firebaseapp.com",
+  projectId: "aiconnect-ion-lejsx1",
+  storageBucket: "aiconnect-ion-lejsx1.appspot.com",
+  messagingSenderId: "673159361095",
+  appId: "1:673159361095:web:eb5fd4f3062aaf66ea7762"
+};
+
+        // Prevent zoom scripts (Consistent)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Zoom prevention listeners
+            document.addEventListener('touchstart', function(event) { if (event.touches.length > 1) { event.preventDefault(); } }, { passive: false });
+            document.addEventListener('touchmove', function(event) { if (event.touches.length > 1) { event.preventDefault(); } }, { passive: false });
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            // Initialize Firebase and load orders
+            initializeFirebaseAndOrders();
+            // Update cart icon from localStorage if needed
+            updateCartIconFromLocalStorage();
+        });
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <!-- Header (Consistent) -->
+    <div class="header">
+        <div class="header-left">
+            <a href="index.html" class="back-btn" title="Go to Products">
+                 <img src="assets/images/logo/logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'; console.error('Logo image not found at assets/images/logo/logo.png')">
+            </a>
+            <div class="header-title">My Orders</div> <!-- Updated Title -->
+        </div>
+        <div class="header-right">
+            <!-- Settings Icon Link Removed -->
+            <!-- Preview Icon Link Removed -->
+            <a href="cart.html" class="header-icon" id="cart-icon-link" title="View Cart">
+                 <i class="fas fa-shopping-cart"></i>
+                 <div class="cart-badge hidden" id="cart-badge"> <span id="cart-item-count">0</span> </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="container">
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loadingIndicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Loading your orders...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="errorMessage" style="display: none;">
+            <!-- Error message text will be set dynamically -->
+        </div>
+
+        <!-- Orders List Container -->
+        <div id="ordersListContainer" style="display: none;"> <!-- Initially hidden -->
+            <!-- Order cards will be appended here by JavaScript -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <i class="fas fa-box-open"></i>
+            <h3>No Orders Yet</h3>
+            <p>You haven't placed any orders. Start shopping!</p>
+            <a href="index.html" class="order-action-btn">Shop Now</a>
+        </div>
+
+    </div> <!-- End .container -->
+
+    <!-- Bottom Navigation Bar (REMOVED) -->
+    <!-- The entire <div class="bottom-navbar">...</div> block has been deleted -->
+
+    <script>
+        let auth, db; // Firebase instances
+
+        // --- DOM Element References ---
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const emptyState = document.getElementById('emptyState');
+        const ordersListContainer = document.getElementById('ordersListContainer');
+
+        // --- Firebase Initialization and Auth Handling ---
+        function initializeFirebaseAndOrders() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                    console.log("Firebase initialized on Orders Page.");
+                } else {
+                     firebase.app(); // Use existing app instance
+                     console.log("Using existing Firebase app instance.");
+                }
+                auth = firebase.auth();
+                db = firebase.firestore();
+
+                // Listen for Authentication state changes
+                auth.onAuthStateChanged(user => {
+                    clearUI(); // Clear previous state on auth change
+                    if (user) {
+                        console.log("User is signed in:", user.uid);
+                        fetchUserOrders(user.uid); // Fetch orders for the logged-in user
+                    } else {
+                        console.log("User is signed out.");
+                        showLoggedOutState(); // Show message or redirect
+                    }
+                });
+
+            } catch (error) {
+                console.error("CRITICAL: Firebase initialization failed:", error);
+                showError("Application setup failed. Please check configuration.");
+            }
+        }
+
+        // --- UI State Management Functions ---
+        function showLoading(show = true) {
+            loadingIndicator.style.display = show ? 'flex' : 'none';
+            if (show) { // Hide other states when showing loading
+                 errorMessage.style.display = 'none';
+                 emptyState.style.display = 'none';
+                 ordersListContainer.style.display = 'none'; // Hide list container
+                 ordersListContainer.innerHTML = ''; // Clear previous list content
+            }
+        }
+        function showError(message = "An error occurred.") {
+            hideLoading();
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            emptyState.style.display = 'none';
+            ordersListContainer.style.display = 'none';
+            console.error("Error displayed to user:", message);
+        }
+        function showEmptyState() {
+            hideLoading();
+            errorMessage.style.display = 'none';
+            // Reset empty state content to default
+            emptyState.querySelector('h3').textContent = "No Orders Yet";
+            emptyState.querySelector('p').textContent = "You haven't placed any orders. Start shopping!";
+            emptyState.querySelector('i').className = "fas fa-box-open";
+            const shopNowBtn = emptyState.querySelector('.order-action-btn');
+            if (shopNowBtn) shopNowBtn.style.display = 'inline-block'; // Show button
+            emptyState.style.display = 'flex'; // Show empty state message
+            ordersListContainer.style.display = 'none';
+        }
+        function showLoggedOutState() {
+            hideLoading();
+            errorMessage.style.display = 'none';
+            ordersListContainer.innerHTML = ''; // Clear list
+            ordersListContainer.style.display = 'none';
+            // Customize empty state for logged-out view
+            emptyState.querySelector('h3').textContent = "Login Required";
+            emptyState.querySelector('p').textContent = "Please log in to view your orders.";
+            emptyState.querySelector('i').className = "fas fa-sign-in-alt"; // Change icon
+            const shopNowBtn = emptyState.querySelector('.order-action-btn');
+            if(shopNowBtn) shopNowBtn.style.display = 'none'; // Hide shop now button
+            emptyState.style.display = 'flex'; // Show message
+            // Optionally redirect to login page here:
+            // window.location.href = 'login.html';
+        }
+        function hideLoading() { loadingIndicator.style.display = 'none'; }
+        function clearUI() { // Resets the view
+             hideLoading();
+             errorMessage.style.display = 'none';
+             emptyState.style.display = 'none';
+             ordersListContainer.innerHTML = '';
+             ordersListContainer.style.display = 'none';
+        }
+
+        // --- Data Fetching and Rendering ---
+        async function fetchUserOrders(userId) {
+            if (!userId) {
+                 console.error("No userId provided to fetch orders.");
+                 showLoggedOutState(); // Prompt login
+                 return;
+            }
+            showLoading(true); // Show loading indicator
+
+            try {
+                // Define the query using the now enabled index
+                const ordersRef = db.collection("orders")
+                                  .where("userId", "==", userId)
+                                  .orderBy("orderTimestamp", "desc"); // Newest first
+
+                const snapshot = await ordersRef.get();
+
+                hideLoading(); // Hide loading indicator *after* query finishes
+
+                if (snapshot.empty) {
+                    console.log("No orders found for user:", userId);
+                    showEmptyState(); // Display the "No Orders Yet" message
+                } else {
+                    console.log(`Fetched ${snapshot.size} orders for user: ${userId}`);
+                    ordersListContainer.innerHTML = ''; // Clear just before rendering new list
+                    snapshot.forEach(doc => {
+                        // Pass the document data and the document ID to the render function
+                        renderOrder(doc.data(), doc.id);
+                    });
+                    ordersListContainer.style.display = 'flex'; // Show the populated container
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+                // Handle specific errors if needed
+                if (error.code === 'permission-denied') {
+                     showError("You don't have permission to view these orders.");
+                } else if (error.code === 'unauthenticated') {
+                     showLoggedOutState(); // Firestore might return this if auth token expired mid-request
+                }
+                 else {
+                    showError(`Failed to load orders. Please check your connection and try again.`);
+                }
+            }
+        }
+
+        // --- Renders a single order card ---
+        function renderOrder(orderData, orderId) {
+            // Validate essential data
+            if (!orderData || !orderId) {
+                console.warn("Skipping rendering order due to missing data:", orderData, orderId);
+                return;
+            }
+
+            const orderCard = document.createElement('div');
+            orderCard.className = 'order-card';
+
+            // --- Safely Format Timestamp ---
+            const orderTimestamp = orderData.orderTimestamp?.toDate ? orderData.orderTimestamp.toDate() : null;
+            let formattedDate = 'Date unavailable';
+            if (orderTimestamp instanceof Date && !isNaN(orderTimestamp)) {
+                formattedDate = orderTimestamp.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ', ' +
+                                orderTimestamp.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            }
+
+            // --- Safely Get Status and Class ---
+            const status = orderData.status || 'Unknown';
+            // Generates classes like 'status-pending', 'status-delivered', 'status-default'
+            const statusClass = `status-${String(status).toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'default'}`;
+
+            // --- Generate Item Previews (Max 5 images) ---
+            let itemPreviewHtml = '';
+            const maxPreviewItems = 5;
+            if (orderData.items && Array.isArray(orderData.items) && orderData.items.length > 0) {
+                const itemsToPreview = orderData.items.slice(0, maxPreviewItems);
+                const remainingItems = orderData.items.length - itemsToPreview.length;
+
+                itemPreviewHtml = `
+                    <div class="order-items-preview">
+                        ${itemsToPreview.map(item => {
+                            const title = item.productTitle || 'Item';
+                            const qty = item.quantity || 1;
+                            const imgSrc = item.productImage || 'assets/images/placeholder.svg'; // Fallback image
+                            return `
+                                <img src="${imgSrc}"
+                                     alt="${title}"
+                                     class="preview-item-img"
+                                     title="${title} (Qty: ${qty})"
+                                     onerror="this.onerror=null; this.src='assets/images/placeholder.svg';">
+                            `;
+                        }).join('')}
+                        ${remainingItems > 0 ? `<span class="preview-more-items">+${remainingItems} more</span>` : ''}
+                    </div>`;
+            }
+
+            // --- Safely Get Recipient Name ---
+            const recipientName = orderData.shippingAddress?.fullName || null;
+
+            // --- Construct Inner HTML ---
+            orderCard.innerHTML = `
+                <div class="order-header">
+                    <div>
+                        <div class="order-id"><strong>Order ID:</strong> ${orderId}</div>
+                        <div class="order-date">${formattedDate}</div>
+                    </div>
+                    <span class="order-status ${statusClass}">${status}</span>
+                </div>
+                <div class="order-details">
+                    <div class="detail-row">
+                         <span class="detail-label">Payment:</span>
+                         <span class="detail-value">${orderData.paymentMethod || 'N/A'}</span>
+                    </div>
+                    ${recipientName ? `
+                         <div class="detail-row">
+                              <span class="detail-label">Recipient:</span>
+                              <span class="detail-value">${recipientName}</span>
+                         </div>` : ''}
+                    <!-- Add more details here if needed, e.g., Address Summary -->
+                    <!-- <div class="detail-row">
+                        <span class="detail-label">Items:</span>
+                        <span class="detail-value">${orderData.items?.length || 0}</span>
+                    </div> -->
+                </div>
+
+                ${itemPreviewHtml} <!-- Insert item previews here -->
+
+                <div class="order-footer">
+                    <span class="order-total">${formatPrice(orderData.totalAmount)}</span>
+                    <a href="order-details.html?id=${orderId}" class="order-action-btn">View Details</a>
+                </div>
+            `;
+
+            // Append the fully constructed card to the container
+            ordersListContainer.appendChild(orderCard);
+        }
+
+        // --- Helper Functions ---
+        function formatPrice(price) {
+             // Ensure price is a number before formatting
+             const number = parseFloat(price);
+             if (isNaN(number)) return '₱0.00'; // Handle cases where price might be null, undefined, or non-numeric
+             return `₱${number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        // --- Cart Icon Update Logic (using localStorage example) ---
+        function updateCartIcon(count) {
+            const cartBadge = document.getElementById('cart-badge');
+            const cartItemCountSpan = document.getElementById('cart-item-count');
+            if (!cartBadge || !cartItemCountSpan) return; // Elements might not exist
+            const displayCount = Math.max(0, Number(count) || 0); // Ensure non-negative number
+            if (displayCount > 0) {
+                cartItemCountSpan.textContent = displayCount > 99 ? '99+' : displayCount;
+                cartBadge.classList.remove('hidden');
+            } else {
+                cartItemCountSpan.textContent = '0';
+                cartBadge.classList.add('hidden');
+            }
+        }
+        function updateCartIconFromLocalStorage() {
+             const storedCount = localStorage.getItem('cartItemCount');
+             updateCartIcon(storedCount || 0); // Update with stored value or 0
+        }
+        // You would call localStorage.setItem('cartItemCount', newCount); elsewhere when cart changes.
+        // --- End Helper Functions ---
+
+    </script>
+
+</body>
+</html>
